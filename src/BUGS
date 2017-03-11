@@ -1,9 +1,13 @@
 
-	Yes, there are bugs.  If you happen to find one, please let us
+  Yes, there are bugs.  If you happen to find one, please let us
 know (or even better -- send a patch) so that we can tell others who are 
 running this same code.  You can send your bugs or patches to 
 mordor@moria.bio.uci.edu or post them to rec.games.mud.admin.
-	None of the bugs in this version of the code should do any damage 
+  None of the bugs in this version of the code should do any damage 
 to your system.  They may cause players or room files to be corrupted 
 when frp crashes, so you should backup every now and then.
-
+  Every effort has been made to make Mordor 3.0 as stable as possible 
+with respect to player activities.  That is to say we have tried to make 
+it impossible for a player action to crash the game.  This does not mean 
+that Caretakers and DMs cannot crash the game, or put something into the 
+database that will crash the game.

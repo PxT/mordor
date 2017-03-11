@@ -1,0 +1,40 @@
+spells
+I can cast most of the healing spells.  Which one would you like?
+spell
+I can know several different healing spells, and a few others, too
+healing
+yes, I can heal you if you tell me which spell you desire
+mend-wounds CAST mend-wounds
+that should perk you up.
+mend CAST mend-wounds
+there.  I hope that makes you feel better
+vigor CAST vigor
+that should raise your enthusiasm
+vig CAST vigor
+that will put lead back in your pencil
+poison CAST curepoison
+you got here just in time.  Another few minutes and you would be in Limbo
+dis CAST remove-disease
+uhhh, there's really no need to shake my hand.  PLEASE don't touch me
+disease CAST remove-disease
+uhhh, there's really no need to shake my hand.  PLEASE don't touch me
+bli CAST remove-blind
+open your eyes.  You can see
+blind CAST remove-blind
+now you should be able to see again
+blindness CAST remove-blind
+you may open your eyes, now
+bless CAST bless
+you have been blessed for a while.  See that you deserve it
+cast
+I can cast spells to heal, or to bless and protect you.  Which would you like?
+protect CAST protection
+the power of my protection will be with you
+protection CAST protection
+the power of my protection will be with you
+prot CAST protection
+the power of my protection will be with you
+heal CAST heal
+that's my specialty!
+restore CAST restore
+well, it's not really a health problem, now is it?

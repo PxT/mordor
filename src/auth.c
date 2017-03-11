@@ -8,7 +8,9 @@
  *	Copyright (C) 1994   Brett J. Vickers
  *
  */
-
+#ifdef IRIX
+	#define _BSD_COMPAT
+#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -186,12 +188,12 @@ char *buf;
 }
 
 /************************************************************************/
-/*				logf					*/
+/*				loge					*/
 /************************************************************************/
 
 /* Log debugging information if necessary.				*/
 
-void logf(fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
+void loge(fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
 char    *fmt;
 int     i1, i2, i3, i4, i5, i6, i7, i8, i9, i10;
 {

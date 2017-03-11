@@ -10,13 +10,14 @@
 
 #include <stdio.h>
 #include <sys/file.h>
-
 #ifndef MIGNORE
 
 extern int		Tablesize;
 extern int		Cmdnum;
 extern long		Time;
+extern long		StartTime;
 extern struct lasttime	Shutdown;
+extern struct lasttime  Weather[4];
 extern int		Spy[PMAX];
 extern int		Numlockedout;
 extern lockout		*Lockout;
@@ -97,7 +98,7 @@ extern int	write_obj_to_mem(), write_crt_to_mem(), read_obj_from_mem(),
 extern int	io_check(), accept_input(), locked_out(), addr_equal(),
 		remove_wait();
 extern void	sock_init(), sock_loop(), accept_connect(), output_buf(), 
-		print(), handle_commands(), disconnect(), broadcast(), 
+		print(), handle_commands(), disconnect(), broadcast(), broadcast_login(),
 		broadcast_wiz(), broadcast_rom(), broadcast_rom2(),
 		broadcast_robot_rom(), add_wait(), init_connect(),
 		waiting(), child_died(), reap_children();
@@ -121,7 +122,7 @@ extern void	wear_all(), remove_all(), equip_list();
 /* COMMAND4.C */
 
 extern int	health(), info(), follow(), lose(), group(), track(), peek(),
-		help(), welcome(), send(), broadsend();
+		help(), welcome(), psend(), broadsend();
 extern void	info_2();
 
 /* COMMAND5.C */
@@ -164,6 +165,10 @@ extern int	passwd(), vote();
 
 extern int	pfinger();
 
+/* COMMAND12.C */
+
+extern int	bard_song(), bard_song2(), meditate(), touch_of_death();
+
 /* MAGIC1.C */
 
 extern int	cast(), teach(), study(), readscroll(), drink(), zap(),
@@ -197,7 +202,8 @@ extern int	resist_cold(), breathe_water(), earth_shield(),
 
 /* MAGIC8.C */
 
-extern int	room_vigor(), fear(), rm_blind(), silence(), blind(), charm(), spell_fail(); 
+extern int	room_vigor(), fear(), rm_blind(), silence(), blind(),
+		spell_fail(), fortune(); 
 
 /* DM1.C */
 
@@ -233,7 +239,8 @@ extern int     dm_replace(), desc_search(), dm_nameroom(), dm_append(),
 extern void 	txt_parse();
 
 /* DM6.C */
-extern int	dm_dust(), dm_follow(), dm_attack(), list_enm(), list_charm();
+extern int	dm_dust(), dm_attack(), list_enm(), list_charm(), 
+		dm_alias(), dm_auth(), dm_flash(), dm_memory();
 
 /* PLAYER.C */
 
@@ -242,16 +249,16 @@ extern void	init_ply(), uninit_ply(), update_ply(), up_level(),
 		compute_thaco();
 extern char	*title_ply(), *ply_prompt();
 extern int	weight_ply(), max_weight(), profic(), mprofic(),
-		mod_profic(), has_light(), fall_ply();
+		mod_profic(), has_light(), fall_ply(), luck(), update_combat();
 extern creature	*find_who(), *lowest_piety(), *low_piety_alg();
 
 /* CREATURE.C */
 
 extern creature	*find_crt();
 extern int 	add_enm_crt(), del_enm_crt(), is_enm_crt(), add_charm_crt(), 
-		del_charm_crt(), is_charm_crt();
+		del_charm_crt(), is_charm_crt(), attack_mon(), mobile_crt();
 extern void	end_enm_crt(), die(), temp_perm(), die_perm_crt(), 
-		check_for_flee(), consider(), add_enm_dmg();
+		check_for_flee(), consider(), add_enm_dmg(), monster_combat();
 
 /* ROOM.C */
 
@@ -272,8 +279,8 @@ extern object	*find_obj();
 
 extern void	update_game(), update_users(), update_random(),
 		update_active(), update_time(), update_exit(),
-		update_shutdown(), add_active(), del_active();
-extern int	crt_spell(), choose_item();
+		update_shutdown(), add_active(), del_active(), update_weather(), update_security();
+extern int	crt_spell(), choose_item(), is_crt_active();
 
 /* POST.C */
 
@@ -286,7 +293,7 @@ extern int	action();
 
 /* MISC.C */
 
-extern void	merror(), lowercize(), zero(), delimit(), view_file(), logf(),
+extern void	merror(), lowercize(), zero(), delimit(), view_file(), loge(),
 		sort_cmds(), load_lockouts(), please_wait(), logn();
 extern int	low(), up(), dice(), exp_to_lev(), dec_daily(), sort_cmp(),
 		file_exists(), isnumber();
@@ -305,3 +312,4 @@ extern int	compress(), uncompress();
 
 #endif
 extern int nirvana(),list_act();
+extern void log_act();

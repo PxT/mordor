@@ -14,7 +14,9 @@
 #include <stdio.h>
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 #define FALSE    	0
 #define TRUE     	!FALSE
 #define TABSIZE  	4096

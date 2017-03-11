@@ -8,13 +8,23 @@
  *
  */
 
+#ifdef IRIX
+	#define _BSD_COMPAT
+	#include <unistd.h>
+	#include <sys/stat.h>
+     	#include <fcntl.h>
+#endif /* IRIX */
+
 #include "mstruct.h"
 #include "mextern.h"
 #include <stdio.h>
-#include <sys/types.h>
 #include <sys/time.h>
-#include <math.h>
+#include <sys/types.h>
 #include <ctype.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
+
 
 /************************************************************************/
 /*				merror					*/
@@ -32,7 +42,7 @@ char 	errtype;
 
 	t = time(0);
 	sprintf(bugstr, "Error occured in %s. %s", str, ctime(&t));
-	logf(bugstr);
+	loge(bugstr);
 	if(errtype == FATAL)
 		exit(-1);
 }
@@ -126,10 +136,20 @@ int		num, flag;
 	str = xstr[xnum];  xnum = (xnum + 1)%5;
 
 	if(crt->type != MONSTER) {
-		if(((F_ISSET(crt, PINVIS) || F_ISSET(crt, PDMINV)) && 
-		   !(flag & 2)) || F_ISSET(crt, PDMINV))
+		if((((F_ISSET(crt, PINVIS) || F_ISSET(crt, PDMINV)) && 
+		   !(flag & 2)) || F_ISSET(crt, PDMINV)) && !F_ISSET(crt, PALIAS))
 			strcpy(str, "Someone");
 		else {
+
+		   if(F_ISSET(crt, PALIAS) && F_ISSET(crt, PDMINV)) {
+		     if(!F_ISSET(Ply[crt->fd].extr->alias_crt, MNOPRE)) { 
+                        strcpy(str, "A ");   
+			strcat(str, Ply[crt->fd].extr->alias_crt->name);
+		     }
+		     else
+			strcpy(str, Ply[crt->fd].extr->alias_crt->name);
+		   }
+		   else
 			strcpy(str, crt->name);
 			if(F_ISSET(crt, PINVIS))
 				strcat(str, " (*)");
@@ -520,13 +540,13 @@ struct daily	*dly_ptr;
 }
 
 /************************************************************************/
-/*				logf					*/
+/*				loge					*/
 /************************************************************************/
 
 /* This function writes a formatted printf string to a logfile called	*/
 /* "log" in the player directory.					*/
 
-void logf(fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
+void loge(fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
 char 	*fmt;
 int	i1, i2, i3, i4, i5, i6, i7, i8, i9, i10;
 {
@@ -623,6 +643,7 @@ void load_lockouts()
 	if(!fp) return;
 
 	while(1) {
+		if(fscanf(fp, "%s", str) == EOF) break; 
 		if(fscanf(fp, "%s", str) == EOF) break;
 		if(fscanf(fp, "%s", str) == EOF) break;
 		Numlockedout++;
@@ -637,6 +658,7 @@ void load_lockouts()
 	fseek(fp, 0L, 0);
 
 	for(i=0; i<Numlockedout; i++) {
+		fscanf(fp, "%s", Lockout[i].userid); 
 		fscanf(fp, "%s", Lockout[i].address);
 		fscanf(fp, "%s", Lockout[i].password);
 		if(Lockout[i].password[0] == '-' && !Lockout[i].password[1])
@@ -665,7 +687,7 @@ int	duration;
 /************************************************************************/
  
 /* This function writes a formatted printf string to a logfile called   */
-/* "log" in the player directory.                                       */
+/* "name" in the log directory.                                       */
  
 void logn(name,fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
 char    *name;
@@ -677,7 +699,7 @@ int     i1, i2, i3, i4, i5, i6, i7, i8, i9, i10;
         int     fd;
  
         sprintf(file, "%s/%s", LOGPATH,name);
-        fd = open(file, O_RDWR, 0);
+        fd = open(file, O_RDWR | O_APPEND, 0);
         if(fd < 0) {
                 fd = open(file, O_RDWR | O_CREAT, ACC);
                 if(fd < 0) return;

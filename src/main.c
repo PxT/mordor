@@ -11,9 +11,12 @@
 #include "mstruct.h"
 #include "mextern.h"
 #include <time.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 #define SCHEDPORT  4040
 
-int Port;
+int Port; 
 char report =0;
 
 main(argc, argv)
@@ -30,10 +33,12 @@ char	*argv[];
 #ifdef SCHED
 	if(argc == 1)
 		Port = schedule_g();
-#endif SCHED
+#endif 
 	
 #ifndef DEBUG
+#ifndef WIN32
 	if(fork()) exit(0);		/* go into background */
+#endif
 	close(0); close(1); close(2);	/* close stdio */
 #endif
 
@@ -57,7 +62,7 @@ char	*argv[];
 #ifdef AUTOSHUTDOWN
 	if (!Shutdown.interval){
 	    Shutdown.ltime = time(0);
-	    Shutdown.interval = 21600L;
+	    Shutdown.interval = 43200L;
 	}
 #endif
 
@@ -74,11 +79,12 @@ char	*argv[];
 
 #ifdef RECORD_ALL
 	mvc_log();
-#endif RECORD_ALL
+#endif
 	{
 	 long c;
 	 c = time(0);
-	logf("--- Game Up: %d --- (%.24s)\n", Port, ctime(&c));
+	StartTime = time(0);
+	loge("--- Game Up: %d --- (%.24s)\n", Port, ctime(&c));
 	}
 
 	sock_loop();
@@ -169,7 +175,11 @@ void mvc_log(){
    date[24] = 0;
    sprintf(rfile,"%s/%s",LOGPATH,"all_cmd");
    sprintf(mfile,"%s/%s_%s",LOGPATH,"all_cmd",date);
+#ifndef WIN32
 	link(rfile,mfile);
 	unlink(rfile);
+#else
+	rename( rfile, mfile);
+#endif
 
 }

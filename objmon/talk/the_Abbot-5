@@ -1,0 +1,27 @@
+blessings
+if you ask for a specific blessing, you will receive it my son.  I know many spells
+blessing
+if you ask for a specific blessing, you will receive it my son.  I know many spells
+spells
+yes, I know spells.  I can cast bless, protect, restore, curepoison and cure-disease.  I can also cast the word-of-recall on you
+bless CAST bless PLAYER
+bless you, mighty warrior.
+protect CAST protection PLAYER
+may you have the power of protection watch over you
+prot CAST protection PLAYER
+may you have the power of protection watch over you
+protection CAST protection PLAYER
+may you have the power of protection watch over you
+curep CAST curepoison PLAYER
+now you owe your life to the service of Ragnar
+curepoison CAST curepoison PLAYER
+may you have everlasting life in the service of Ragnar
+cure-d CAST remove-disease PLAYER
+uh, did I get it?  Is it catching?
+cure-disease CAST remove-disease PLAYER
+um, did the spell work?  It's not catching is it?
+word CAST word-of-recall PLAYER
+ done
+word-of-recall  CAST word-of-recall PLAYER
+done
+

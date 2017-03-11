@@ -2,16 +2,17 @@
 #include <ctype.h>
 #include "mstruct.h"
 #include "mextern.h"
+#include "mtype.h"
 
 #define set_flag(f,n) ((f) |= 1 << (n))
 #define clr_flag(f,n) ((f) &= ~(1 << (n)))
 #define is_fset(f,n) ((f) & 1 << (n))
-
-main(int argc, char *argv[])
+Port= PORTNUM;
+char report=1;
+int main (int argc, char *argv[])
 /* plist coomand provides a quick way to check a given players *
  * level, class, password and inventory without having to log  *
  * the player in or use the editor */
-
 {
 creature	*player;
 int		i,adj,lvl=0;
@@ -22,7 +23,7 @@ char		flags = 0;
  
     if (argc < 2) {
         printf("syntax: plist [[-pni] [-l #]] <players>\n");
-        return;
+        return(1);
     }
  
     for (i=1;i<argc;i++){
@@ -61,7 +62,7 @@ char		flags = 0;
  
         if (is_fset(flags,3)){
             printf("syntax: plist [[-pni] [-l #]] <players>\n");
-            return;
+            return(1);
         }
             
     } 
@@ -69,7 +70,7 @@ char		flags = 0;
 
 	if (adj >= argc){
         	printf("syntax: plist [[-pni] [-l #]] <players>\n");
-		return;
+		return(1);
 	}
 
 	for(i= adj;i < argc; i++){
@@ -139,5 +140,5 @@ char		flags = 0;
 		free_crt(player);
 	}
 
-	return;
+	return(0);
 }

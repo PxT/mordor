@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-#include <sys/time.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				give				      */
@@ -330,7 +332,7 @@ cmd		*cmnd;
 	}
 
 	if(crt_ptr->type == PLAYER) {
-		if(F_ISSET(rom_ptr, RNOKIL)) {
+		if(F_ISSET(rom_ptr, RNOKIL) && ply_ptr->class < DM) {
 			print(fd, "No killing allowed in this room.\n");
 			return(0);
 		}
@@ -338,11 +340,11 @@ cmd		*cmnd;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS)) {
+                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, you're lawful.\n");
                     return (0);
                 }
-                if(!F_ISSET(crt_ptr, PCHAOS)) {
+                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
                 }     
@@ -384,6 +386,9 @@ cmd		*cmnd;
 				F_ISSET(crt_ptr, MMALES) ? "him":"her");
 			return(0);
 		}
+		/* if(is_charm_crt(crt_ptr->name, ply_ptr))
+			del_charm_crt(crt_ptr, ply_ptr); */
+
 		add_enm_crt(ply_ptr->name, crt_ptr);
 	}
 
@@ -476,11 +481,11 @@ cmd		*cmnd;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS)) {
+                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, you're lawful.\n");
                     return (0);
                 }
-                if(!F_ISSET(crt_ptr, PCHAOS)) {
+                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
                 }     
@@ -502,7 +507,9 @@ cmd		*cmnd;
 
 	ply_ptr->lasttime[LT_ATTCK].ltime = t;
 	ply_ptr->lasttime[LT_ATTCK].interval = 3;
-
+	ply_ptr->lasttime[LT_SPELL].ltime = t;
+        ply_ptr->lasttime[LT_SPELL].interval = 5;
+	
 	F_CLR(ply_ptr, PHIDDN);
 	if(F_ISSET(ply_ptr, PINVIS)) {
 		F_CLR(ply_ptr, PINVIS);
@@ -530,6 +537,9 @@ cmd		*cmnd;
                 return(0);
             }
         }  
+	/*	if(is_charm_crt(crt_ptr->name, ply_ptr))
+			del_charm_crt(crt_ptr, ply_ptr); */
+		
 		add_enm_crt(ply_ptr->name, crt_ptr);
 	}
 
@@ -558,7 +568,9 @@ cmd		*cmnd;
 
 			crt_ptr->lasttime[LT_ATTCK].ltime = t;
 			crt_ptr->lasttime[LT_ATTCK].interval = mrand(5,8);
-
+			crt_ptr->lasttime[LT_SPELL].ltime = t;
+                        crt_ptr->lasttime[LT_SPELL].interval = mrand(7,10);
+			
 			if(ply_ptr->ready[WIELD-1])
 				n = mdice(ply_ptr->ready[WIELD-1]) / 2;
 			else
@@ -569,16 +581,26 @@ cmd		*cmnd;
 
 			m = MIN(crt_ptr->hpcur, n);
 			if(crt_ptr->type != PLAYER) {
+				/* if(is_charm_crt(crt_ptr->name, ply_ptr))
+					del_charm_crt(crt_ptr, ply_ptr); */
+
 				add_enm_dmg(ply_ptr->name, crt_ptr, m);
 				if(ply_ptr->ready[WIELD-1]) {
 					p = MIN(ply_ptr->ready[WIELD-1]->type,
 						4);
 					addprof = (m * crt_ptr->experience) /
-						crt_ptr->hpmax;
+						MAX(crt_ptr->hpmax, 1);
 					addprof = MIN(addprof,
 						crt_ptr->experience);
 					ply_ptr->proficiency[p] += addprof;
 				}
+				else if(ply_ptr->class == MONK) {
+                                /* give blunt prof for monk barehand */
+                                addprof = (m * crt_ptr->experience) /
+                                    MAX(crt_ptr->hpmax, 1);
+                                addprof = MIN(addprof, crt_ptr->experience);
+                                ply_ptr->proficiency[2] += addprof;  
+	                        }
 			}
 			crt_ptr->hpcur -= n;
 
@@ -657,7 +679,7 @@ cmd		*cmnd;
 	if(!dum_ptr->name[0]) return;
 
 	if(save_ply(dum_ptr->name, dum_ptr) < 0)
-		merror("savegame", NONFATAL);
+		merror("ERROR - savegame", NONFATAL);
 
 	for(i=0; i<n; i++)
 		del_obj_crt(obj[i], dum_ptr);
@@ -699,6 +721,7 @@ cmd		*cmnd;
 			   cmnd->str[1], cmnd->val[1]);
 
 	if(!crt_ptr) {
+
 		print(fd, "I don't see that here.\n");
 		return(0);
 	}
@@ -715,6 +738,7 @@ cmd		*cmnd;
 				crt_ptr->talk);
 			print(fd, "%M says to you, \"%s\".\n", crt_ptr,
 				crt_ptr->talk);
+
 		}
 		else
 			broadcast_rom(-1, ply_ptr->rom_num,

@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				look				      */
@@ -262,7 +265,12 @@ cmd		*cmnd;
 		print(fd, "You can't go that way.\n");
 		return(0);
 	}
-
+	if(F_ISSET(xp->ext, XPLSEL)) {
+		if(!F_ISSET(xp->ext, XPLSEL + ply_ptr->class) && ply_ptr->class < CARETAKER){
+			print(fd, "Your class prohibits you from going there.\n");
+			return(0);
+		}
+	}
 	if(F_ISSET(xp->ext, XLOCKD)) {
 		print(fd, "It's locked.\n");
 		return(0);
@@ -407,28 +415,31 @@ cmd		*cmnd;
 		broadcast_rom(fd, old_rom_ptr->rom_num, "%M leaves %s.", 
 			      ply_ptr, tempstr);
 	}
-
-	del_ply_rom(ply_ptr, ply_ptr->parent_rom);
-	add_ply_rom(ply_ptr, rom_ptr);
-
-
+	if(F_ISSET(ply_ptr, PALIAS) && ply_ptr->type == PLAYER) { 
+                del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+                broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered to the %s.", Ply[ply_ptr->fd].extr->alias_crt, tempstr);
+                add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
+        }
+        if(ply_ptr->type == PLAYER) {
+		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
+		add_ply_rom(ply_ptr, rom_ptr);
+	}
+	else {
+		del_crt_rom(ply_ptr, ply_ptr->parent_rom);
+	        add_crt_rom(ply_ptr, rom_ptr);
+        }
+	
 	cp = ply_ptr->first_fol;
 	while(cp) {
 		if(cp->crt->rom_num == old_rom_num && cp->crt->type != MONSTER)
 			move(cp->crt, cmnd);
-		if(F_ISSET(cp->crt, MDMFOL) && cp->crt->rom_num == old_rom_num && cp->crt->type == MONSTER) {
-		del_crt_rom(cp->crt, old_rom_ptr);
-		broadcast_rom(fd, old_rom_ptr->rom_num, "%M just wandered to the %s.\n", cp->crt, tempstr); 
-		add_crt_rom(cp->crt, rom_ptr, 1);
-                add_active(cp->crt);
-	        }	
 	cp = cp->next_tag;
 	}
-
+	
 	if(is_rom_loaded(old_rom_num)) {
 		cp = old_rom_ptr->first_mon;
 		while(cp) {
-			if(!F_ISSET(cp->crt, MFOLLO) || F_ISSET(cp->crt, MDMFOL)) {
+			if((!F_ISSET(cp->crt, MFOLLO) || F_ISSET(cp->crt, MDMFOL)) && cp->crt->type == MONSTER) {
 				cp = cp->next_tag;
 				continue;
 			}
@@ -478,7 +489,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	room		*rom_ptr;
-	int		index = -1, i, fd;
+	int		index = -1, i, j, fd;
 	int		len;
 
 	fd = ply_ptr->fd;
@@ -492,6 +503,13 @@ cmd		*cmnd;
 		}
 	}
 	cmnd->fullstr[255] = 0;
+	/* Check for modem escape code */
+        for(j=0; j<len && j < 256; j++) {
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+                        index = -1;
+                        break;
+                }
+        }
 
 	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
 		print(fd, "Say what?\n");
@@ -504,14 +522,14 @@ cmd		*cmnd;
 
 	F_CLR(ply_ptr, PHIDDN);
 	if(F_ISSET(ply_ptr, PLECHO)){
-                ANSI(fd, CYAN);
-                print(fd, "You say, \"%s\"\n", &cmnd->fullstr[index]);
-                ANSI(fd, NORMAL);
-        }
-        else
+		ANSI(fd, CYAN);
+		print(fd, "You say, \"%s\"\n", &cmnd->fullstr[index]);
+		ANSI(fd, NORMAL);
+	}
+	else
 		print(fd, "Ok.\n");
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M says, \"%s\".", 
+	broadcast_rom(fd, rom_ptr->rom_num, "%M says, \"%s.\"", 
 		      ply_ptr, &cmnd->fullstr[index]);
 
 	return(0);

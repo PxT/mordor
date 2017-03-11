@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*				recall				      */
 /**********************************************************************/
@@ -459,7 +461,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+	if(spell_fail(ply_ptr, how)) {
                 if(how == CAST)
                      ply_ptr->mpcur -= 10;
                 return(0);
@@ -557,7 +559,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+	if(spell_fail(ply_ptr, how)) {
                 if(how == CAST)
                      ply_ptr->mpcur -= 12;
                 return(0);
@@ -658,7 +660,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+	if(spell_fail(ply_ptr, how)) {
                 if(how == CAST)
                      ply_ptr->mpcur -= 15;
                 return(0);

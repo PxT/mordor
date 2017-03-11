@@ -9,31 +9,14 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
-typedef struct queue_tag {		/* General queue tag data struct */
-	int			index;
-	struct queue_tag	*next;
-	struct queue_tag	*prev;
-} qtag;
 
-typedef struct rsparse {		/* Sparse pointer array for rooms */
-	room 			*rom;
-	qtag			*q_rom;
-} rsparse;
-
-typedef struct csparse {		/* Sparse pointer array for creatures */
-	creature		*crt;
-	qtag			*q_crt;
-} csparse;
-
-typedef struct osparse {		/* Sparse pointer array for objects */
-	object			*obj;
-	qtag			*q_obj;
-} osparse;
-
-static rsparse	Rom[RMAX];	/* Pointer array declared */
-static csparse	Crt[CMAX];
-static osparse	Obj[OMAX];
+rsparse	Rom[RMAX];	/* Pointer array declared */
+csparse	Crt[CMAX];
+osparse	Obj[OMAX];
 
 static qtag	*Romhead=0;	/* Queue header and tail pointers */
 static qtag	*Romtail=0;
@@ -80,7 +63,7 @@ room	**rom_ptr;
 
 	else {
 		sprintf(file, "%s/r%05d", ROOMPATH, index);
-		fd = open(file, O_RDONLY, 0);
+		fd = open(file, O_RDONLY | O_BINARY, 0);
 		if(fd < 0)
 			return(-1);
 		*rom_ptr = (room *)malloc(sizeof(room));
@@ -112,16 +95,16 @@ room	**rom_ptr;
 			sprintf(file, "%s/r%05d", ROOMPATH, qt->index);
 			sprintf(filebak, "%s~", file);
 			rename(file, filebak);
-			fd = open(file, O_RDWR | O_CREAT, ACC);
+			fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
 			if(fd < 1)
 				return(-1);
 			if(!Rom[qt->index].rom)
-				merror("load_rom", NONFATAL);
+				merror("ERROR - load_rom", NONFATAL);
 			if(write_rom(fd, Rom[qt->index].rom, PERMONLY) < 0) {
 				close(fd);
 				unlink(file);
 				rename(filebak, file);
-				merror("write_rom", NONFATAL);
+				merror("ERROR - write_rom", NONFATAL);
 				return(-1);
 			}
 			close(fd);
@@ -163,7 +146,7 @@ int	num;
 		return(0);
 
 	sprintf(file, "%s/r%05d", ROOMPATH, num);
-	fd = open(file, O_RDONLY, 0);
+	fd = open(file, O_RDONLY | O_BINARY, 0);
 	if(fd < 0)
 		return(-1);
 	rom_ptr = (room *)malloc(sizeof(room));
@@ -233,7 +216,7 @@ int	num;
 	sprintf(file, "%s/r%05d", ROOMPATH, num);
 	sprintf(filebak, "%s~", file);
 	rename(file, filebak);
-	fd = open(file, O_RDWR | O_CREAT, ACC);
+	fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
 	if(fd < 1)
 		return(-1);
 	if(write_rom(fd, Rom[num].rom, PERMONLY) < 0) {
@@ -272,7 +255,7 @@ int	permonly;
 		}
 
 		sprintf(file, "%s/r%05d", ROOMPATH, qt->index);
-		fd = open(file, O_RDWR | O_CREAT, ACC);
+		fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
 		if(fd < 1)
 			return;
 		if(write_rom(fd, Rom[qt->index].rom, permonly) < 0) {
@@ -402,7 +385,7 @@ creature	**mon_ptr;
 
 	else {
 		sprintf(file, "%s/m%02d", MONPATH, index/MFILESIZE);
-		fd = open(file, O_RDONLY, 0);
+		fd = open(file, O_RDONLY | O_BINARY, 0);
 		if(fd < 0) {
 			*mon_ptr = 0;
 			return(-1);
@@ -487,7 +470,7 @@ object	**obj_ptr;
 
 	else {
 		sprintf(file, "%s/o%02d", OBJPATH, index/OFILESIZE);
-		fd = open(file, O_RDONLY, 0);
+		fd = open(file, O_RDONLY | O_BINARY, 0);
 		if(fd < 0)
 			return(-1);
 		*obj_ptr = (object *)malloc(sizeof(object));
@@ -544,7 +527,7 @@ creature	*ply_ptr;
 	sprintf(file, "%s/%s", PLAYERPATH, str);
 	sprintf(filebak, "%s~", file);
 	rename(file, filebak);
-	fd = open(file, O_RDWR | O_CREAT, ACC);
+	fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
 	if(fd < 0) {
 		rename(filebak, file);
 		return(-1);
@@ -596,7 +579,7 @@ creature	**ply_ptr;
 #endif
 
 	sprintf(file, "%s/%s", PLAYERPATH, str);
-	fd = open(file, O_RDONLY, 0);
+	fd = open(file, O_RDONLY | O_BINARY, 0);
 	if(fd < 0) 
 		return(-1);
 

@@ -2,12 +2,14 @@
  * 	MAGIC8.C:
  *
  *  	Additional spell-casting routines.
- *
+ *	(C) 1994, 1995 Brooke Paul, Brett Vickers
  */
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /***********************************************************************/
 /*                              room_vigor                             */
 /***********************************************************************/
@@ -41,8 +43,7 @@ cmd         *cmnd;
     	}
 	if(how == CAST)
 		ply_ptr->mpcur-=12;
-
-        if(spell_fail(ply_ptr)) {
+	if(spell_fail(ply_ptr, how)) {
                 return(0);
         }
 
@@ -103,7 +104,7 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-    if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 12;
                 return(0);
@@ -208,7 +209,7 @@ int     how;
         broadcast_rom(fd, ply_ptr->rom_num, "%M fades into view.",
                   ply_ptr);
     }
-    if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 15;
                 return(0);
@@ -217,7 +218,6 @@ int     how;
     if(how == CAST) {
         ply_ptr->mpcur -= 15;
 	}
- 
     /* blind self */
    if(cmnd->num == 2) {
 		F_SET(ply_ptr,PBLIND);
@@ -278,9 +278,9 @@ int     how;
                   ply_ptr);
         }
  
-        if(crt_ptr->type != PLAYER)
-            add_enm_crt(ply_ptr->name, crt_ptr);
- 
+        if(crt_ptr->type != PLAYER){
+		add_enm_crt(ply_ptr->name, crt_ptr);
+ 	}
     }
  
     return(1);
@@ -330,8 +330,8 @@ int     how;
         dur =  600 + mrand(1,15)*10  + bonus[ply_ptr->intelligence]*50;
     else 
         dur = 600 + mrand(1,30)*10;
-     
-	if(spell_fail(ply_ptr)) {
+
+	if(spell_fail(ply_ptr, how)) {
                 return(0);
         }
  
@@ -411,9 +411,9 @@ int     how;
                   ply_ptr);
         }
  
-        if(crt_ptr->type != PLAYER)
-            add_enm_crt(ply_ptr->name, crt_ptr);
- 
+        if(crt_ptr->type != PLAYER){
+		add_enm_crt(ply_ptr->name, crt_ptr);
+ 	}
     }
  
     return(1);
@@ -465,7 +465,7 @@ int     how;
     else 
         dur = 300 + mrand(1,15)*10;
 
-	if(spell_fail(ply_ptr)) {
+        if(spell_fail(ply_ptr, how)) {
                 return(0);
         }
  
@@ -540,9 +540,9 @@ int     how;
                   ply_ptr);
         }
  
-        if(crt_ptr->type != PLAYER)
+        if(crt_ptr->type != PLAYER){
             add_enm_crt(ply_ptr->name, crt_ptr);
- 
+	} 
     }
  
     return(1);
@@ -580,11 +580,13 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 12;
                 return(0);
-        } 
+        }
+
+ 
     if(cmnd->num == 2) {
  
         if(how == CAST)
@@ -594,7 +596,7 @@ if(spell_fail(ply_ptr)) {
             print(fd, "Remove blindness spell cast on yourself.\n");
             print(fd, "You can see.\n");
             broadcast_rom(fd, ply_ptr->rom_num, 
-                      "%M cast remove blindness on %sself.", 
+                      "%M casts remove blindness on %sself.", 
                       ply_ptr,
                       F_ISSET(ply_ptr, PMALES) ? "him":"her");
         }
@@ -637,11 +639,11 @@ if(spell_fail(ply_ptr)) {
 			F_CLR(crt_ptr,MBLIND);
  
         if(how == CAST || how == SCROLL || how == WAND) {
-            print(fd, "You cast the remove blindness spell on %m.\n", crt_ptr);
+            print(fd, "You cast the remove blindness on %m.\n", crt_ptr);
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
-                       "%M cast remove blindness on %m.",
+                       "%M casts remove blindness on %m.",
                        ply_ptr, crt_ptr);
-            print(crt_ptr->fd, "%M cast remove blindness on you.\nYou can see.\n", ply_ptr);
+            print(crt_ptr->fd, "%M casts remove blindness on you.\nYou can see.\n", ply_ptr);
         }
  
     }
@@ -649,119 +651,6 @@ if(spell_fail(ply_ptr)) {
     return(1);
  
 }
-/**********************************************************************/
-/*              charm                                                 */
-/**********************************************************************/
-
-int charm(ply_ptr, cmnd, how)
-creature    *ply_ptr;
-cmd     *cmnd;
-int	how;
-{
-    room        *rom_ptr;
-    creature    *crt_ptr;
-    int     fd, n, dur;
-
-    fd = ply_ptr->fd;
-    rom_ptr = ply_ptr->parent_rom;
-
-    if(ply_ptr->mpcur < 12 && how == CAST) {
-        print(fd, "Not enough magic points.\n");
-        return(0);
-    }
-
-     
-    if(!S_ISSET(ply_ptr, SCHARM) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
-        return(0);
-    }
-    if(how == CAST) {
-        dur =  300 + mrand(1,30)*10  + bonus[ply_ptr->intelligence]*150;
-    }
-    else if (how == SCROLL)
-        dur =  100 + mrand(1,15)*10  + bonus[ply_ptr->intelligence]*75;
-    else
-        dur = 100 + mrand(1,15)*10;
-	
-    if(cmnd->num == 2) {
-
-        if(how == CAST)
-            ply_ptr->mpcur -= 15;
-
-	if(spell_fail(ply_ptr)) {
-                return(0);
-        }
-
-	ply_ptr->lasttime[LT_CHRMD].ltime = time(0);
-        ply_ptr->lasttime[LT_CHRMD].interval = dur;
-
-        if(how == CAST || how == SCROLL || how == WAND)  {
-            print(fd, "You feel so much better about yourself now.\n");
-            broadcast_rom(fd, ply_ptr->rom_num,
-                      "%M casts charm on %sself.",
-                      ply_ptr,
-                      F_ISSET(ply_ptr, PMALES) ? "him":"her");
-        }
-        else if(how == POTION)
-            print(fd, "You feel so much better about yourself now.\n");
-
-
-    }
-
-    else {
-
-        if(how == POTION) {
-            print(fd, "You can only use a potion on yourself.\n");
-            return(0);
-        }
-
-        cmnd->str[2][0] = up(cmnd->str[2][0]);
-        crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-                   cmnd->str[2], cmnd->val[2]);
-
-        if(!crt_ptr) {
-            cmnd->str[2][0] = low(cmnd->str[2][0]);
-            crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
-                       cmnd->str[2], cmnd->val[2]);
-
-            if(!crt_ptr) {
-                print(fd, "That's not here.\n");
-                return(0);
-            }
-        }
-
-	if(how == CAST)
-            ply_ptr->mpcur -= 15;
-
-        if((crt_ptr->type == PLAYER && F_ISSET(crt_ptr, PRMAGI)) ||
-           (crt_ptr->type != PLAYER && F_ISSET(crt_ptr, MRMAGI)))
-            dur /= 2;
-
-        if(how == CAST || how == SCROLL || how == WAND) {
-
-            print(fd, "You cast charm on %m.\n", crt_ptr);
-            broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
-                       "%M casts charm on %m.",
-                       ply_ptr, crt_ptr);
-            print(crt_ptr->fd, "%M casts charm on you.\n", ply_ptr);
-            add_charm_crt(crt_ptr, ply_ptr);
-
-	    crt_ptr->lasttime[LT_CHRMD].ltime = time(0);
-            crt_ptr->lasttime[LT_CHRMD].interval = dur;
-
-	    if(crt_ptr->type == PLAYER)
-     	    	F_SET(crt_ptr, PCHARM);
-	    else 
-		F_SET(crt_ptr, MCHARM);
-
-	}
-
-    }
-
-    return(1);
-
-}
-
 
 /****************************************************************************/
 /*			spell_fail					    */
@@ -770,21 +659,28 @@ int	how;
 /* This function returns 1 if the casting of a spell fails, and 0 if it is  */
 /* sucessful.								    */
 
-int spell_fail(ply_ptr)
+int spell_fail(ply_ptr, how)
 creature	*ply_ptr;
-
+int		 how;
 {
 
 int	chance, fd, n;
 
+	if(how == POTION)
+		return(0);
+
+	if(ply_ptr->type != PLAYER)
+		return(0);
 
 	fd=ply_ptr->fd;
 	n = mrand(1,100);
+	luck(ply_ptr);
 
 switch(ply_ptr->class) {
 
         case ASSASSIN:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+30; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
 			print(fd,"Your spell fails.\n");
 			return(1);
@@ -794,6 +690,7 @@ switch(ply_ptr->class) {
 
         case BARBARIAN:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5); 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -801,17 +698,19 @@ switch(ply_ptr->class) {
                 else
                         return(0);
 
-      /*  case BARD:
+        case BARD:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+60; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
                 }
                 else
-                        return(0); */
+                        return(0);
 
         case CLERIC:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+65; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -821,6 +720,7 @@ switch(ply_ptr->class) {
 
         case FIGHTER:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+10; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -830,6 +730,7 @@ switch(ply_ptr->class) {
 
         case MAGE:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+75; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -837,17 +738,19 @@ switch(ply_ptr->class) {
                 else
                         return(0);
 
-/*        case MONK:
+        case MONK:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*6)+25; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
                 }
                 else
-                        return(0); */
+                        return(0);
 
         case PALADIN:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+50; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -857,6 +760,7 @@ switch(ply_ptr->class) {
 
         case RANGER:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*4)+56; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -866,6 +770,7 @@ switch(ply_ptr->class) {
 
 	case THIEF:
                 chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*6)+22; 
+		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
                         print(fd,"Your spell fails.\n");
                         return(1);
@@ -878,3 +783,167 @@ switch(ply_ptr->class) {
     }
 }
 
+/****************************************************************************/
+/*                      fortune                                            */
+/****************************************************************************/
+        
+/* This allows bards to tell the luck of a given player.		*/
+
+int fortune(ply_ptr, cmnd, how)
+creature	*ply_ptr;
+cmd         	*cmnd;
+int		how;
+{
+
+int		fd, luk;
+creature	*crt_ptr;
+room		*rom_ptr;
+
+	fd = ply_ptr->fd;
+	rom_ptr = ply_ptr->parent_rom;
+	
+	if(ply_ptr->class != BARD && ply_ptr->class < CARETAKER) {
+		print(fd, "Only bards may do that.\n");
+		return(0);
+	}
+
+	if(ply_ptr->mpcur < 12 && how == CAST) {
+        	print(fd, "Not enough magic points.\n");
+        	return(0);
+	}
+
+	if(!S_ISSET(ply_ptr, SFORTU) && how == CAST) {
+        	print(fd, "You don't know that spell.\n");
+        	return(0);
+    	}
+    	
+	if(spell_fail(ply_ptr, how)) {
+                if(how==CAST)
+                        ply_ptr->mpcur -= 12;
+                return(0);
+        }       
+
+    if(cmnd->num == 2) {
+
+	if(how == CAST)
+            ply_ptr->mpcur -= 12;
+
+        if(how == CAST || how == SCROLL || how == WAND)  {
+            print(fd, "Fortune spell cast on yourself.\n");
+	    luk = Ply[fd].extr->luck/10;
+	    MAX(luk, 1);
+	    switch(luk) {
+		case 1:
+			print(fd, "Your death will be tragic.\n.");
+			break;
+                case 2:
+                        print(fd, "A black cat must have crossed your path.\n");
+                        break;
+                case 3:
+                        print(fd, "If it weren't for bad luck you'd have no luck at all.\n");
+                        break;
+                case 4:
+                        print(fd, "Your karma is imbalanced.\n");
+                        break;
+                case 5:
+                        print(fd, "Your future is uncertain.\n");
+                        break;
+                case 6:
+                        print(fd, "Without intervention you may find yourself in a dire situation.\n");
+                        break;
+                case 7:
+                        print(fd, "Long range prospects look good.\n");
+                        break;
+                case 8:
+                        print(fd, "Count your blessings, for others are less fortunate.\n");
+                        break;
+                case 9:
+                        print(fd, "The fates have smiled upon you.\n");
+                        break;
+                case 10:
+                        print(fd, "Your death would be tragic.\n");
+                        break;
+		default:
+			print (fd, "You can't tell right now.\n");
+		}
+
+            broadcast_rom(fd, ply_ptr->rom_num,
+                      "%M reads %s aura.",
+                      ply_ptr,
+                      F_ISSET(ply_ptr, PMALES) ? "his":"her");
+        }
+        else if(how == POTION)
+            print(fd, "Nothing happens.\n"); 
+
+ 
+    }
+	
+   else {
+       
+        if(how == POTION) {
+            print(fd, "You can only use a potion on yourself.\n");
+            return(0);
+        }                       
+
+        cmnd->str[2][0] = up(cmnd->str[2][0]);
+        crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
+                   cmnd->str[2], cmnd->val[2]);
+    
+        if(!crt_ptr) {
+            cmnd->str[2][0] = low(cmnd->str[2][0]);
+            crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
+                       cmnd->str[2], cmnd->str[2]);
+ 
+            if(!crt_ptr) {
+                print(fd, "That's not here.\n");
+                return(0);
+            }
+        }
+
+	if(crt_ptr->type == MONSTER)
+		luk = crt_ptr->alignment/10;
+	else 
+		luk = Ply[crt_ptr->fd].extr->luck/10;
+	
+	MAX(luk, 1);
+            print(fd, "Fortune spell cast on %s.\n", crt_ptr);
+
+            switch(luk) {
+                case 1:
+                        print(fd, "%M's death will be swift and certain.\n", crt_ptr);
+                        break;
+                case 2:
+                        print(fd, "You sense %M's karma is imbalanced.\n", crt_ptr);
+                        break;
+                case 3:
+                        print(fd, "A black cat must have crossed %M's path.\n", crt_ptr);
+                        break;
+                case 4:
+                        print(fd, "%M's aura reeks of danger.\n", crt_ptr);
+                        break;
+                case 5:
+                        print(fd, "Without intervention %M may end up in a dire situation.\n", crt_ptr);
+		        break;
+                case 6:
+                        print(fd, "%M's future is uncertain.\n", crt_ptr);
+                        break;
+                case 7:
+                        print(fd, "Long range prospects look good for %M.\n", crt_ptr);
+                        break;
+                case 8:
+                        print(fd, "%M should count their blessings, as others are less fortunate.\n", crt_ptr);
+                        break;
+                case 9:
+                        print(fd, "The fates smile upon %M.\n", crt_ptr);
+                        break;
+                case 10:
+                        print(fd, "%M's death would be tragic and unexpected.\n", crt_ptr);
+                        break;
+                default:
+                        print (fd, "You can't tell right now.\n");
+                }
+		broadcast_rom(fd, ply_ptr->rom_num, "%M reads %s's aura.\n", ply_ptr, crt_ptr); 
+		return(0);
+	}
+	
+}		

@@ -1,0 +1,58 @@
+knowledge
+good.  You have come to the right place.  What subject do you seek?
+wealth
+bah.  Wealth and power, that's all any of you seek.  Begone before you raise my ire.
+ire ATTACK
+I said begone, for I do not like you.
+subject
+I do not know everything, but I often know where to find out.  What topic would you like to learn about?
+topic
+yes, tell me what you wish to learn about.  The Towers?  The city?  Politics?  History?  Or perhaps magic?
+city
+Kista is a fabulous city.  It was built by the Triad of Wisdom, as a repository for all knowledge.  The representatives of the three races meet in the Towers.
+towers
+yes, the meeting place for the Triad.  You must cross the drawbridge to get there.
+drawbridge
+speak to the oracle in the Grand Cathedral.  She knows how to cross the drawbridge.
+oracle
+She resides in the Great Cathedral, and she knows many things.
+triad
+the Triad of Wisdom represents the three major races in the Land of Mordor.
+politics
+it's a dirty business.  speak to one of the mayors, because I know little of it.
+history
+in the beginning there were two visionaries... Garth and Caledon.  Much has happened since then.  It's a very long story.  speak to Styx or Trinadas. 
+magic
+you need to talk to Elise, the mage in the Towers of Kista.
+elise
+a very young mage, but quite powerful.  She takes the form of the adamantine dragon, you know.
+dragon
+Lord Aaileman in the Towers can direct you.  Go and speak to him.
+lord
+he resides in the Towers.
+aaileman
+he lives in the Towers.  He knows of the dragon and can direct you.
+garth
+he is the first coder, and made it all possible.  He worked with Caledon. 
+caledon
+Caledon wrote the world, using Garth's code. 
+styx
+Styx continues the work of Caledon, while Trinadas follows Garth.
+trinadas
+Trinadas provides us with the living code today, building on Garth's work.
+humans
+they send a representative to the Towers, to help solve the problems of the land.
+land
+this Land of Mordor.  What else?
+dwarves
+the dwarves are the third part of the Triad of Wisdom, and also have a representative at the Towers.
+quest
+there are many quests in this land, my young friend.
+friend
+you are my friend, are you not?
+seek
+do you seek knowledge, wealth or power?
+power CAST teleport
+how crass.  Be gone from my sight.
+learning
+all knowledge is here in Kista.  If you seek more answers, speak to the oracle

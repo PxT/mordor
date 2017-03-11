@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*              find_crt                  */
@@ -29,9 +32,18 @@ int     val;
     ctag    *cp;
     int match=0, found=0;
 
+    if(!ply_ptr)
+	return(0);
+    if(!str)
+	return(0);
+	
     cp = first_ct;
     while(cp) {
-        if(cp->crt->class >= CARETAKER && F_ISSET(cp->crt, PDMINV)) {
+        if(!cp->crt) {
+		cp = cp->next_tag;
+            	continue;
+	}
+	if(cp->crt->class >= CARETAKER && F_ISSET(cp->crt, PDMINV)) {
             cp = cp->next_tag;
             continue;
         }
@@ -69,6 +81,7 @@ creature    *crt_ptr;
     int n;
     n = del_enm_crt(enemy, crt_ptr);
 
+    ep = 0;
     ep = (etag *)malloc(sizeof(etag));
     if(!ep)
         merror("add_enm_crt", FATAL);
@@ -141,7 +154,8 @@ char        *enemy;
 creature    *crt_ptr;
 {
     etag    *ep, *move;
-
+    
+    move = 0;
     move = (etag *)malloc(sizeof(etag));
     if(!move)
         merror("end_enm_crt", FATAL);
@@ -244,7 +258,7 @@ creature    *att_ptr;
             if(ply_ptr) levels += ply_ptr->level;
             ep = ep->next_tag;
         }
-
+	if(levels > 1 )
         expdiv = crt_ptr->experience / levels;
 
         ep = crt_ptr->first_enm;
@@ -295,7 +309,7 @@ creature    *att_ptr;
             add_obj_rom(obj_ptr, crt_ptr->parent_rom);
         }
 	
-	if(F_ISSET(crt_ptr, MDMFOL)) {	
+	if(F_ISSET(crt_ptr, MDMFOL) && crt_ptr->type == MONSTER) {	
 	ply_ptr = crt_ptr->following;
         cp = ply_ptr->first_fol;
         if(cp->crt == crt_ptr) {
@@ -311,13 +325,20 @@ creature    *att_ptr;
                 prev = cp;
                 cp = cp->next_tag;
         }
-        crt_ptr->following = 0;
+	Ply[ply_ptr->fd].extr->alias_crt = 0;
+	F_CLR(Ply[ply_ptr->fd].ply, PALIAS);
+	ANSI(ply_ptr->fd, RED);
+	ANSI(ply_ptr->fd, BLINK);
+	print (ply_ptr->fd, "%M's body has been destroyed.\n", crt_ptr);
+        ANSI(ply_ptr->fd, NORMAL);
+	crt_ptr->following = 0;
 	}
+
 	if(is_charm_crt(crt_ptr->name, att_ptr))
 		del_charm_crt(crt_ptr, att_ptr);
-        del_active(crt_ptr);
+        
         del_crt_rom(crt_ptr, crt_ptr->parent_rom);
-
+	del_active(crt_ptr);
         free_crt(crt_ptr);
 
         if(strlen(str) > n)
@@ -540,7 +561,7 @@ creature    *crt_ptr;
             if(name[i] == ' ') name[i] = '_';
 
     	sprintf(file,"%s/ddesc/%s_%d",OBJPATH,name,crt_ptr->level);
-    	fd = open(file,O_RDONLY,0);
+    	fd = open(file,O_RDONLY | O_BINARY,0);
     	if (fd){
 		    n = read(fd,tmp,2048);
     		tmp[n] = 0;
@@ -584,8 +605,8 @@ creature    *crt_ptr;
             del_crt_rom(crt_ptr, rom_ptr);
             load_rom(xp->ext->room, &rom_ptr);
             add_crt_rom(crt_ptr, rom_ptr, 1);
-            if(!rom_ptr->first_ply)
-                del_active(crt_ptr);
+/*            if(!rom_ptr->first_ply)
+                del_active(crt_ptr); */
             return;
         }
         xp = xp->next_tag;
@@ -661,7 +682,9 @@ creature    *crt_ptr;
     int     fd;
             
         fd = crt_ptr->fd;
-        
+        if(crt_ptr->type == MONSTER)
+		return(0);
+
         cp = Ply[fd].extr->first_charm;
            
     while(cp) {
@@ -696,6 +719,7 @@ creature    *ply_ptr;
                 return(0);
 
         if(crt_ptr && crt_ptr->class < DM) {
+		cp = 0;
                 cp = (ctag *)malloc(sizeof(ctag));
                 if (!cp)
                         merror("add_charm_crt", FATAL);
@@ -746,4 +770,161 @@ creature    *ply_ptr;
         return(0);
 }
 
+/**********************************************************************/
+/*		attack_mon					      */
+/**********************************************************************/
+/*  This function does the attacking when it is two monsters 	      */
+/*  attacking each other.					      */
 
+int attack_mon(att_ptr, atd_ptr)
+creature	*att_ptr;
+creature	*atd_ptr;
+{
+int	n,t, m;	
+	
+
+	if(att_ptr->type !=MONSTER || atd_ptr->type != MONSTER)
+		return(0);
+	
+	t = time(0);
+    	if(t < LT(att_ptr, LT_ATTCK))
+		return(0);
+
+	F_CLR(att_ptr, MHIDDN);
+    	if(F_ISSET(att_ptr, MINVIS)) {
+        	F_CLR(att_ptr, MINVIS);
+        broadcast_rom(-1, att_ptr->rom_num, "%M fades into view.",
+                  att_ptr);
+    	}
+
+    	att_ptr->lasttime[LT_ATTCK].ltime = t;
+	if(F_ISSET(att_ptr, MBLIND)){
+		att_ptr->lasttime[LT_ATTCK].interval = 7;
+    	}
+
+        if(F_ISSET(atd_ptr, MUNKIL)) {
+            return(0);
+        }
+
+        if(add_enm_crt(att_ptr->name, atd_ptr) < 0) {
+            broadcast_rom(-1, att_ptr->rom_num, "%M attacks %m.",
+                      att_ptr, atd_ptr);
+        }
+
+
+    n = att_ptr->thaco - atd_ptr->armor/10;
+    
+    if (F_ISSET(att_ptr, MFEARS))
+		n += 2;
+
+    if (F_ISSET(att_ptr, MBLIND))
+		n += 5;
+
+    if(mrand(1,20) >= n) {
+            n = mdice(att_ptr) + bonus[att_ptr->strength]; 
+	    n = MAX(1,n);
+
+
+        if(mrand(1,100) <= 5) {
+            broadcast_rom(-1, att_ptr->rom_num,
+                "%M made a critical hit.", att_ptr);
+            n *= mrand(3,6);
+        }
+        else if(mrand(1,100) <= 5) {
+            broadcast_rom(-1, att_ptr->rom_num, 
+                "%M fumbled %s weapon.", att_ptr,
+                F_ISSET(att_ptr, MMALES) ? "his":"her");
+        }
+
+        m = MIN(atd_ptr->hpcur, n);
+        atd_ptr->hpcur -= n;
+
+        if(atd_ptr->hpcur < 1) {
+            broadcast_rom(-1, att_ptr->rom_num,
+                      "%M killed %m.", att_ptr, atd_ptr);
+            die(atd_ptr, att_ptr);
+            return(1);
+        }
+        else
+            check_for_flee(atd_ptr);
+    }
+
+    return(0);
+}
+
+/****************************************************************/
+/*		mobile_crt					*/
+/****************************************************************/
+
+/*	This function provides for self-moving monsters.  If	*/
+/*  the MMOBIL flag is set the creature will move around.	*/
+
+int mobile_crt(crt_ptr)
+creature	*crt_ptr;
+{
+int	i, n=0, d=0, choice=0;
+room	*rom_ptr, *new_rom;
+xtag	*xp, *xptemp;
+
+	if(crt_ptr->type != MONSTER || !F_ISSET(crt_ptr, MMOBIL) || F_ISSET(crt_ptr, MPERMT))
+		return(0);
+
+	if(crt_ptr->first_enm)
+		return(0);
+
+	rom_ptr = crt_ptr->parent_rom;
+	xptemp = rom_ptr->first_ext;
+	while(xptemp) { /* Count up exits */
+	if(!F_ISSET(xptemp->ext, XSECRT) && !F_ISSET(xptemp->ext, XNOSEE) &&!F_ISSET(xptemp->ext, XLOCKD) && !F_ISSET(xptemp->ext, XPGUAR) && is_rom_loaded(xptemp->ext->room)) 
+		d += 1;
+	xptemp=xptemp->next_tag;
+	}
+
+	if(!d)
+		return(0);
+
+	choice = mrand(1,d);
+	xp = rom_ptr->first_ext;
+    	while(xp) {  
+        if(!F_ISSET(xp->ext, XSECRT) && F_ISSET(xp->ext, XNOSEE) && !F_ISSET(xp->ext, XLOCKD) && !F_ISSET(xp->ext, XPGUAR) && is_rom_loaded(xp->ext->room)) {
+            choice -= 1;
+	    if(!choice) {
+		if(F_ISSET(xp->ext, XCLOSD) && !F_ISSET(xp->ext, XLOCKD)) {
+			broadcast_rom(-1, rom_ptr->rom_num, "%M just opened the %s.", crt_ptr, xp->ext->name);
+			F_CLR(xp->ext, XCLOSD);
+		}
+	    broadcast_rom(-1, rom_ptr->rom_num,"%M just wandered to the %s.", crt_ptr,xp->ext->name);
+            del_crt_rom(crt_ptr, rom_ptr);
+	    load_rom(xp->ext->room, &new_rom); 
+            add_crt_rom(crt_ptr, new_rom , 1);
+	    n = 1;
+	    crt_ptr->lasttime[LT_MWAND].ltime=time(0);
+	    crt_ptr->lasttime[LT_MWAND].interval=mrand(5,60);
+	    break;
+	    }
+        }
+        xp = xp->next_tag;
+    }
+	if(mrand(1,100)>80)
+		F_CLR(crt_ptr, MMOBIL);
+
+ return(n);
+}
+
+/****************************************************************/
+/*		monster_combat					*/
+/****************************************************************/
+/*	This function should make monsters attack ewach other   */
+/* 	My ultimate dream -BP 					*/
+
+void monster_combat(att_ptr, atd_ptr)
+creature	*att_ptr;
+creature	*atd_ptr;
+{
+room	*rom_ptr;
+int	dmg;
+	rom_ptr = att_ptr->parent_rom;
+
+	broadcast_rom(-1, rom_ptr, "%1M attacks %1m.\n", att_ptr, atd_ptr);
+	return;
+}	

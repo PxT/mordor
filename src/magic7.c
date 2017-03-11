@@ -6,7 +6,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /************************************************************************/
 /*              resist_cold             */
 /************************************************************************/
@@ -36,12 +38,11 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-    if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 12;
                 return(0);
         }
-
 
     if(cmnd->num == 2) {
         ply_ptr->lasttime[LT_RCOLD].ltime = time(0);
@@ -138,12 +139,11 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-    if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 12;
                 return(0);
         }
-
 
     if(cmnd->num == 2) {
         ply_ptr->lasttime[LT_BRWAT].ltime = time(0);
@@ -240,7 +240,7 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 12;
                 return(0);
@@ -353,13 +353,14 @@ int     how;
         print(fd, "That player is not logged on.\n");
         return(0);
     }
-    if(spell_fail(ply_ptr)) {
+   if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 15;
                 return(0);
-        } 
+        }
+ 
         broadcast_rom(fd, ply_ptr->rom_num, 
-            "%M casts clairvoyance.\n", ply_ptr);
+            "%M casts clairvoyance.", ply_ptr);
         if(how == CAST) {
             print(fd, "Your mind begins to focus on %m.\n",
                 crt_ptr);
@@ -548,12 +549,11 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-	if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 12;
                 return(0);
         }
-
  
     if(cmnd->num == 2) {
  
@@ -696,9 +696,10 @@ int     how;
     } else if(how == CAST) {
             ply_ptr->mpcur -= cost;
         }
-	if(spell_fail(ply_ptr)) {
+	if(spell_fail(ply_ptr, how)) {
                 return(0);
         }
+
     
 
     if (max_weight(crt_ptr) < weight_ply(crt_ptr)+obj_ptr->weight){

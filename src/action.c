@@ -12,7 +12,9 @@
 #include "mextern.h"
 
 #define SHIT 349
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*                              action                                */
 /**********************************************************************/
@@ -108,13 +110,13 @@ cmd             *cmnd;
                 OUT("You belch loudly.\n", "%M belches rudely.");
 	}
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "ponder")) {
-                OUT("You ponder the situation.\n", "%M ponders the situation.\n.");
+                OUT("You ponder the situation.\n", "%M ponders the situation.");
         }
         else if(!strcmp(cmdlist[cmdno].cmdstr, "think")) {
-                OUT("You think carefully.\n", "%M thinks carefully.\n.");
+                OUT("You think carefully.\n", "%M thinks carefully.");
         }
         else if(!strcmp(cmdlist[cmdno].cmdstr, "ack")) {
-                OUT("You ack.\n", "%M acks.\n.");
+                OUT("You ack.\n", "%M acks.");
         }
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "nervous")) {
 		OUT("You titter nervously.\n", "%M titters nervously.");
@@ -122,8 +124,8 @@ cmd             *cmnd;
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "sleep")) {
 		OUT("You take a nap.\n", "%M dozes off.");
 	}
-	else if(!strcmp(cmdlist[cmdno].cmdstr, "masterbate")) {
-		OUT("You masterbate to orgasm.\n", "%M masterbates to orgasm.");
+	else if(!strcmp(cmdlist[cmdno].cmdstr, "masturbate")) {
+		OUT("You masturbate to orgasm.\n", "%M masturbates to orgasm.");
 		/*if(mrand(1,100)<1  && !F_ISSET(ply_ptr, PBLIND)) {
 		 *	F_SET(ply_ptr,PBLIND);
 		 *	ANSI(fd, RED);
@@ -300,6 +302,11 @@ cmd             *cmnd;
 		OUT("You giggle inanely.\n", "%M giggles inanely.");
 	}
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "sing")) {
+		if(ply_ptr->class == BARD) {
+		bard_song(ply_ptr, cmnd);
+		return(0);
+		}
+		else 
 		OUT("You sing a song.\n", "%M sings a song.");
 	}
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "hum")) {
@@ -364,14 +371,14 @@ cmd             *cmnd;
 		OUT("You rage like a madman.\n", "%M rages likes a madman.");
 	}
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "defecate")) {
-		if(!dec_daily(&ply_ptr->daily[DL_DEFEC])) {
+		if(!dec_daily(&ply_ptr->daily[DL_DEFEC]) || ply_ptr->level < 4) {
 			print(fd,"You don't have to go.\n");
 			return(0);
 		}
 		n = load_obj(SHIT, &obj_ptr);
 		if(n > -1) {
 			sprintf(obj_ptr->name, "piece of %s's shit",
-				ply_ptr->name);
+				(F_ISSET(ply_ptr, PALIAS) ? Ply[ply_ptr->fd].extr->alias_crt->name : ply_ptr->name));
 			add_obj_rom(obj_ptr, ply_ptr->parent_rom);
 		}
 		OUT("You squat down and shit.\n", "%M squats down and shits.");
@@ -628,7 +635,7 @@ cmd             *cmnd;
 	}
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "groan")) {
 		OUT("You groan miserabily.\n",
-		    "%M groans miserabily\n.");
+		    "%M groans miserabily.\n");
 	
 	}
 	else if(!strcmp(cmdlist[cmdno].cmdstr, "flip")) {
@@ -639,7 +646,7 @@ cmd             *cmnd;
 			print(crt_ptr->fd, "%M flips a coin: %s.\n",
 				ply_ptr,(num >50 ) ? "heads" : "tails");
 			broadcast_rom2(fd, crt_ptr->fd, rom_ptr->rom_num, 
-				"%M flips a coin and shows it to %m.\n", 
+				"%M flips a coin and shows it to %m.", 
 				ply_ptr, crt_ptr);
 		}
 		else {

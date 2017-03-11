@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				add_ply_rom			      */
@@ -27,7 +30,8 @@ room		*rom_ptr;
 	ply_ptr->parent_rom = rom_ptr;
 	ply_ptr->rom_num = rom_ptr->rom_num;
 	rom_ptr->beenhere++;
-
+	
+	cg = 0;
 	cg = (ctag *)malloc(sizeof(ctag));
 	if(!cg)
 		merror("add_ply_rom", FATAL);
@@ -87,6 +91,10 @@ room		*rom_ptr;
 	ctag 	*cp, *temp, *prev;
 
 	ply_ptr->parent_rom = 0;
+	/* 6/17/95 BP */
+	/*	if(!rom_ptr->first_ply)
+		return; */
+		
 	if(rom_ptr->first_ply->crt == ply_ptr) {
 		temp = rom_ptr->first_ply->next_tag;
 		free(rom_ptr->first_ply);
@@ -135,6 +143,7 @@ room	*rom_ptr;
 	obj_ptr->parent_obj = 0;
 	obj_ptr->parent_crt = 0;
 
+	op = 0;
 	op = (otag *)malloc(sizeof(otag));
 	if(!op)
 		merror("add_obj_rom", FATAL);
@@ -224,6 +233,7 @@ int		num;
 	crt_ptr->parent_rom = rom_ptr;
 	crt_ptr->rom_num = rom_ptr->rom_num;
 
+	cg = 0;
 	cg = (ctag *)malloc(sizeof(ctag));
 	if(!cg)
 		merror("add_crt_rom", FATAL);
@@ -272,6 +282,10 @@ room		*rom_ptr;
 
 	crt_ptr->parent_rom = 0;
 	crt_ptr->rom_num = 0;
+	if(!rom_ptr)
+		return;
+	if(!rom_ptr->first_mon)
+		return;
 
 	if(rom_ptr->first_mon->crt == crt_ptr) {
 		temp = rom_ptr->first_mon->next_tag;
@@ -279,6 +293,7 @@ room		*rom_ptr;
 		rom_ptr->first_mon = temp;
 		return;
 	}
+
 
 	prev = rom_ptr->first_mon;
 	temp = prev->next_tag;
@@ -533,7 +548,10 @@ room		*rom_ptr;
 	
 	if(!F_ISSET(ply_ptr, PNORNM)) {
 		ANSI(fd, CYAN);
-		print(fd, "%s\n\n", rom_ptr->name);
+		if (ply_ptr->class >= CARETAKER)
+			print(fd, "%d - %s\n\n", rom_ptr->rom_num, rom_ptr->name);
+		else
+			print(fd, "%s\n\n", rom_ptr->name);
 		ANSI(fd, WHITE);
 	}
 
@@ -695,6 +713,12 @@ room		*rom_ptr;
 
 	if(!rom_ptr->trap) {
 		F_CLR(ply_ptr, PPREPA);
+		return;
+	}
+	if(ply_ptr->class > CARETAKER){
+		ANSI(ply_ptr->fd, MAGENTA);
+		print(ply_ptr->fd, "Trap passed.\n");
+		ANSI(ply_ptr->fd, NORMAL);
 		return;
 	}
 

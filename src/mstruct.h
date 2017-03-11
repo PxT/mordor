@@ -42,6 +42,16 @@ typedef struct tlk_tag {		/* Talk list tags */
 	char		type;
 	char		*action;
 	char		*target;
+        char            on_cmd;          /* action functions */
+        char            if_cmd;          /* if # command succesful */         
+        char            test_for;        /* test for condition in room */
+        char            do_act;          /* do action */
+        char            success;         /* command was succesful */
+        char            if_goto_cmd;     /* used to jump to new cmd point */
+        char            not_goto_cmd;    /* jump to cmd if not success */
+        char            goto_cmd;        /* unconditional goto cmd */
+        int             arg1;
+        int             arg2;
 } ttag;
 
 typedef struct daily {			/* Daily-use operation struct */
@@ -76,11 +86,14 @@ typedef struct extra {			/* Extra (non-saved) player fields */
 	char		lastcommand[80];
 	ctag		*first_charm;
 	etag		*first_ignore;
+	int		luck;
+	struct creature	*alias_crt;	
 } extra;
 
 typedef struct lockout {
 	char		address[80];
 	char		password[20];
+	char		userid[9];
 } lockout;
 
 typedef struct cmd {
@@ -111,7 +124,7 @@ typedef struct exit_ {
 typedef struct object {
 	char 		name[80];
 	char		description[80];
-	char		key[3][20];
+	char		key[3][20];     /* key 3 hold object index */
 	char		use_output[80];	/* String output by successful use */
 	long 		value;
 	short 		weight;
@@ -210,3 +223,34 @@ typedef struct creature {
 	ttag		*first_tlk;	/* List of talk responses */
 	struct room	*parent_rom;	/* Room creature is in */
 } creature;
+
+/* moved here to accomodate global use throughout mordor */
+
+typedef struct queue_tag {		/* General queue tag data struct */
+	int			index;
+	struct queue_tag	*next;
+	struct queue_tag	*prev;
+} qtag;
+
+typedef struct rsparse {		/* Sparse pointer array for rooms */
+	room 			*rom;
+	qtag			*q_rom;
+} rsparse;
+
+typedef struct csparse {		/* Sparse pointer array for creatures */
+	creature		*crt;
+	qtag			*q_crt;
+} csparse;
+
+typedef struct osparse {		/* Sparse pointer array for objects */
+	object			*obj;
+	qtag			*q_obj;
+} osparse;
+
+
+
+
+
+
+
+

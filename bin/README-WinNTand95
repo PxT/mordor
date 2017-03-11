@@ -1,0 +1,7 @@
+MORDOR.ZIP is a precompiled binary for Win95/NT.  It must be run under a 
+different directory than the UNIX version.  It must be run from 
+/home/Isengard/mordor/bin and the database must reside in 
+/home/Isengard/mordor/rooms and /home/Isengard/mordor/objmon.  You can 
+change this by compiling your own version and setting the path variables 
+in src/mtype.h.
+

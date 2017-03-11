@@ -9,8 +9,9 @@ typedef struct {
 
 static t_toggle =0; 
 static tx_tag   time_x[MAX_TEXIT] =
-{ {540,NULL,"dock", 0, 542,
-   "The Ithil Express has docked in Parth.","The Ithil Express has docked in Celduin."},
-  {541,"steamboat",NULL,534, 0,NULL,NULL},
-  {542,NULL,"steamboat",0,540,NULL,NULL},
-  {534,"dock",NULL,541,0,NULL,NULL}} ;
+{ {3311,"up","ocean", 951, 3161,
+   "The Widow Maker sets sail to uncharted waters.","The Widow Maker has docked."},
+  {951,"down","down",3311, 362,NULL,NULL},
+  {3160,"down",NULL,3161,0,NULL,NULL},
+  {362,NULL,"up",0,951,NULL,NULL},
+  {3161,"rope","dock",3160,3311,NULL,NULL}} ;

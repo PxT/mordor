@@ -10,14 +10,19 @@
 #include "mstruct.h"
 #define MIGNORE
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 int		Tablesize;
 int		Cmdnum;
 long		Time;
+long		StartTime;
 struct lasttime	Shutdown;
+struct lasttime Weather[5];
 int		Spy[PMAX];
 int		Numlockedout;
 lockout		*Lockout;
+extern char     report;
 
 struct {
 	creature	*ply;
@@ -33,7 +38,7 @@ struct {
 	short		ndice;
 	short		sdice;
 	short		pdice;
-} class_stats[11] = {
+} class_stats[13] = {
 	{  0,  0,  0,  0,  0,  0,  0},
 	{ 19,  2,  6,  2,  1,  6,  0},	/* assassin */
 	{ 24,  1,  8,  1,  1,  3,  1},	/* barbarian */
@@ -43,6 +48,8 @@ struct {
 	{ 19,  3,  6,  3,  1,  4,  0},	/* paladin */
 	{ 18,  3,  6,  3,  2,  2,  0},	/* ranger */
 	{ 18,  3,  5,  2,  2,  2,  1},	/* thief */
+	{ 15,  3,  5,  4,  2,  2,  1},  /* bard */
+	{ 17,  3,  6,  2,  1,  3,  0},  /* monk */
 	{ 30, 30, 10, 10,  5,  5,  5},	/* caretaker */
 	{ 30, 30, 10, 10,  5,  5,  5}	/* DM */
 };
@@ -51,14 +58,15 @@ int bonus[35] = { -4, -4, -4, -3, -3, -2, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 		  2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
 
 char class_str[][15] = { "None", "Assassin", "Barbarian", "Cleric",
-	"Fighter", "Mage", "Paladin", "Ranger", "Thief", "Caretaker",
+	"Fighter", "Mage", "Paladin", "Ranger", "Thief", "Bard", "Monk", "Caretaker",
 	"Dungeonmaster" };
 
 char race_str[][15] = { "Unknown", "Dwarf", "Elf", "Half-elf", "Halfling",
-	"Human", "Orc", "Half-giant", "Gnome" };
+	"Human", "Orc", "Half-giant", "Gnome", "Troll", "Half-orc", "Ogre","Dark-elf", "Goblin" };
 
 char race_adj[][15] = { "Unknown", "Dwarven", "Elven", "Half-elven",
-	"Halfling", "Mannish", "Orcish", "Half-giant", "Gnomish" };
+	"Halfling", "Mannish", "Orcish", "Half-giant", "Gnomish", "Trollkin", 
+"Half-orc", "Ogre", "Dark-elf", "Goblin" };
 
 short level_cycle[][10] = {
 	{ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0   },
@@ -70,6 +78,8 @@ short level_cycle[][10] = {
 	{ DEX, INT, CON, STR, PTY, STR, INT, PTY, CON, PTY },
 	{ PTY, STR, INT, CON, DEX, CON, DEX, STR, INT, DEX },
 	{ INT, CON, PTY, STR, DEX, STR, CON, DEX, PTY, DEX },
+	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },
+	{ PTY, CON, STR, DEX, INT, CON, INT, PTY, CON, STR },
 	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY },
 	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY }
 };
@@ -84,6 +94,8 @@ short thaco_list[][20] = {
 /*p*/	{ 19,19,18,18,17,16,16,15,15,14,14,13,13,12,11,11,10, 9, 8, 7 },
 /*r*/	{ 19,19,18,17,16,16,15,15,14,14,13,12,12,11,11,10, 9, 9, 8, 7 },
 /*t*/	{ 20,20,19,19,18,18,17,17,16,16,15,15,14,14,13,13,12,12,11,11 },
+/*bd*/  { 18,18,18,17,17,16,16,15,15,14,14,13,12,11,11,10, 9, 9, 8, 7 },
+/*mn*/  { 18,18,17,17,16,16,15,15,14,14,13,12,11,11,10,10, 9, 8, 7, 6 },	
 	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
 	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 };
@@ -109,9 +121,9 @@ long quest_exp[] = {
  
 long needed_exp[] = {
     512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 100000,
-    146410, 207360, 314171, 460992, 658125, 887504, 1202815,
-    1699616, 2203457, 2799000, 3505139, 4465120, 5792661, 7319072,
-    8874375, 2000000};   
+    166410, 277360, 394171, 560992, 757125, 1087504, 1402815,
+    1739616, 2203457, 2799000, 3505139, 4465120, 5792661, 7319072,
+    8874375, 15000000};   
 
 char lev_title[][8][20] = {
 	{ "", "", "", "", "", "", "", "" },
@@ -131,10 +143,14 @@ char lev_title[][8][20] = {
 	  "Royal Guide", "Pathfinder", "Ranger Knight", "Ranger Lord" },
 	{ "Rogue", "Footpad", "Dervish", "Burglar",
 	  "Sharper", "Magsman", "High Thief", "Master Thief" },
-	{ "Bumbling Idiot", "Immortal", "Slave", "Fool",
-	  "Addict", "Egomaniac", "Laborer", "Caretaker" },
-	{ "Bumbling Idiot", "Egomaniac", "Computer Nerd", "Dungeon Lord", 
-	  "Arch Occultate", "Divine Entity", "Addict", "Dungeonmaster"  }
+	{ "Jongleur", "Lyrist", "Sonneteer", "Skald",
+	  "Minstrel", "Muse", "Bard", "Master Bard" },
+	{ "Novice", "Initiate", "Brother", "Disciple", "Immaculate",  
+	  "Master", "Superior Master", "Grand Master" },
+	{ "Builder", "Creator", "Slave", "Daemon",
+	  "Addict", "Hero", "Dungeonmaster", "Caretaker" },
+	{ "Builder", "Creator", "Programmer", "Dungeon Lord", 
+	  "Immortal", "Divine Entity", "Addict", "Dungeonmaster"  }
 };
 
 struct {
@@ -166,6 +182,7 @@ struct {
 	{ "leave", 1, move },
 	{ "l" , 2, look },
 	{ "look", 2, look },
+	{ "consider", 2, look },
 	{ "examine", 2, look },
 	{ "quit", 3, quit },
 	{ "quit", 3, quit },
@@ -194,9 +211,9 @@ struct {
 	{ "score", 15, health },
 	{ "sc", 15, health },
 	{ "information", 16, info },
-	{ "send", 17, send },
-	{ "sen", 17, send },
-	{ "tell", 17, send },
+	{ "send", 17, psend },
+	{ "sen", 17, psend },
+	{ "tell", 17, psend },
 	{ "follow", 18, follow },
 	{ "lose", 19, lose },
 	{ "group", 20, group },
@@ -208,6 +225,7 @@ struct {
 	{ "k", 23, attack },
 	{ "search", 24, search },
         { "emote",25, emote},    
+        { ":",25, emote},    
 	{ "hide", 26, hide },
 	{ "set", 27, set },
 	{ "clear", 28, clear },
@@ -274,8 +292,12 @@ struct {
         { "trade",76, trade},    
 	{ "suicide", 77, ply_suicide },
 	{ "passwd", 78, passwd},
+	{ "password", 78, passwd },
 	{ "vote",79,vote},
 	{ "finger", 80, pfinger},
+	{ "charm", 81, bard_song2},
+	{ "meditate", 82, meditate},
+	{ "touch", 83, touch_of_death},
 	{ "nod", 100, action },
 	{ "sleep", 100, action },
 	{ "grab", 100, action },
@@ -305,7 +327,7 @@ struct {
 	{ "tap", 100, action },
 	{ "smile", 100, action },
 	{ "beam", 100, action},
-	{ "masterbate", 100, action},
+	{ "masturbate", 100, action},
 	{ "smoke", 100, action },
 	{ "shake", 100, action },
 	{ "cackle", 100, action },
@@ -337,6 +359,7 @@ struct {
 	{ "grunt", 100, action },
 	{ "stomp", 100, action },
 	{ "flex", 100, action },
+	{ "curtsy", 100, action },
 	{ "blush", 100, action },
 	{ "faint", 100, action },
 	{ "hug", 100, action },
@@ -382,6 +405,7 @@ struct {
 	{ "flip", 100, action },
 	{ "groan", 100, action },
 	{ "*teleport", 101, dm_teleport },
+	{ "*t", 101, dm_teleport },
 	{ "*rm", 102, dm_rmstat },
 	{ "*reload", 103, dm_reload_rom },
 	{ "*save", 104, dm_resave },
@@ -426,11 +450,14 @@ struct {
 	{ "*cname", 139, dm_crt_name },
 	{ "*active", 140, list_act },
 	{ "*dust", 141, dm_dust },
-	{ "*cfollow", 142, dm_follow },
-	{ "*dmhelp", 143, dm_help },
-	{ "*attack", 144, dm_attack },
-	{ "*enemy", 145, list_enm },
-	{ "*charm", 146, list_charm },
+	{ "*dmhelp", 142, dm_help },
+	{ "*attack", 143, dm_attack },
+	{ "*enemy", 144, list_enm },
+	{ "*charm", 145, list_charm },
+	{ "*auth", 146, dm_auth },
+	{ "*possess", 147, dm_alias }, 
+	{ "*tell", 148, dm_flash }, 
+	{ "*memory", 149, dm_memory },
 	{ "push", -2, 0 },
 	{ "press", -2, 0 },
 	{ "@", 0, 0 }
@@ -507,7 +534,7 @@ struct {
 	{ "transport", STRANO, object_send},
 	{ "blind", SBLIND, blind},
 	{ "silence", SSILNC, silence},
-	{ "charm", SCHARM, charm},
+	{ "fortune", SFORTU, fortune},
 	{ "@", -1,0 }
 };
 

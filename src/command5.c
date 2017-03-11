@@ -10,6 +10,9 @@
 #include "mstruct.h"
 #include "mextern.h"
 #include <ctype.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*              attack                    */
@@ -79,7 +82,7 @@ creature    *ply_ptr;
 creature    *crt_ptr;
 {
     long    i, t;
-    int fd, m, n, p, lev, addprof;
+    int fd, m, n, p, lev, addprof, d;
 
     fd = ply_ptr->fd;
 
@@ -88,7 +91,7 @@ creature    *crt_ptr;
 
     if(t < i)
         return(0);
-	if (crt_ptr->type != MONSTER) {
+	if (crt_ptr->type == PLAYER) {
          if(is_charm_crt(ply_ptr->name, crt_ptr) && F_ISSET(ply_ptr, PCHARM)) {
                 print(fd, "You like %s too much to do that.\n", crt_ptr->name);
                 return(0);
@@ -113,16 +116,28 @@ creature    *crt_ptr;
 	if(F_ISSET(ply_ptr, PBLIND)){
 		ply_ptr->lasttime[LT_ATTCK].interval = 7;
     	}
-    if(crt_ptr->type == MONSTER) {
-        if(F_ISSET(crt_ptr, MUNKIL)) {
+        if(crt_ptr->type == MONSTER) 
+	 {
+          if(F_ISSET(crt_ptr, MUNKIL)) 	
+	   {
             print(fd, "You cannot harm %s.\n",
                 F_ISSET(crt_ptr, MMALES) ? "him":"her");
             return(0);
-        }
+            }
 
-        if(add_enm_crt(ply_ptr->name, crt_ptr) < 0) {
-            print(fd, "You attack %m.\n", crt_ptr);
-            broadcast_rom(fd, ply_ptr->rom_num, "%M attacks %m.",
+	if(F_ISSET(ply_ptr, PALIAS)) 
+	 {
+		print(fd, "You attack %m.\n", crt_ptr);
+		broadcast_rom(fd, ply_ptr->rom_num, "%M attacks %m.",
+                      ply_ptr, crt_ptr);
+         }
+	else if(add_enm_crt(ply_ptr->name, crt_ptr) < 0 ) 
+	{
+		/* if(is_charm_crt(crt_ptr->name, ply_ptr))
+			del_charm_crt(crt_ptr, ply_ptr); */
+           
+	    	print(fd, "You attack %m.\n", crt_ptr);
+            	broadcast_rom(fd, ply_ptr->rom_num, "%M attacks %m.",
                       ply_ptr, crt_ptr);
         }
 
@@ -142,7 +157,7 @@ creature    *crt_ptr;
         }
     }
     else {
-        if(F_ISSET(ply_ptr->parent_rom, RNOKIL)) {
+        if(F_ISSET(ply_ptr->parent_rom, RNOKIL) && ply_ptr->class < DM) {
             print(fd, "No killing allowed in this room.\n");
             return(0);
         }
@@ -150,11 +165,11 @@ creature    *crt_ptr;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS)) {
+                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, you're lawful.\n");
                     return (0);
                 }
-                if(!F_ISSET(crt_ptr, PCHAOS)) {
+                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
                 }     
@@ -208,6 +223,12 @@ creature    *crt_ptr;
                 print(fd, "Your goodness increases your damage.\n");
             }
         }
+	if(ply_ptr->class == MONK) {
+		if(ply_ptr->ready[WIELD-1] && !F_ISSET(ply_ptr->ready[WIELD-1], OMONKO)){
+			print(fd, "How can you attack well with your hands full?\n");
+			n /=2;
+		}
+	}
 
         p = mod_profic(ply_ptr);
         if(mrand(1,100) <= p || (ply_ptr->ready[WIELD-1] && F_ISSET(ply_ptr->ready[WIELD-1],OALCRT))) {
@@ -245,14 +266,19 @@ creature    *crt_ptr;
         print(fd, "You hit for %d damage.\n", n);
         print(crt_ptr->fd, "%M hit you for %d damage.\n",
               ply_ptr, n);
-
+	if (ply_ptr->type == MONSTER && crt_ptr->type == MONSTER)
+	    broadcast_rom2(crt_ptr->fd,fd,crt_ptr->rom_num,"%M hits %m!", ply_ptr,crt_ptr);
         if(ply_ptr->ready[WIELD-1] && !mrand(0,3))
             ply_ptr->ready[WIELD-1]->shotscur--;
 
         m = MIN(crt_ptr->hpcur, n);
         crt_ptr->hpcur -= n;
         if(crt_ptr->type != PLAYER) {
-            add_enm_dmg(ply_ptr->name, crt_ptr, m);
+        /* uncomment to remove charm when attack   */   
+	/* if(is_charm_crt(crt_ptr->name, ply_ptr))*/
+	/*	del_charm_crt(crt_ptr, ply_ptr);   */
+
+	    add_enm_dmg(ply_ptr->name, crt_ptr, m);
             if(ply_ptr->ready[WIELD-1]) {
                 p = MIN(ply_ptr->ready[WIELD-1]->type, 4);
                 addprof = (m * crt_ptr->experience) /
@@ -260,8 +286,14 @@ creature    *crt_ptr;
                 addprof = MIN(addprof, crt_ptr->experience);
                 ply_ptr->proficiency[p] += addprof;
             }
-        }
-
+	    else if(ply_ptr->class == MONK) { 
+	    /* give blunt prof for monk barehand */
+		addprof = (m * crt_ptr->experience) /
+                    MAX(crt_ptr->hpmax, 1);
+		addprof = MIN(addprof, crt_ptr->experience);
+		ply_ptr->proficiency[2] += addprof;
+	   }
+	}
         if(crt_ptr->hpcur < 1) {
             print(fd, "You killed %m.\n", crt_ptr);
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
@@ -275,6 +307,8 @@ creature    *crt_ptr;
     else {
         print(fd, "You missed.\n");
         print(crt_ptr->fd, "%M missed.\n", ply_ptr);
+	if (ply_ptr->type == MONSTER && crt_ptr->type == MONSTER)
+  	  broadcast_rom2(fd,crt_ptr->fd,crt_ptr->rom_num,"%M missed %m.",ply_ptr,crt_ptr);
     }
 
     return(0);
@@ -386,7 +420,9 @@ cmd     *cmnd;
  
 	ANSI(fd, YELLOW); 
        print(fd, "%-20s  %-3s %-3s [Lv]%-20s  %-3s  %-10s\n", "Player", "Cls", "Gen", "Title", "Age", "Race");
+	ANSI(fd, BLUE); 
         print(fd, "------------------------------------------------------------------------\n");
+	ANSI(fd, WHITE);
         print(fd, "%-20s  %-3.3s %-3s [%02d]%-20s  %-3d  ",
                 crt_ptr->name,
                 class_str[crt_ptr->class],
@@ -532,13 +568,18 @@ int param;
 char    *str;
 {
     char    file[80];
+#ifdef SUICIDE
+    long t;
+    char str2[50];
+#endif
 
     switch(param) {
         case 1:
 	    ANSI(fd, BOLD);
+	    ANSI(fd, BLINK);
 	    ANSI(fd, RED);
             print(fd, "This will completely erase your player.\n");
-            print(fd, "Are you sure (Y/N)");
+            print(fd, "Are you sure (Y/N)\n");
 	    ANSI(fd, NORMAL);
 	    ANSI(fd, WHITE);
             RETURN(fd, suicide, 2);
@@ -548,7 +589,10 @@ char    *str;
                 sprintf(file, "%s/%s", PLAYERPATH, 
                     Ply[fd].ply->name);
 #ifdef SUICIDE
-		logn("SUICIDE","%s (%s) suicided.\n", Ply[fd].ply->name, Ply[fd].io->address);
+	t = time(0);
+        strcpy(str2, (char *)ctime(&t));
+        str[strlen(str2)-1] = 0;
+	logn("SUICIDE","%s (%s@%s):%s\n", Ply[fd].ply->name, Ply[fd].io->userid, Ply[fd].io->address, str2); 
 #endif
 		disconnect(fd);
                 unlink(file);
@@ -609,8 +653,10 @@ cmd     *cmnd;
 	if(F_ISSET(ply_ptr, PBLIND))
 	    chance = MIN(chance, 20);
 
-        if(mrand(1,100) <= chance)
+        if(mrand(1,100) <= chance) {
             F_SET(ply_ptr, PHIDDN);
+	    print(fd, "You slip into the shadows unnoticed.\n");
+	}
         else {
             F_CLR(ply_ptr, PHIDDN);
             broadcast_rom(fd, ply_ptr->rom_num,
@@ -678,10 +724,11 @@ cmd			*cmnd;
 		if(F_ISSET(ply_ptr, PNOBRD)) strcat(str, "NoBroad\n");
 		if(F_ISSET(ply_ptr, PNOLDS)) strcat(str, "No Long Room Description\n");
 		if(F_ISSET(ply_ptr, PNOSDS)) strcat(str, "No Short Room Description\n");
-		if(F_ISSET(ply_ptr, PNORNM)) strcat(str, "NoName\n");
-		if(F_ISSET(ply_ptr, PNOEXT)) strcat(str, "NoExits\n");
+		if(F_ISSET(ply_ptr, PNORNM)) strcat(str, "No Name\n");
+		if(F_ISSET(ply_ptr, PNOEXT)) strcat(str, "No Exits\n");
 		if(F_ISSET(ply_ptr, PLECHO)) strcat(str, "Communications echo\n");
-		if(F_ISSET(ply_ptr, PNOCMP)) strcat(str, "Noncompact\n");
+		if(F_ISSET(ply_ptr, PNLOGN)) strcat(str, "No Login messages\n");
+		if(F_ISSET(ply_ptr, PNOCMP)) strcat(str, "Non-compact\n");
 		if(F_ISSET(ply_ptr, PWIMPY)) {
 			sprintf(temp, "Wimpy%d\n", ply_ptr->WIMPYVALUE);
 			strcat(str, temp);
@@ -690,7 +737,7 @@ cmd			*cmnd;
 		if(F_ISSET(ply_ptr, PANSIC)) strcat(str, "Ansi output mode\n");
 		if(F_ISSET(ply_ptr, PIGNOR)) strcat(str, "Ignore all sends\n");
 		if(F_ISSET(ply_ptr, PNOSUM)) strcat(str, "Nosummon\n");
-        if(F_ISSET(ply_ptr, PNOAAT)) strcat(str, "No Auto Attack\n"); 
+        	if(F_ISSET(ply_ptr, PNOAAT)) strcat(str, "No Auto Attack\n"); 
 		if(F_ISSET(ply_ptr, PHASTE)) strcat(str, "Haste\n");
 		if(F_ISSET(ply_ptr, PPRAYD)) strcat(str, "Pray\n");
 		if(F_ISSET(ply_ptr, PPLDGK))
@@ -747,6 +794,10 @@ cmd     *cmnd;
         F_SET(ply_ptr, PHEXLN);
         print(fd, "Hexline enabled.\n");
     }
+    else if(!strcmp(cmnd->str[1], "nologin")) {
+        F_SET(ply_ptr, PNLOGN);
+        print(fd, "Login messages disabled.\n");
+    } 
     else if(!strcmp(cmnd->str[1], "echo")) {
         F_SET(ply_ptr, PLECHO);
         print(fd, "Communications echo enabled.\n");
@@ -826,6 +877,11 @@ cmd     *cmnd;
         F_CLR(ply_ptr, PLECHO);
         print(fd, "Communications echo disabled.\n");
     }
+
+    else if(!strcmp(cmnd->str[1], "nologin")) {
+        F_CLR(ply_ptr, PNLOGN);
+        print(fd, "Login messages enabled.\n");
+    }
     else if(!strcmp(cmnd->str[1], "roomname")) {
         F_SET(ply_ptr, PNORNM);
         print(fd, "Room name output disabled.\n");
@@ -895,16 +951,23 @@ cmd     *cmnd;
 {
     long    i, t;
     int fd;
-
+    otag *op, *cop;
+    object *obj_ptr, *obj_ptr2, *cnt_ptr;
     fd = ply_ptr->fd;
 
     t = time(0);
     i = LT(ply_ptr, LT_ATTCK) + 20;
-
+	
     if(t < i) {
         please_wait(fd, i-t);
         return(0);
     }
+    i = LT(ply_ptr, LT_SPELL) + 20;
+    
+    if(t < i) {
+        please_wait(fd, i-t);
+        return(0);
+    }   
 
     update_ply(ply_ptr);
     return(DISCONNECT);

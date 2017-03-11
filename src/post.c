@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /************************************************************************/
 /*				postsend				*/
 /************************************************************************/
@@ -192,7 +194,7 @@ cmd     *cmnd;
     if (ply_ptr->class < CARETAKER)
         return(PROMPT);
  
-    sprintf(file, "%s/DM_pad", POSTPATH);
+    sprintf(file, "%s/%s_pad", POSTPATH, ply_ptr->name);
  
     if (cmnd->num == 2) {
         if( low(cmnd->str[1][0]) == 'a'){
@@ -207,7 +209,7 @@ cmd     *cmnd;
         }
         else if (low(cmnd->str[1][0]) == 'd'){
             unlink(file);
-            print(fd,"Clearing DM notepad\n");
+            print(fd,"Clearing your notepad.\n");
             return(PROMPT);
         }
         else{

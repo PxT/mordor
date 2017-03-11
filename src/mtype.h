@@ -6,7 +6,6 @@
  *      Copyright (C) 1991, 1992, 1993 Brett J. Vickers
  *
  */
-int Port;
 
 /* socket port number */
 #define PORTNUM         4040
@@ -14,11 +13,11 @@ int Port;
 /* DM's name */
 #define DMNAME          "Garth"
 #define DMNAME2         "Tesseract"
-#define DMNAME3         "Alice"
-#define DMNAME4         "Eldritch"
-#define DMNAME5         "Samwise"
-#define DMNAME6         "Boromir"
-#define DMNAME7		"Bahamut"
+#define DMNAME3         "Gandalf"
+#define DMNAME4         "Ugluk"
+#define DMNAME5         "Darwin"
+#define DMNAME6         "Fangorn"
+#define DMNAME7         "Frodo"
  
 /* I/O buffer sizes */
 #define IBUFSIZE        1024
@@ -56,9 +55,9 @@ int Port;
 #define OMAX            1000
 #define PMAX            256
 
-#define RQMAX           300     /* Max number of these allowed in memory */
-#define CQMAX           100     /* at any one time                       */
-#define OQMAX           100
+#define RQMAX           600     /* Max number of these allowed in memory */
+#define CQMAX           200     /* at any one time                       */
+#define OQMAX           200
 
 /* how often (in seconds) players get saved */
 #define SAVEINTERVAL    1200
@@ -93,8 +92,10 @@ int Port;
 #define PALADIN         6
 #define RANGER          7
 #define THIEF           8
-#define CARETAKER       9
-#define DM              10
+#define BARD		9
+#define MONK		10
+#define CARETAKER       11
+#define DM              12
 
 /* Character races */
 #define DWARF           1
@@ -105,6 +106,11 @@ int Port;
 #define ORC             6
 #define HALFGIANT       7
 #define GNOME           8
+#define TROLL		9
+#define HALFORC		10
+#define OGRE		11
+#define DARKELF		12
+#define GOBLIN		13
 
 /* creature types */
 #define PLAYER          0
@@ -141,6 +147,7 @@ int Port;
 #define DL_FHEAL        2       /* Daily heals */
 #define DL_TRACK        3       /* Daily track spells */
 #define DL_DEFEC        4       /* Daily defecations */
+#define DL_CHARM	5	/* Daily charms */
 
 /* Last-time specifications */
 #define LT_INVIS        0
@@ -179,8 +186,11 @@ int Port;
 #define LT_SSHLD        31
 #define LT_FEARS	33
 #define LT_SILNC	34
-#define LT_CHARM	35
+#define LT_SINGS	35
 #define LT_CHRMD	36
+#define LT_MEDIT	37
+#define LT_TOUCH	38
+#define LT_SECCK	39
 
 /* Maximum number of items that can be worn/readied */
 #define MAXWEAR         20
@@ -265,8 +275,9 @@ int Port;
 #define STRANO		52	/* item transport */
 #define SBLIND		53	/* cause blindness */
 #define SSILNC		54	/* cause silence */
-#define SCHARM		55	/* charm person */
-/* Trap types */
+#define SFORTU		55	/* fortune */
+
+/*Trap types */
 #define TRAP_PIT        1       /* Pit trap */
 #define TRAP_DART       2       /* Poison dart trap */
 #define TRAP_BLOCK      3       /* Falling block */
@@ -311,6 +322,7 @@ int Port;
 #define RPMEXT          32      /* Player magic spell extend */
 #define RNOLOG          33      /* No player login */
 #define RELECT          34      /* Election Booth */ 
+#define RNDOOR		35	/* Indoors */
 
 /* Player flags */
 #define PBLESS          0       /* Bless spell */
@@ -359,7 +371,11 @@ int Port;
 #define PFEARS		43	/* Player is fearful */
 #define	PSILNC		44	/* Player has been silenced */
 #define PCHARM		45	/* Player is charmed */
-#define PLECHO		46	/* Local Echo mode enable */
+#define PNLOGN		46	/* No login messages sent */
+#define PLECHO		47	/* Echo comms to sender */
+#define PSECOK		48	/* Player has passed security check */
+#define PAUTHD		49	/* No-port that has been authorized */
+#define	PALIAS		50	/* DM is aliasing */
 
 /* Monster flags */
 #define MPERMT          0       /* Permanent monster */
@@ -413,7 +429,8 @@ int Port;
 #define MSILNC		48	/* Monster is silenced */
 #define MBLIND		49	/* Monster is blind */
 #define MCHARM		50	/* Monster is charmed */
-#define MTESTM		51	/* test flag */
+#define MMOBIL		51	/* Mobile monster */
+#define MROBOT		52	/* Logic Monster */
 
 /* Object flags */
 #define OPERMT          0       /* Permanent item (not yet taken) */
@@ -456,9 +473,11 @@ int Port;
 #define OPALAO          37      /* class selective: paladin */
 #define ORNGRO          38      /* class selective: ranger */
 #define OTHIEO          39      /* class selective: thief */
-#define OVBEFD		40	/* stun length based on ndice */
-#define ONSHAT		41	/* weapon will never shatter */
-#define OALCRT		42	/* weapon will always critical */
+#define OBARDO		40	/* class selective: bard */
+#define OMONKO		41	/* class selective: monk */
+#define ONSHAT		42	/* weapon will never shatter */
+#define OALCRT		43	/* weapon will always critical */
+#define OLUCKY		44	/* Item is a luck charm */
 
 /* Exit flags */
 #define XSECRT          0       /* Secret */
@@ -481,7 +500,23 @@ int Port;
 #define XDAYON          17      /* only open during day */
 #define XPGUAR          18      /* passive guarded exit */
 #define XNOSEE          19      /* Can not use / see exit */
+#define XPLSEL		20	/* Class selective exit */
+#define XPASSN		21
+#define XPBARB		22	
+#define XPCLER		23
+#define XPFGHT		24
+#define XPMAGE		25
+#define XPPALA		26
+#define XPRNGR		27
+#define XPTHEF		28
+#define XPBARD		29
+#define XPMONK		30
 
+/* Weather */
+#define WSUNNY		1	/* Sunny outside */
+#define WWINDY		2	/* Rainy outside */
+#define	WSTORM		3	/* Storm */
+#define WMOONF		4	/* Full Moon */
 
 /* specials */
 #define SP_MAPSC        1       /* Map or scroll */
@@ -532,6 +567,6 @@ int Port;
 #define BOLD            1
 #define BLINK           5
 #define NORMAL          0  
-#define ANSI(a,b)       if(F_ISSET(Ply[(a)].ply, PANSIC)) \
-                        print((a), "%c[%dm", 27, (b));
+#define ANSI(a,b)       if( (a) > -1 ) { if( F_ISSET(Ply[(a)].ply, PANSIC)) \
+                        print((a), "%c[%dm", 27, (b));}
 

@@ -1,0 +1,8 @@
+East: Brownhaven
+	Conditions: safe
+
+South: Oceancrest
+	Conditions: safe
+
+West: Closed
+

@@ -6,9 +6,12 @@
  *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
  *
  */
-
+#include <math.h>
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				init_ply			      */
@@ -23,13 +26,14 @@ creature	*ply_ptr;
 {
 	char	file[80], str[50];
 	room	*rom_ptr;
-	object	*obj_ptr;
-	otag	*op, *otemp;
+	object	*obj_ptr, *obj_ptr2, *cnt_ptr;
+	otag	*op, *otemp, *cop;
 	long	t, tdiff;
-	int	n, wf, i;
+	int	n, wf, i, fd, found=0, cantwear=0;
 
 	F_CLR(ply_ptr, PSPYON);
 	F_CLR(ply_ptr, PREADI);
+	F_CLR(ply_ptr, PSECOK);
 
 	if(ply_ptr->class == DM && strcmp(ply_ptr->name, DMNAME) &&
 	   strcmp(ply_ptr->name, DMNAME2) && strcmp(ply_ptr->name, DMNAME3) &&
@@ -49,24 +53,34 @@ creature	*ply_ptr;
 		ply_ptr->daily[DL_FHEAL].max = MAX(3, 3 + (ply_ptr->level-5)/3);
 		ply_ptr->daily[DL_TRACK].max = MAX(3, 3 + (ply_ptr->level-5)/4);
 		ply_ptr->daily[DL_DEFEC].max = 1;
+		ply_ptr->daily[DL_CHARM].max = MAX(5, 3 + ply_ptr->level/4);
 	}
+	else {
+                ply_ptr->daily[DL_BROAD].cur = 20;
+                ply_ptr->daily[DL_BROAD].max = 20;
+		ply_ptr->daily[DL_DEFEC].max = 1;
+		ply_ptr->daily[DL_DEFEC].cur = 1;
+        }
+
 
 	F_SET(ply_ptr, PNOSUM);
+	F_CLR(ply_ptr, PALIAS);
 	if(ply_ptr->class < CARETAKER)
 		F_SET(ply_ptr, PPROMP);
 
 	if(!F_ISSET(ply_ptr, PDMINV))
-		broadcast("### %s the %s %s just logged in.", ply_ptr->name,
+		broadcast_login("### %s the %s %s just logged in.", ply_ptr->name,
 			race_adj[ply_ptr->race], title_ply(ply_ptr));
 
 	t = time(0);
 	strcpy(str, (char *)ctime(&t));
 	str[strlen(str)-1] = 0;
-		logf("%s: %s (%s) logged on.\n", str, ply_ptr->name, 
+		loge("%s: %s (%s) logged on.\n", str, ply_ptr->name, 
 			Ply[ply_ptr->fd].io->address);
 
 	ply_ptr->lasttime[LT_PSAVE].ltime = t;
 	ply_ptr->lasttime[LT_PSAVE].interval = SAVEINTERVAL;
+	ply_ptr->lasttime[LT_SECCK].ltime = t;
 
 	if(load_rom(ply_ptr->rom_num, &rom_ptr) < 0)
 		load_rom(1, &rom_ptr);
@@ -86,7 +100,40 @@ creature	*ply_ptr;
 		ply_ptr->lasttime[i].ltime =
 			MIN(t, ply_ptr->lasttime[i].ltime);
 	}
+   
+    /* delete quest scrolls */
+	op = ply_ptr->first_obj;
+	while(op) {
+		if(op->obj->type == CONTAINER) {
+			cnt_ptr = op->obj;
+			cop = cnt_ptr->first_obj;
+			while(cop) {
+				obj_ptr2 = cop->obj;
+				if(obj_ptr2->questnum && obj_ptr2->type == SCROLL) {
+					cop = cop->next_tag;
+					cnt_ptr->shotscur--;
+					del_obj_obj(obj_ptr2, cnt_ptr);
+					free_obj(obj_ptr2);
+				}
+				else
+					cop = cop->next_tag;
+			}
 
+
+		}
+                if(op->obj->questnum && op->obj->type == SCROLL) {
+                        obj_ptr = op->obj;
+                        op = op->next_tag;
+                        del_obj_crt(obj_ptr, ply_ptr);
+                        free_obj(obj_ptr);
+                        }
+                else
+                        op = op->next_tag;
+        }
+
+	
+	/*  Bugged wear code -- no check for broken/non-suth eq */
+	/*
 	op = ply_ptr->first_obj;
 	while(op) {
 		otemp = op->next_tag;
@@ -117,15 +164,182 @@ creature	*ply_ptr;
 			}
 		}
 		op = otemp;
+	} */
+	/* End of bugged wear code */
+
+	/* Beginning of new wear code */
+	op = ply_ptr->first_obj;
+
+	while(op) {
+
+		otemp = op->next_tag;
+
+		if((F_ISSET(ply_ptr, PDINVI) ?
+		   1:!F_ISSET(op->obj, OINVIS)) && op->obj->wearflag &&
+		   op->obj->wearflag != HELD && op->obj->wearflag != WIELD) {
+
+			obj_ptr = op->obj;
+
+			if(obj_ptr->type == ARMOR && F_ISSET(obj_ptr, ONOMAG) &&
+			   ply_ptr->class == MAGE) {
+				op = otemp;
+				continue;
+			}
+
+		if(obj_ptr->type == ARMOR && F_ISSET(obj_ptr, ONOFEM) &&
+		   !F_ISSET(ply_ptr,PMALES)) {
+			op = otemp;
+			continue;
+		}
+
+		if(obj_ptr->type == ARMOR && F_ISSET(obj_ptr, ONOMAL) &&
+		   F_ISSET(ply_ptr,PMALES)) {
+			op = otemp;
+			continue;
+		}
+
+
+			if(obj_ptr->wearflag == NECK && 
+			   ply_ptr->ready[NECK1-1] && 
+			   ply_ptr->ready[NECK2-1]) {
+				op = otemp;
+				continue;
+			}
+	
+			if(obj_ptr->wearflag == FINGER && 
+			   ply_ptr->ready[FINGER1-1] &&
+			   ply_ptr->ready[FINGER2-1] && 
+			   ply_ptr->ready[FINGER3-1] &&
+			   ply_ptr->ready[FINGER4-1] && 
+			   ply_ptr->ready[FINGER5-1] && 
+			   ply_ptr->ready[FINGER6-1] && 
+			   ply_ptr->ready[FINGER7-1] &&
+			   ply_ptr->ready[FINGER8-1]) {
+				op = otemp;
+				continue;
+			}
+
+			if(obj_ptr->wearflag != NECK && 
+			   obj_ptr->wearflag != FINGER &&
+			   ply_ptr->ready[obj_ptr->wearflag-1]) {
+				op = otemp;
+				continue;
+			}
+
+			if(obj_ptr->shotscur < 1) {
+				op = otemp;
+				continue;
+			}
+
+
+			if (F_ISSET(obj_ptr,OPLDGK) &&
+   		     	(BOOL(F_ISSET(obj_ptr,OKNGDM)) != BOOL(F_ISSET(ply_ptr,PKNGDM)))){
+				op = otemp;
+				continue;
+	    	}              
+
+      if(F_ISSET(obj_ptr,OCLSEL))
+	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+				op = otemp;
+				continue;
 	}
 
+	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && (ply_ptr->class== MONK || ply_ptr->class == MAGE) && obj_ptr->armor >5){
+                                op = otemp;
+                                continue;
+        }
+        if((obj_ptr->wearflag == FINGER||obj_ptr->wearflag ==SHIELD) && ply_ptr->class == MONK){
+                                op=otemp;
+                                continue;
+        }
+
+			if(F_ISSET(obj_ptr, OGOODO) && 
+			   ply_ptr->alignment < -50) {
+				op = otemp;
+				continue;
+			}
+
+			if(F_ISSET(obj_ptr, OEVILO) && 
+			   ply_ptr->alignment > 50) {
+				op = otemp;
+				continue;
+			}
+
+			i = (F_ISSET(obj_ptr, OSIZE1) ? 1:0) * 2 +
+				(F_ISSET(obj_ptr, OSIZE2) ? 1:0);
+
+			switch(i) {
+			case 1:
+				if(ply_ptr->race != GNOME &&
+				   ply_ptr->race != HOBBIT &&
+				   ply_ptr->race != DWARF) cantwear = 1;
+				break;
+			case 2:
+				if(ply_ptr->race != HUMAN &&
+				   ply_ptr->race != ELF &&
+				   ply_ptr->race != HALFELF &&
+				   ply_ptr->race != HALFORC &&
+				   ply_ptr->race != DARKELF &&
+				   ply_ptr->race != GOBLIN &&
+				   ply_ptr->race != ORC) cantwear = 1;
+				break;
+			case 3:
+				if(ply_ptr->race != HALFGIANT && ply_ptr->race != OGRE && ply_ptr->race != TROLL) cantwear = 1;
+				break;
+			}
+
+			if(cantwear) {
+				op = otemp;
+				cantwear = 0;
+				continue;
+			}
+
+			if(obj_ptr->wearflag == NECK) {
+				if(ply_ptr->ready[NECK1-1])
+					ply_ptr->ready[NECK2-1] = obj_ptr;
+				else
+					ply_ptr->ready[NECK1-1] = obj_ptr;
+				F_SET(obj_ptr, OWEARS);
+			}
+
+			else if(obj_ptr->wearflag == FINGER && ply_ptr->class != MONK) {
+				for(i=FINGER1; i<FINGER8+1; i++) {
+					if(!ply_ptr->ready[i-1]) {
+						ply_ptr->ready[i-1] = obj_ptr;
+						F_SET(obj_ptr, OWEARS);
+						break;
+					}
+				}
+			}
+
+			else {
+				ply_ptr->ready[obj_ptr->wearflag-1] = obj_ptr;
+				F_SET(obj_ptr, OWEARS);
+			}
+
+			del_obj_crt(obj_ptr, ply_ptr);
+			found = 1;
+
+		}
+		op = otemp;
+	}
+
+
+	/* End of new wear code */
+	
 	compute_ac(ply_ptr);
 	compute_thaco(ply_ptr);
+	luck(ply_ptr);
 	update_ply(ply_ptr);
 
 	sprintf(file, "%s/dialin", DOCPATH);
-	if (!strcmp(Ply[ply_ptr->fd].io->address, "128.200.142.2"))
-		view_file(ply_ptr->fd, 1, file);
+
+	/* Just so we know who to mail */
+	/* Remove it if you are that paranoid. */
+/*
+	if (!strcmp(Ply[ply_ptr->fd].io->address, "128.200.21.101")|| !strcmp(Ply[ply_ptr->fd].io->address, "moria.bio.uci.edu"))
+		print(ply_ptr->fd, "DMs here are: %M, %M, %M, %M, %M.\n", DMNAME1, DNAME2, DMNAME3, DMNAME4 DMAME5);
+*/	
 
 	if (ply_ptr->class < DM) {
 	sprintf(file, "%s/news", LOGPATH);
@@ -152,13 +366,15 @@ creature	*ply_ptr;
 	ctag		*cp, *prev;
 	int		i;
 
+
 	if(ply_ptr->parent_rom)
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 
 	cp = ply_ptr->first_fol;
 	while(cp) {
 		cp->crt->following = 0;
-		print(cp->crt->fd, "You stop following %s.\n", ply_ptr->name);
+		if(cp->crt->type == PLAYER)
+			print(cp->crt->fd, "You stop following %s.\n", ply_ptr->name);
 		prev = cp->next_tag;
 		free(cp);
 		cp = prev;
@@ -183,7 +399,7 @@ creature	*ply_ptr;
 		}
 		ply_ptr->following = 0;
 
-		if(!F_ISSET(ply_ptr, PDMINV))
+		if(ply_ptr->class < CARETAKER)
 			print(crt_ptr->fd, "%s stops following you.\n", 
 			      ply_ptr->name);
 	}
@@ -196,7 +412,7 @@ creature	*ply_ptr;
 
 	update_ply(ply_ptr);
 	if(!F_ISSET(ply_ptr, PDMINV))
-		broadcast("### %s just logged off.", ply_ptr->name);
+		broadcast_login("### %s just logged off.", ply_ptr->name);
 }
 
 /**********************************************************************/
@@ -357,7 +573,7 @@ creature	*ply_ptr;
 		if(t > LT(ply_ptr, LT_SILNC)) {
 			ANSI(ply_ptr->fd, GREEN);
 			print(ply_ptr->fd,
-				"You voice returns!\n");
+				"Your voice returns!\n");
 			ANSI(ply_ptr->fd, WHITE);
 			F_CLR(ply_ptr, PSILNC);
 		}
@@ -485,7 +701,7 @@ if (F_ISSET(ply_ptr, PPOISN)){
   	print(ply_ptr->fd, "Poison courses through your veins.\n");
 	ANSI(ply_ptr->fd, NORMAL);
 	ANSI(ply_ptr->fd, WHITE);
-	ply_ptr->hpcur -= MAX(1,mrand(1,4)-bonus[ply_ptr->constitution]);
+	ply_ptr->hpcur -= MAX(1,mrand(1,6)-bonus[ply_ptr->constitution]);
   	if(ply_ptr->hpcur < 1) die(ply_ptr, ply_ptr);
 }
 if (F_ISSET(ply_ptr, PDISEA)){
@@ -496,7 +712,7 @@ if (F_ISSET(ply_ptr, PDISEA)){
 			ANSI(ply_ptr->fd, BLUE);
         print(ply_ptr->fd, "You feel nauseous.\n");
         ply_ptr->lasttime[LT_ATTCK].interval= dice(1,6,3);
-        ply_ptr->hpcur -= MAX(1,mrand(1,6)-bonus[ply_ptr->constitution]);
+        ply_ptr->hpcur -= MAX(1,mrand(1,12)-bonus[ply_ptr->constitution]);
         ply_ptr->lasttime[LT_HEALS].ltime = t;
         ply_ptr->lasttime[LT_HEALS].interval = 65 + 
                             5*bonus[ply_ptr->constitution];
@@ -507,7 +723,7 @@ if (F_ISSET(ply_ptr, PDISEA)){
 }                                   
 
 if (F_ISSET(ply_ptr->parent_rom,RPMPDR))
- 	ply_ptr->mpcur -= MIN(ply_ptr->mpcur,3); 
+ 	ply_ptr->mpcur -= MIN(ply_ptr->mpcur,6); 
 else if (!ill) {
   ply_ptr->mpcur += MAX(1, 2+(ply_ptr->intelligence > 17 ? 1:0)+
                                 (ply_ptr->class == MAGE ? 2:0));
@@ -547,7 +763,7 @@ else  if(!F_ISSET(ply_ptr->parent_rom, RWINDR) &&
 	prot = 0;
 }
 	if (!prot) {
-		ply_ptr->hpcur -= 8 - MIN(bonus[ply_ptr->constitution],2);
+		ply_ptr->hpcur -= 15 - MIN(bonus[ply_ptr->constitution],2);
         	if(ply_ptr->hpcur < 1) die(ply_ptr, ply_ptr);      
 	}
 	else if (!ill)
@@ -618,6 +834,139 @@ creature	*ply_ptr;
 		case INT: ply_ptr->intelligence++; break;
 		case PTY: ply_ptr->piety++; break;
 		}
+	/* MONK CODE */
+	/* Yeah, I know this is ugly */
+	/* Feel free to send a patch */
+  	    if(ply_ptr->class == MONK) {
+                switch(ply_ptr->level) {
+                case 1:
+                ply_ptr->ndice = class_stats[ply_ptr->class].ndice;
+                ply_ptr->sdice = class_stats[ply_ptr->class].sdice;
+                ply_ptr->pdice = class_stats[ply_ptr->class].pdice;
+                break;
+                case 2:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 5;
+		ply_ptr->pdice = 0;
+                break;
+                case 3:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 1;
+                break;
+                case 4:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 6;
+		ply_ptr->pdice = 0; 
+                break;
+                case 5:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 1;
+                break;
+                case 6:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 3;
+                ply_ptr->pdice = 1;
+                break;
+                case 7:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 3;
+                ply_ptr->pdice = 2;
+                break;
+                case 8:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 4;
+                ply_ptr->pdice = 0;
+                break;
+                case 9:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 4;
+                ply_ptr->pdice = 1;
+                break;
+                case 10:
+		ply_ptr->ndice = 2;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 0;
+                break;
+                case 11:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 2;
+                break;
+                case 12:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 1;
+                break;
+                case 13:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 2;
+                break;
+                case 14:
+                ply_ptr->ndice = 3;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 1;
+                break;
+                case 15:
+                ply_ptr->ndice = 3;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 1;
+                break;
+                case 16:
+                ply_ptr->ndice = 4;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 1;
+                break;
+                case 17:
+                ply_ptr->ndice = 5;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 0;
+                break;
+                case 18:
+                ply_ptr->ndice = 5;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 1;
+                break;
+                case 19:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 0;
+                break;
+                case 20:
+                ply_ptr->ndice = 6;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 2;
+                break;
+		case 21:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 0;
+                case 22:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 2;
+		case 23:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 9;
+                ply_ptr->pdice = 0;
+		case 24:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 2;
+		case 25:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 10;
+                ply_ptr->pdice = 0;
+		default:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 3;
+                ply_ptr->pdice = 0;
+                break;
+		}
+	    }	
+	/* END MONK */
 	}
 
 }
@@ -647,6 +996,140 @@ creature	*ply_ptr;
 	case INT: ply_ptr->intelligence--; break;
 	case PTY: ply_ptr->piety--; break;
 	}
+
+	/* MONK CODE */
+	/* Yeah, I know this is ugly */
+	
+  	    if(ply_ptr->class == MONK) {
+                switch(ply_ptr->level) {
+                case 1:
+                ply_ptr->ndice = class_stats[ply_ptr->class].ndice;
+                ply_ptr->sdice = class_stats[ply_ptr->class].sdice;
+                ply_ptr->pdice = class_stats[ply_ptr->class].pdice;
+                break;
+                case 2:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 6;
+		ply_ptr->pdice = 0;
+                break;
+                case 3:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 0;
+                break;
+                case 4:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 3;
+		ply_ptr->pdice = 1; 
+                break;
+                case 5:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 3;
+                ply_ptr->pdice = 2;
+                break;
+                case 6:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 4;
+                ply_ptr->pdice = 2;
+                break;
+                case 7:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 1;
+                break;
+                case 8:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 1;
+                break;
+                case 9:
+                ply_ptr->ndice = 2;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 1;
+                break;
+                case 10:
+		ply_ptr->ndice = 3;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 1;
+                break;
+                case 11:
+                ply_ptr->ndice = 4;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 0;
+                break;
+                case 12:
+                ply_ptr->ndice = 4;
+                ply_ptr->sdice = 5;
+                ply_ptr->pdice = 1;
+                break;
+                case 13:
+                ply_ptr->ndice = 4;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 0;
+                break;
+                case 14:
+                ply_ptr->ndice = 4;
+                ply_ptr->sdice = 6;
+                ply_ptr->pdice = 2;
+                break;
+                case 15:
+                ply_ptr->ndice = 3;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 2;
+                break;
+                case 16:
+                ply_ptr->ndice = 4;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 2;
+                break;
+                case 17:
+                ply_ptr->ndice = 5;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 0;
+                break;
+                case 18:
+                ply_ptr->ndice = 5;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 2;
+                break;
+                case 19:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 7;
+                ply_ptr->pdice = 0;
+                break;
+                case 20:
+                ply_ptr->ndice = 6;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 2;
+                break;
+		case 21:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 8;
+                ply_ptr->pdice = 3;
+		case 22:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 9;
+                ply_ptr->pdice = 0;
+		case 23:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 9;
+                ply_ptr->pdice = 1;
+		case 24:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 9;
+                ply_ptr->pdice = 2;
+		case 25:
+		ply_ptr->ndice = 6;
+                ply_ptr->sdice = 9;
+                ply_ptr->pdice = 3;
+                default:
+                ply_ptr->ndice = 1;
+                ply_ptr->sdice = 3;
+                ply_ptr->pdice = 0;
+                break;
+		}
+	    }	
+	/* END MONK */
 
 }
 
@@ -778,6 +1261,9 @@ creature	*ply_ptr;
 		if(ply_ptr->ready[i])
 			ac -= ply_ptr->ready[i]->armor;
 
+	if(ply_ptr->class == MONK)
+               ac = 100-ply_ptr->level*7;
+
 	if(F_ISSET(ply_ptr, PPROTE))
 		ac -= 10;
 
@@ -834,6 +1320,7 @@ creature	*ply_ptr;
 			break;
 		case THIEF:
 		case ASSASSIN:
+		case MONK:
 		case CLERIC:
 			amt = 30;
 			break;
@@ -926,6 +1413,7 @@ int		index;
 	case BARBARIAN: 
 	case PALADIN: 
 	case RANGER:
+	case MONK:
 	case DM:
 	case CARETAKER:
 		prof_array[0] = 0L;		prof_array[1] = 768L;
@@ -938,6 +1426,7 @@ int		index;
 		break;
 
 	case CLERIC:
+	case BARD:
 	case THIEF:
 	case ASSASSIN:
 		prof_array[0] = 0L;		prof_array[1] = 768L;
@@ -1003,7 +1492,8 @@ int		index;
                 prof_array[10] = 2973307L; prof_array[11] = 500000000L;
                 break;
         case PALADIN:
-        case RANGER:    
+        case MONK:
+	case RANGER:    
                 prof_array[0] = 0L;       prof_array[1] = 1024L;
                 prof_array[2] = 8192L;    prof_array[3] = 16384L;
                 prof_array[4] = 32768L;   prof_array[5] = 65536L;
@@ -1090,10 +1580,9 @@ int	invis;
 {
 	creature	*ply_ptr = 0;
 	ctag		*cp;
-	int		totalpiety, pick;
+	int		totalpiety=0, pick=0;
 
 	cp = rom_ptr->first_ply;
-	totalpiety = 0;
 	if(!cp)
 		return(0);
 
@@ -1185,9 +1674,14 @@ creature	*ply_ptr;
 	if(fd < 0 || F_ISSET(ply_ptr, PSPYON) || F_ISSET(ply_ptr, PREADI))
 		prompt[0] = 0;
 
-	else if(F_ISSET(ply_ptr, PPROMP))
-		sprintf(prompt, "(%d H %d M): ", ply_ptr->hpcur,
-		    ply_ptr->mpcur);
+	else if(F_ISSET(ply_ptr, PPROMP) || F_ISSET(ply_ptr, PALIAS))
+		if(F_ISSET(ply_ptr, PALIAS))
+			sprintf(prompt, "(%d H %d M): ", Ply[fd].extr->alias_crt->hpcur,
+        	            Ply[fd].extr->alias_crt->mpcur);
+		else
+
+			sprintf(prompt, "(%d H %d M): ", ply_ptr->hpcur,
+			    ply_ptr->mpcur);
 
 	else
 		strcpy(prompt, ": ");
@@ -1217,6 +1711,9 @@ int  	lvl;
     creature    *ply_ptr = 0;
     ctag        *cp;
     int        total, pick;
+
+	if(!rom_ptr)
+		return(NULL);
  
         cp = rom_ptr->first_ply;
         total = 0;
@@ -1266,3 +1763,49 @@ int  	lvl;
         return(ply_ptr);
 }
                         
+/****************************************************************/
+/*			luck					*/
+/****************************************************************/
+
+/* This sets the luck value for a given player			*/
+
+int luck(ply_ptr)
+creature	*ply_ptr;
+{
+	int	fd, num, gld, alg, con, smrt;
+	extra	*extr;
+	
+	if(!ply_ptr)
+		return(0);
+	if(ply_ptr->type != PLAYER)
+		return(0);
+
+	gld = ply_ptr->gold;
+	alg = abs(ply_ptr->alignment);
+	alg = alg+1;
+#ifdef WIN32
+	alg = (int)(alg/10);
+#else
+	alg = rint(alg/10);
+#endif
+	if(!alg)
+		alg = 1;
+	con = ply_ptr->constitution;
+	smrt = ply_ptr->intelligence;
+
+	num = 100*(smrt+con);
+	num /= alg;
+	num -= gld/50000;
+
+	if(ply_ptr->ready[HELD-1] && F_ISSET(ply_ptr->ready[HELD-1], OLUCKY)) 
+		num += ply_ptr->ready[HELD-1]->ndice;
+
+	if(num>99)
+		num=99;
+	if(num<1)
+		num=1;
+	
+	Ply[ply_ptr->fd].extr->luck = num;
+
+	return(num);
+}

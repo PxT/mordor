@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				flee				      */
@@ -34,7 +37,7 @@ cmd		*cmnd;
 
 	t = time(0);
 	i = MAX(ply_ptr->lasttime[LT_ATTCK].ltime,
-		ply_ptr->lasttime[LT_SPELL].ltime) + 3L;
+		ply_ptr->lasttime[LT_SPELL].ltime) + 4L;
 
 	if(t < i && !F_ISSET(ply_ptr, PFEARS)) {
 		please_wait(fd, i-t);
@@ -61,7 +64,7 @@ cmd		*cmnd;
 			continue;
 		if(F_ISSET(xp->ext, XNGHTO) && (t>6 && t < 20)) continue;
 		if(F_ISSET(xp->ext, XDAYON) && (t<6 || t > 20))  continue;
-		
+		if(F_ISSET(xp->ext, XPLSEL) && !F_ISSET(xp->ext, XPLSEL+ply_ptr->class)) continue;		
     if(F_ISSET(xp->ext,XPGUAR)){
         cp = rom_ptr->first_mon;
         while(cp) {
@@ -75,7 +78,6 @@ cmd		*cmnd;
 	if(found)
 		continue;
     }         
-/* if(mrand(1,100) < 70) break;     */
 		if(mrand(1,100) < (65 + bonus[ply_ptr->dexterity]*5)) 
 			break;
 	} while(xp = xp->next_tag);
@@ -140,10 +142,13 @@ cmd		*cmnd;
 		broadcast_rom(fd, rom_ptr->rom_num, "%M just arrived.",ply_ptr);
 		return(0);
 	}
+	if(F_ISSET(ply_ptr, PALIAS)) {
+                del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+		add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
+	}
 
 	del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 	add_ply_rom(ply_ptr, rom_ptr);
-
 	check_traps(ply_ptr, rom_ptr);
 
 	return(0);
@@ -299,9 +304,11 @@ cmd		*cmnd;
 		print(fd, "You don't have that.\n");
 		return(0);
 	}
-
-	gold = MIN(obj_ptr->value / 2, 10000);
-
+	luck (ply_ptr);	
+	gold = obj_ptr->value / 3;
+	gold = ((Ply[fd].extr->luck*gold)/100);
+	gold = MIN( gold, 10000);
+	
 	if((obj_ptr->type <= MISSILE || obj_ptr->type == ARMOR) &&
 	   obj_ptr->shotscur <= obj_ptr->shotsmax/8)
 		poorquality = 1;
@@ -310,7 +317,7 @@ cmd		*cmnd;
 		poorquality = 1;
 
 	if(gold < 20 || poorquality) {
-		print(fd, "The shopkeep says, \"I won't buy that crap.\"\n");
+		print(fd, "The shopkeep says, \"I won't buy that crap from you.\"\n");
 		return(0);
 	}
 
@@ -458,7 +465,7 @@ cmd		*cmnd;
 	}
 
 	if(crt_ptr->type == PLAYER) {
-		if(F_ISSET(rom_ptr, RNOKIL)) {
+		if(F_ISSET(rom_ptr, RNOKIL) && ply_ptr->class < DM) {
 			print(fd, "No killing allowed in this room.\n");
 			return(0);
 		}
@@ -466,11 +473,11 @@ cmd		*cmnd;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS)) {
+                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, you're lawful.\n");
                     return (0);
                 }
-                if(!F_ISSET(crt_ptr, PCHAOS)) {
+                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
                 }     
@@ -568,10 +575,17 @@ cmd		*cmnd;
 			if(ply_ptr->ready[WIELD-1]) {
 				p = MIN(ply_ptr->ready[WIELD-1]->type, 4);
 				addprof = (m * crt_ptr->experience) /
-					crt_ptr->hpmax;
+					MAX(crt_ptr->hpmax, 1);
 				addprof = MIN(addprof, crt_ptr->experience);
 				ply_ptr->proficiency[p] += addprof;
 			}
+           		else if(ply_ptr->class == MONK) { 
+		            	/* give blunt prof for monk barehand */
+        		        addprof = (m * crt_ptr->experience) /
+                		    MAX(crt_ptr->hpmax, 1);
+              			addprof = MIN(addprof, crt_ptr->experience);
+                		ply_ptr->proficiency[2] += addprof;
+           		}
 		}
 		crt_ptr->hpcur -= n;
 
@@ -624,7 +638,10 @@ cmd		*cmnd;
 		ANSI(fd, WHITE);
 		return(0);
 	}
-
+	if(!F_ISSET(ply_ptr, PSECOK)) {
+		print(fd, "You are not allowed to do that.\n");
+		return(0);
+	}
 	rom_ptr = ply_ptr->parent_rom;
 
 	bit[0] = ply_ptr->class & 1;

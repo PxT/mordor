@@ -1,0 +1,50 @@
+properly
+you may ask for resist-fire and resist-magic, protection, curepoison, know-alignment, detect-magic, mend-wounds, and invisiblity
+spells
+I know all the spells, and in recognition of your advancement will cast protective spells on you
+spell
+you may ask for resist-fire and resist-magic, protection, curepoison, know-alignment, detect-magic, mend-wounds, and invisibility
+resist
+you may ask for resist-fire and resist-magic, protection, curepoison, know-alignment, detect-magic, mend-wounds, and invisibility
+resistive
+you may ask for resist-fire and resist-magic, protection, curepoison, know-alignment, detect-magic, mend-wounds, and invisibility
+protective
+You may ask for resist-fire and resist-magic, protection, curepoison, know-alignment, detect-magic, mend-wounds, and invisibility
+resist-fire CAST resist-fire
+now you can walk through hell!
+resist-f CAST resist-fire
+now you can walk through hell!
+resist-m CAST resist-magic
+magic is powerful, and my spell does not entirely stop it, but it does reduce its damage to you
+resist-magic CAST resist-magic
+magic is powerful, and my spell does not entirely stop it, but it does reduce its damage to you
+protection CAST protection
+it will be harder for the monsters to hit you, little one
+prot CAST protection
+it will be harder for the monsters to hit you, little one
+curepoison CAST curepoison
+feel better?
+curep CAST curepoison
+feel better?
+know-alignment CAST know-alignment
+Ahh, the better to know your friends and enemies
+know-a CAST know-alignment
+Ahh, the better to know your friends and enemies
+know CAST know-alignment
+Ahh, the better to know your friends and enemies
+mend-wounds CAST mend-wounds
+yes, you do look a little beat up
+mend CAST mend-wounds
+yes, you do look a little beat up
+invisibility CAST invisibility
+giggle.  I think you look better this way
+nvis CAST invisibility
+giggle.  I think you look better this way
+detect-magic CAST detect-magic
+you will one day have this power for yourself, my fellow mage
+detect-m CAST detect-magic
+you will one day have this power for yourself, my  fellow mage
+enchant
+for that you will have to seek Chanteclaire, the Arch Mage
+
+

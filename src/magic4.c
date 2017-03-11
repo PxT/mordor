@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*				detectinvis			      */
 /**********************************************************************/
@@ -40,7 +42,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+        if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                      ply_ptr->mpcur -= 10;
                 return(0);
@@ -161,7 +163,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+ 	if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                      ply_ptr->mpcur -= 10;
                 return(0);
@@ -271,7 +273,7 @@ int		how;
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 
-	if(ply_ptr->mpcur < 20 && how == CAST) {
+	if(ply_ptr->mpcur < 30 && how == CAST) {
 		print(fd, "Not enough magic points.\n");
 		return(0);
 	}
@@ -280,9 +282,16 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+	if(F_ISSET(rom_ptr, RNOTEL)) {
+                print(fd, "The spell fizzles.\n");
                 if(how == CAST)
-                        ply_ptr->mpcur -= 20;
+                        ply_ptr->mpcur -= 30;
+                return(0);
+        }
+
+	if(spell_fail(ply_ptr, how)) {
+                if(how == CAST)
+                        ply_ptr->mpcur -= 30;
                 return(0);
         }
 
@@ -290,7 +299,7 @@ int		how;
 	if(cmnd->num == 2) {
 
 		if(how == CAST)
-			ply_ptr->mpcur -= 20;
+			ply_ptr->mpcur -= 30;
 
 		broadcast_rom(fd, ply_ptr->rom_num, 
 			      "%M disappears.", ply_ptr);
@@ -333,6 +342,14 @@ int		how;
 			print(fd, "That player is not here.\n");
 			return(0);
 		}
+		
+		if(ply_ptr->level < 13) {
+	               print(fd, "The spell fizzles.\n");
+        	         if(how == CAST)
+                	         ply_ptr->mpcur -= 30;
+			return(0);	
+		}
+		
 		if(F_ISSET(crt_ptr, PRMAGI) && (mrand(1,60)+(ply_ptr->level-crt_ptr->level)*10) > 80) {
 			print(fd, "Your magic is too weak to teleport %m.\n", crt_ptr);
 			print(crt_ptr->fd, "%M tried to cast teleport on you.\n", ply_ptr);
@@ -340,6 +357,8 @@ int		how;
 				ply_ptr->mpcur -= 20;
 			return(0);
 		}
+
+		
 
 		if(how == CAST)
 			ply_ptr->mpcur -=20;

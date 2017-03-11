@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				dm_set				      */
@@ -134,6 +137,11 @@ cmd		*cmnd;
 		print(fd, "Syntax: *set c <name> <a|con|c|dex|e|f|g|hm|h|int|l|mm|m|\n                       pie|p#|r#|str> [<value>]\n");
 		return(0);
 	}
+	
+	if(ply_ptr->class < DM) {
+               print(fd, "Check with a Dungeonmaster to get permission.\n");
+               return(0);
+        }
 
 	cmnd->str[2][0] = up(cmnd->str[2][0]);
 	crt_ptr = find_who(cmnd->str[2]);
@@ -389,6 +397,11 @@ cmd		*cmnd;
 		return(0);
 	}
 
+	if(ply_ptr->class < DM) {
+                 print(fd, "Check with a Dungeonmaster for permission.\n");
+                 return(0);
+         }
+
 	if(cmnd->num == 4) {
 		strcpy(flags, cmnd->str[3]);
 		num = cmnd->val[3];
@@ -483,14 +496,24 @@ cmd		*cmnd;
 		}
 		return(PROMPT);
 	case 't':
-		if ((num<0 || num>4) && ply_ptr->class<DM) return(PROMPT);
+		if ((num<0 || num>14) && ply_ptr->class<DM) return(PROMPT);
 		switch(num) {
 		case SHARP: obj_ptr->type = SHARP; print(fd, "Object is a sharp weapon.\n");return(PROMPT);
 		case THRUST: obj_ptr->type = THRUST; print(fd, "Object is a thrust weapon.\n");return(PROMPT);
 		case BLUNT: obj_ptr->type = BLUNT; print(fd, "Object is a blunt weapon.\n");return(PROMPT);
 		case POLE: obj_ptr->type = POLE; print(fd, "Object is a pole weapon.\n");return(PROMPT);
 		case MISSILE: obj_ptr->type = MISSILE; print(fd, "Object is a missile weapon.\n");return(PROMPT);
+		case ARMOR: obj_ptr->type = ARMOR; print(fd, "Object is armor.\n");return(PROMPT);
+		case POTION:obj_ptr->type = POTION; print(fd, "Object is a potion.\n");return(PROMPT);
+                case SCROLL:obj_ptr->type = SCROLL; print(fd, "Object is a scroll.\n");return(PROMPT);
+               	case WAND:obj_ptr->type = WAND; print(fd, "Object is a wand.\n");return(PROMPT);
+               	case CONTAINER:obj_ptr->type = CONTAINER; print(fd, "Object is a container.\n");return(PROMPT);
+               	case MONEY:obj_ptr->type = MONEY; print(fd, "Object is money.\n");return(PROMPT);               
+		case KEY:obj_ptr->type = KEY; print(fd, "Object is a key.\n");return(PROMPT);
+		case LIGHTSOURCE:obj_ptr->type = LIGHTSOURCE; print(fd, "Object is a lightsource.\n");return(PROMPT);
+		case MISC:obj_ptr->type = MISC; print(fd, "Object is a misc item.\n");
 		}
+
 		break;
 	case 'v':
 		obj_ptr->value = num;
@@ -705,11 +728,16 @@ int dm_loadlockout(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
+int	i;
+
 	if(ply_ptr-> class < CARETAKER)
 		return(PROMPT);
 
 	load_lockouts();
-	print(ply_ptr->fd, "Lockout file read in.\n");
+	print(ply_ptr->fd, "Lockout sites read in:\n");
+	for(i=0; i<Numlockedout; i++) {
+		print(ply_ptr->fd, "%s@%s\n", Lockout[i].userid, Lockout[i].address);
+	}
 	return(0);
 }
 
@@ -754,7 +782,12 @@ cmd		*cmnd;
 		strcpy(addr, Ply[crt_ptr->fd].io->address);
 	}
 
-	if(!vfork())  {
+#ifdef IRIX
+	#define _BSD_COMPAT
+        if(!fork())  {
+#else
+        if(!vfork())  {
+#endif
 		if(cmnd->num == 3)
 			strncpy(name, cmnd->str[2], 79);
 		else
@@ -791,6 +824,7 @@ int dm_list(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
+#ifndef WIN32
 	char		path[80];
 	char		fdstr[10];
 	int		i;
@@ -802,7 +836,12 @@ cmd		*cmnd;
 		print(ply_ptr->fd, "List what?\n");
 		return(0);
 	}
-	if(!vfork()) {
+
+#ifdef IRIX
+        if(!fork())  {
+#else
+        if(!vfork())  {
+#endif
 		sprintf(path, "%s/list", BINPATH);
 		sprintf(fdstr, "-s%d", ply_ptr->fd);
 
@@ -814,7 +853,7 @@ cmd		*cmnd;
 		exit(0);
 	}
 	else return(0);
-
+#endif
 }
 
 /************************************************************************/

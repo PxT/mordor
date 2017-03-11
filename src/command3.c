@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*				wear				      */
 /**********************************************************************/
@@ -131,6 +133,16 @@ cmd		*cmnd;
         	print(fd, "Your class prevents you from wearing %i.\n",obj_ptr);
         	return(0);
 	}
+	if(!F_ISSET(obj_ptr, OCLSEL + ply_ptr->class)  && obj_ptr->armor >5 && (ply_ptr->class == MONK || ply_ptr->class == MAGE)){
+                print(fd, "Your class prevents you from wearing %i.\n",obj_ptr);
+                return(0);
+        }
+
+	if((obj_ptr->wearflag == FINGER||obj_ptr->wearflag ==SHIELD) && ply_ptr->class == MONK) {
+                print(fd, "Your class prevents you from wearing %i.\n",obj_ptr);
+                return(0);
+        }
+
 
 		i = (F_ISSET(obj_ptr, OSIZE1) ? 1:0) * 2 +
 			(F_ISSET(obj_ptr, OSIZE2) ? 1:0);
@@ -148,7 +160,7 @@ cmd		*cmnd;
 			   ply_ptr->race != ORC) cantwear = 1;
 			break;
 		case 3:
-			if(ply_ptr->race != HALFGIANT) cantwear = 1;
+			if(ply_ptr->race != HALFGIANT && ply_ptr->race != OGRE && ply_ptr->race != TROLL) cantwear = 1;
 			break;
 		}
 
@@ -293,6 +305,15 @@ creature	*ply_ptr;
 				continue;
 	}
 
+	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && (ply_ptr->class== MONK || ply_ptr->class == MAGE) && obj_ptr->armor >5){
+                                op = temp;
+                                continue;
+        }
+        if((obj_ptr->wearflag == FINGER||obj_ptr->wearflag ==SHIELD) && ply_ptr->class == MONK){
+                                op=temp;
+                                continue;
+        }
+
 			if(F_ISSET(obj_ptr, OGOODO) && 
 			   ply_ptr->alignment < -50) {
 				op = temp;
@@ -317,11 +338,14 @@ creature	*ply_ptr;
 			case 2:
 				if(ply_ptr->race != HUMAN &&
 				   ply_ptr->race != ELF &&
+				   ply_ptr->race != DARKELF &&
+				   ply_ptr->race != GOBLIN &&
 				   ply_ptr->race != HALFELF &&
+				   ply_ptr->race != HALFORC &&
 				   ply_ptr->race != ORC) cantwear = 1;
 				break;
 			case 3:
-				if(ply_ptr->race != HALFGIANT) cantwear = 1;
+				if(ply_ptr->race != HALFGIANT && ply_ptr->race != OGRE && ply_ptr->race != TROLL) cantwear = 1;
 				break;
 			}
 
@@ -339,7 +363,7 @@ creature	*ply_ptr;
 				F_SET(obj_ptr, OWEARS);
 			}
 
-			else if(obj_ptr->wearflag == FINGER) {
+			else if(obj_ptr->wearflag == FINGER && ply_ptr->class != MONK) {
 				for(i=FINGER1; i<FINGER8+1; i++) {
 					if(!ply_ptr->ready[i-1]) {
 						ply_ptr->ready[i-1] = obj_ptr;
@@ -667,10 +691,13 @@ cmd		*cmnd;
 			if(ply_ptr->race != HUMAN &&
 			   ply_ptr->race != ELF &&
 			   ply_ptr->race != HALFELF &&
+			   ply_ptr->race != DARKELF &&
+                           ply_ptr->race != GOBLIN &&
+                           ply_ptr->race != HALFORC &&
 			   ply_ptr->race != ORC) cantwear = 1;
 			break;
 		case 3:
-			if(ply_ptr->race != HALFGIANT) cantwear = 1;
+			if(ply_ptr->race != HALFGIANT && ply_ptr->race != OGRE && ply_ptr->race != TROLL) cantwear = 1;
 			break;
 		}
 

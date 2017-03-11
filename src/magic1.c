@@ -10,6 +10,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*              cast                      */
@@ -69,7 +72,7 @@ cmd     *cmnd;
         return(0);
     }
 
-    if(F_ISSET(ply_ptr->parent_rom, RNOMAG)) {
+    if(F_ISSET(ply_ptr->parent_rom, RNOMAG) && ply_ptr->class < CARETAKER) {
         print(fd, "Nothing happens.\n");
         return(0);
     }
@@ -100,7 +103,9 @@ cmd     *cmnd;
         ply_ptr->lasttime[LT_SPELL].ltime = t;
         if(ply_ptr->class == CLERIC || ply_ptr->class == MAGE)
             ply_ptr->lasttime[LT_SPELL].interval = 3;
-        else
+        else if(ply_ptr->class == BARD)
+	    ply_ptr->lasttime[LT_SPELL].interval = 4;
+	else
             ply_ptr->lasttime[LT_SPELL].interval = 5;
     }
 
@@ -407,7 +412,8 @@ cmd     *cmnd;
     ply_ptr->lasttime[LT_READS].ltime = t;
     ply_ptr->lasttime[LT_READS].interval = 3;
 
-    if(spell_fail(ply_ptr)){
+
+    if(spell_fail(ply_ptr, SCROLL)){
         print(fd, "%I disintegrates.\n", obj_ptr);
         del_obj_crt(obj_ptr, ply_ptr);
         free_obj(obj_ptr);
@@ -654,11 +660,10 @@ cmd     *cmnd;
     ply_ptr->lasttime[LT_SPELL].ltime = t;
     ply_ptr->lasttime[LT_SPELL].interval = 3;
 
-    if(spell_fail(ply_ptr)){
+    if(spell_fail(ply_ptr, WAND)){
         obj_ptr->shotscur--;
         return(0);
     }
-
     return(zap_obj(ply_ptr, obj_ptr, cmnd));
 }
 
@@ -723,7 +728,7 @@ osp_t       *osp;
     creature    *crt_ptr;
     room        *rom_ptr;
     int     m, fd, dmg, bns=0;
-    long        addrealm;
+    long        addrealm, f,t;
 
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -785,7 +790,7 @@ osp_t       *osp;
         case WIND:  bns = MIN(-bns, -5); break;
         }
     }
-        
+
     /* Cast on self */
     if(cmnd->num == 2) {
 
@@ -851,22 +856,22 @@ osp_t       *osp;
 
         if(ply_ptr->type == PLAYER && crt_ptr->type == PLAYER &&
             crt_ptr != ply_ptr) {
-            if(F_ISSET(rom_ptr, RNOKIL)) {
+            if(F_ISSET(rom_ptr, RNOKIL) && ply_ptr->class < DM) {
                 print(fd,"No killing allowed in this room.\n");
                 return;
             }
-	    if(ply_ptr->level<4 && crt_ptr->level>5){
+	    if(ply_ptr->level<4 && crt_ptr->level>9){
 		print(fd, "That would be foolish.\n");
 		return;
 	    }
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS)) {
+                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, you're lawful.\n");
                     return(0);
                 }
-                if(!F_ISSET(crt_ptr, PCHAOS)) {
+                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return(0);
                 }     
@@ -881,7 +886,7 @@ osp_t       *osp;
         if(how == CAST)
             ply_ptr->mpcur -= osp->mp;
 
-	if(spell_fail(ply_ptr)){
+	if(spell_fail(ply_ptr, how)){
             return(0);
         }
 
@@ -901,7 +906,10 @@ osp_t       *osp;
         if(crt_ptr->type != PLAYER)
             ply_ptr->realm[osp->realm-1] += addrealm;
         if(crt_ptr->type != PLAYER) {
-            add_enm_crt(ply_ptr->name, crt_ptr);
+		/* if(is_charm_crt(crt_ptr->name, ply_ptr))
+			del_charm_crt(crt_ptr, ply_ptr); */
+            
+	    add_enm_crt(ply_ptr->name, crt_ptr);
             add_enm_dmg(ply_ptr->name, crt_ptr, m);
         }
 

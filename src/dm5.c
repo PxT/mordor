@@ -11,6 +11,9 @@
 #include "mextern.h"
 
 #include <ctype.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /*******************************************************************/
 /*                             dm_replace                          */
@@ -490,8 +493,8 @@ cmd             *cmnd;
         memcpy(&buf[len2+1],&cmnd->fullstr[i],len);
         buf[len+len2+1] = 0;
     }
-
-    free(desc);
+    if (desc)
+        free(desc);
     if (ds)
         rom_ptr->short_desc = buf;
     else
@@ -725,7 +728,21 @@ cmd		*cmnd;
 		view_file(fd, 1, file);
 		return(DOPROMPT);
 	}
-
+	else if(!strcmp(cmnd->str[1], "pers")) {
+                strcat(file, "/pers");
+                view_file(fd, 1, file);
+                return(DOPROMPT);
+        }
+	else if(!strcmp(cmnd->str[1], "quest")) {
+                strcat(file, "/quest");
+                view_file(fd, 1, file);
+                return(DOPROMPT);
+        }
+	else if(!strcmp(cmnd->str[1], "pot")) {
+                strcat(file, "/pot");
+                view_file(fd, 1, file);
+                return(DOPROMPT);
+        }
 	else {
 		print(fd,"That dm help file does not exist.\n");
 		return(0);

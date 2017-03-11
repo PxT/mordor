@@ -7,9 +7,18 @@
  *
  */
 
+#ifdef IRIX
+	#define _BSD_SIGNALS
+	#include <fcntl.h>
+	/* #include <stropts.h> */
+#endif
+
 #include <stdio.h>
-#include <sys/ioctl.h>
 #include <sys/types.h>
+
+#ifndef WIN32
+
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/signal.h>
 #include <sys/wait.h>
@@ -17,14 +26,29 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#else
+
+#include <winsock.h>
+
+#endif
+
 #include <errno.h>
 #include <string.h>
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
+
+
+#ifdef WIN32
+#define ioctl(a,b,c)	ioctlsocket(a,b,c)
+#endif
 
 #define buflen(a,b,c)	(a-b + (a<b ? c:0))
 #define saddr		addr.sin_addr.s_addr
-#define MAXPLAYERS	80
+#define MAXPLAYERS	100
 
 typedef struct wq_tag {
 	int		fd;
@@ -37,7 +61,64 @@ int				Deadchildren;
 static wq_tag			*First_wait;
 static int			Waitsock;
 static fd_set			Sockets;
-extern int			Port;
+extern int			Port;  
+
+
+
+/* 
+
+ C file handles are not always the same as system handles.
+ Since read() and write() take C file handles, I had to change this
+ for the socket io stuff.  Thank god, it's isolated to this file.
+
+*/
+int scwrite(int fh, const void *lpvBuffer, unsigned int nLen)
+{
+#ifdef WIN32
+	DWORD dwRet; 
+	WriteFile((HANDLE)fh, lpvBuffer, nLen, &dwRet, NULL); 
+
+	/* Brooke: you could handle spy here and never have to worry
+	   about forgetting to put this code in again.
+	   You only spy socket writes and probably want to
+	   spy on all socket writes. */
+
+	if(Spy[fh] > -1) 
+		{
+		WriteFile((HANDLE)Spy[fh], lpvBuffer, nLen, &dwRet, NULL); 
+		}
+	
+	return(dwRet);
+
+#else
+
+	int	nRet; 
+	nRet = write(fh, lpvBuffer, nLen); 
+
+	/*  Brooke: you could handle spy here and never have to worry
+	    about forgetting to put this code in again.
+	    You only spy socket writes and probably want to
+	    spy on all socket writes. */
+
+	if(Spy[fh] > -1) 
+		{
+		write(fh, lpvBuffer, nLen);
+		}
+	
+	return(nRet);
+#endif
+}
+
+#ifdef WIN32
+int scread(int fh, void *lpvBuffer, unsigned int nLen)
+{
+
+	DWORD dwRet; 
+	ReadFile((HANDLE)fh, lpvBuffer, nLen, &dwRet, NULL); 
+	return(dwRet);
+}
+
+#endif
 
 /**********************************************************************/
 /*				sock_init			      */
@@ -52,36 +133,61 @@ int	debug;
 {
 	struct sockaddr_in 	addr;
 	struct linger		ling;
-	int 			n, i;
+	int 			n, i, flags;
 	extern char		report;
+
+
+#ifdef WIN32
+	// gotta initialize the winsock stuff
+	WORD wVersionRequested; 
+	WSADATA wsaData; 
+	int err; 
+	wVersionRequested = MAKEWORD(1, 1); 
+ 
+	err = WSAStartup(wVersionRequested, &wsaData); 
+ 
+	if (err != 0) 
+		/* Tell the user that we couldn't find a useable */ 
+		/* winsock.dll.     */ 
+		return; 
+#endif
 
 	if(debug) {
 		FD_SET(0, &Sockets);
 		FD_SET(1, &Sockets);
 		FD_SET(2, &Sockets);
 	}
+#ifndef WIN32
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGTERM, SIG_IGN);
 	signal(SIGCHLD, child_died);
-
 	Tablesize = getdtablesize();
 	if (Tablesize > PMAX){
 		Tablesize = PMAX;
-		logf("Tablesize greater than PMAX\n");
+		loge("Tablesize greater than PMAX\n");
 	}
+#else
+		Tablesize = PMAX;
+#endif
+
 	Waitsock = socket(AF_INET, SOCK_STREAM, 0);
 	if(Waitsock < 0)
 		exit(-1);
-	FD_SET(Waitsock, &Sockets);
+
+	FD_ZERO(&Sockets);
+	FD_SET(Waitsock, &Sockets); 
 
 	addr.sin_addr.s_addr = INADDR_ANY;
 	addr.sin_port = htons(port);
+	/* added by John */
+	addr.sin_family = AF_INET;
 
 	if (report){
    	i = 1;
+
         setsockopt(Waitsock, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(int));
 	}
-       
+
 	n = bind(Waitsock, (struct sockaddr *) &addr, sizeof(addr));
 	if(n < 0)
 		exit(-1);
@@ -93,8 +199,18 @@ int	debug;
 	listen(Waitsock, 5);
 
 	i=1;
+#ifdef IRIX
+	flags = fcntl(Waitsock, F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl(Waitsock, flags);
+#else
 	ioctl(Waitsock, FIONBIO, &i);
+#endif /* IRIX */
 }
+
+
+
+
 
 /**********************************************************************/
 /*				sock_loop			      */
@@ -129,13 +245,17 @@ int io_check()
 {
 	fd_set			sockcheck;
 	short			rtn=0, i;
-	static struct timeval	t = {0L, 75000L};
+	static struct timeval	t = {0L, 75000L}; 
 
 	sockcheck = Sockets;
-/*	t.tv_usec = T_USEC; */
-/*	t.tv_sec = 0;	    */
+	t.tv_sec = 0;	    
 	t.tv_usec = 75000L;
+
+#ifdef IRIX
+ 	if(select(Tablesize, &sockcheck, (fd_set *) 0, (fd_set *) 0, &t) > 0) { 
+#else
 	if(select(Tablesize, &sockcheck, 0, 0, &t) > 0) {
+#endif /* IRIX */
 		for(i=0; i<Tablesize; i++) {
 			if(FD_ISSET(i, &sockcheck)) {
 				if(i != Waitsock)
@@ -199,7 +319,12 @@ void accept_connect()
 
 	strcpy(io->address, inetname(addr.sin_addr));
 
-	pid = vfork();
+#ifndef WIN32
+#ifdef IRIX
+        pid = fork();
+#else
+        pid = vfork();
+#endif /* IRIX */
 	if(!pid) {
 		sprintf(path, "%s/auth", BINPATH);
 		sprintf(port1str, "%d", ntohs(addr.sin_port));
@@ -211,8 +336,11 @@ void accept_connect()
 		strcpy(io->userid, "unknown");
 		io->lookup_pid = pid;
 	}
-
-	FD_SET(fd, &Sockets);
+#else
+		strcpy(io->userid, "unknown");
+		io->lookup_pid = pid;
+#endif
+	FD_SET(fd, &Sockets); 
 
 	if(Numplayers > Tablesize-2) {
 		print(fd, "Game full.  Try again later.\n");
@@ -223,7 +351,7 @@ void accept_connect()
 	else if(Numplayers >= MAXPLAYERS &&
 		((unsigned)(ntohl(saddr))>>24) != 127) {
 		if(Numwaiting > MAXPLAYERS) {
-			write(fd, "Queue full.\n\r", 13);
+			scwrite(fd, "Queue full.\n\r", 13);
 			disconnect(fd);
 			return;
 		}
@@ -244,21 +372,22 @@ void init_connect(fd)
 int	fd;
 {
 	int		i;
-
-	/*************************************************************/
-	/* The following lines must be left intact as part of the    */
-	/* copyright agreement.					     */
-	/*************************************************************/
-	print(fd, "\nMordor v2.5 Beta (C) 1992, 1995");
-	print(fd, "\nProgrammed by Brett J. Vickers");
-	print(fd, "\nEnhancements by Steve Smith and Brooke Paul");
-	/*************************************************************/
-	/*************************************************************/
+#ifdef ISENGARD
+	print(fd, "\nThe Land of Isengard v2.2");
+#endif /* ISENGARD */
+	print(fd, "\n  Mordor v3.00");
+	print(fd, "\nProgrammed by:");
+	print(fd, "\n  Brett J. Vickers & Brooke Paul");
+ 	print(fd, "\nContributions by: ");
+	print(fd, "\n  Steve Smith & Charles Marchant\n"); 
+#ifdef WIN32
+	print(fd, "\nMS-Windows port by John Freeman\n");
+#endif /* WIN32 */
 
 	Ply[fd].io->intrpt |= 2;
 	Numplayers++;
 
-	if((i = locked_out(fd)) > 1) {
+	if((i = locked_out(fd)) == 2) {
 		print(fd, "\nA password is required to play from that site.");
 		print(fd, "\nPlease enter site password: ");
 		output_buf();
@@ -291,15 +420,18 @@ int 	fd;
 	int	i;
 
 	for(i=0; i<Numlockedout; i++) {
+
 		if(!addr_equal(Lockout[i].address, Ply[fd].io->address))
 			continue;
 
+		if(!strcmp(Lockout[i].userid, "all"))
 		if(Lockout[i].password[0]) {
 			strcpy(Ply[fd].extr->tempstr[0], Lockout[i].password);
 			return 2;
 		}
 		else {
-			write(fd, "\n\rYour site is locked out.\n\r", 28);
+			scwrite(fd, "\n\rYour site is locked out.\n\r", 28);
+			scwrite(fd, "\n\rSend questions to imail@moria.bio.uci.edu.\n\r", 46);
 			return 1;
 		}
 	}
@@ -349,7 +481,11 @@ int	fd;
 	char 	buf[128], lastchar;
 	int 	i, n, prev, itail, ihead;
 
+#ifdef WIN32
+	n = scread(fd, buf, 127);
+#else
 	n = read(fd, buf, 127);
+#endif
 
 	if(n<=0)
 		Ply[fd].io->commands = -1;	/* Connection dropped */
@@ -427,48 +563,34 @@ void output_buf()
 				if(Ply[i].ply)
 					if(Ply[i].ply->fd > -1 && 
 					   F_ISSET(Ply[i].ply, PNOCMP)) {
-						n = write(i, "\n\r", 2);
-						if(Spy[i] > -1)
-						    write(Spy[i], "\n\r", 2);
+						n = scwrite(i, "\n\r", 2);
 					}
-				n = write(i, &Ply[i].io->output[otail], 
-				 ohead>otail ? ohead-otail:OBUFSIZE-otail);
-				if(Spy[i] > -1) write(Spy[i], 
-				 &Ply[i].io->output[otail], 
+				n = scwrite(i, &Ply[i].io->output[otail], 
 				 ohead>otail ? ohead-otail:OBUFSIZE-otail);
 				if(otail > ohead) {
-					n+= write(i, Ply[i].io->output, ohead);
-					if(Spy[i] > -1) 
-					write(Spy[i], Ply[i].io->output, ohead);
+					n+= scwrite(i, Ply[i].io->output, ohead);
 				}
-/*
-				if(n < buflen(ohead, otail, OBUFSIZE))
-					merror("output_buf", NONFATAL);
-*/
+
+				/* if(n < buflen(ohead, otail, OBUFSIZE))
+					merror("output_buf", NONFATAL); */
+
 				otail = ohead;
 				Ply[i].io->otail = otail;
 				if(Ply[i].ply) {
 					pstr = ply_prompt(Ply[i].ply);
-					n = write(i, pstr, strlen(pstr));
-					if(Spy[i] > -1)
-						write(Spy[i],pstr,strlen(pstr));
+					n = scwrite(i, pstr, strlen(pstr));
 				}
 			}
 			if(buflen(ohead, otail, OBUFSIZE) > (OBUFSIZE*3)/4) {
-				n = write(i, &Ply[i].io->output[otail], 
-				 ohead>otail ? ohead-otail:OBUFSIZE-otail);
-				if(Spy[i] > -1) write(Spy[i], 
-				 &Ply[i].io->output[otail], 
+				n = scwrite(i, &Ply[i].io->output[otail], 
 				 ohead>otail ? ohead-otail:OBUFSIZE-otail);
 				if(otail > ohead) {
-					n+= write(i, Ply[i].io->output, ohead);
-					if(Spy[i] > -1)
-					write(Spy[i], Ply[i].io->output, ohead);
+					n+= scwrite(i, Ply[i].io->output, ohead);
 				}
-/*
-				if(n < buflen(ohead, otail, OBUFSIZE))
-					merror("output_buf", NONFATAL);
-*/
+
+				/* if(n < buflen(ohead, otail, OBUFSIZE))
+					merror("output_buf", NONFATAL); */
+
 				otail = ohead;
 				Ply[i].io->otail = otail;
 			}
@@ -496,7 +618,7 @@ int	i1, i2, i3, i4, i5, i6;
 	int	arg[6];
 	char	type;
 
-	if(fd == -1 || fd > Tablesize)
+	if(fd < 0 || fd > Tablesize)
 		return;
 	if(!Ply[fd].io)
 		return;
@@ -637,8 +759,8 @@ void handle_commands()
 			Ply[i].io->itail = itail;
 			Ply[i].io->commands--;
 			if(Spy[i] > -1) {
-				write(Spy[i], buf, strlen(buf));
-				write(Spy[i], "\n\r", 2);
+				scwrite(Spy[i], buf, strlen(buf));
+				scwrite(Spy[i], "\n\r", 2);
 			}
 			(*Ply[i].io->fn) (i, Ply[i].io->fnparam, buf);
 		}
@@ -659,8 +781,13 @@ int 	fd;
 	int 	i;
 	etag	*ign, *temp;
 	wq_tag	*wq;
+	ctag	*crm, *ctemp;
 
+#ifdef WIN32
+	CloseHandle(fd);
+#else
 	close(fd);
+#endif
 	FD_CLR(fd, &Sockets);
 
 	Spy[fd] = -1;
@@ -677,6 +804,16 @@ int 	fd;
 			temp = ign;
 			ign = ign->next_tag;
 			free(temp);
+		}
+		crm = Ply[fd].extr->first_charm;
+		while(crm) {
+			ctemp = crm;
+			crm = crm->next_tag;
+			free(ctemp);
+		}
+		if(Ply[fd].extr->alias_crt) { 
+			F_CLR(Ply[fd].extr->alias_crt, MDMFOL);
+			Ply[fd].extr->alias_crt = 0;
 		}
 		free(Ply[fd].extr);
 		Ply[fd].extr = 0;
@@ -735,6 +872,30 @@ int	i1, i2, i3, i4, i5, i6;
 }
 
 /**********************************************************************/
+/*                              broadcast_login                       */
+/**********************************************************************/
+
+/* This function broadcasts a message to all the players that are in the */
+/* game.  If they have the NO-BROADCAST flag set, then they will not see */
+/* it.                                                                   */
+
+void broadcast_login(fmt, i1, i2, i3, i4, i5, i6)
+char    *fmt;
+int     i1, i2, i3, i4, i5, i6;
+{
+        char    fmt2[1024];
+        int     i;
+
+        strcpy(fmt2, fmt);
+        strcat(fmt2, "\n");
+        for(i=0; i<Tablesize; i++) {
+                if(FD_ISSET(i, &Sockets) && Ply[i].ply)
+                        if(!F_ISSET(Ply[i].ply, PNLOGN) && Ply[i].ply->fd > -1)
+                                print(i, fmt2, i1, i2, i3, i4, i5, i6);
+        }
+}
+
+/**********************************************************************/
 /*				broadcast_wiz			      */
 /**********************************************************************/
 
@@ -752,7 +913,7 @@ int	i1, i2, i3, i4, i5, i6;
 	strcat(fmt2, "\n");
 	for(i=0; i<Tablesize; i++) {
 		if(FD_ISSET(i, &Sockets) && Ply[i].ply)
-			if(Ply[i].ply->fd > -1 && Ply[i].ply->class >= CARETAKER){
+			if(Ply[i].ply->fd > -1 && Ply[i].ply->class >= CARETAKER && !F_ISSET(Ply[i].ply, PNOBRD)){
 				ANSI(i,YELLOW);
 				print(i, fmt2, i1, i2, i3, i4, i5, i6); 
 				ANSI(i,WHITE);
@@ -948,9 +1109,9 @@ int	i;
   file desc. is still valid.  Theorically, only one write is
   needed, but for some reason 2 writes are needed */
 
- write(wq->fd," ",1);
+ scwrite(wq->fd," ",1);
         if(i == 1) {
-                if (write(wq->fd,"\n",1) == -1){
+                if (scwrite(wq->fd,"\n",1) == -1){
                 fd = -1;
 		}
                 else
@@ -994,7 +1155,11 @@ char	*str;
 void child_died()
 {
 	Deadchildren++;
+
+#ifndef WIN32
 	signal(SIGCHLD, child_died);
+#endif
+
 }
 
 /************************************************************************/
@@ -1008,6 +1173,7 @@ void child_died()
 
 void reap_children()
 {
+#ifndef WIN32
 	int pid, i, found, status;
 	char filename[127], userid[80], address[80], timestr[80];
 	FILE *fp;
@@ -1042,13 +1208,16 @@ void reap_children()
 		fclose(fp);
 		unlink(filename);
 		strcpy(Ply[found].io->userid, userid);
-		logf("%s: %s@%s (%s@%s) connected.\n", timestr,
+		loge("%s: %s@%s (%s@%s) connected.\n", timestr,
 			userid, address, userid, Ply[found].io->address);
 		if(strcmp(address, "UNKNOWN"))
 			strcpy(Ply[found].io->address, address);
 	}
 
-	/* just in case, kill off any zombies */
-	wait4(-1, &status, WNOHANG, (struct rusage *)0);
 
+	/* just in case, kill off any zombies */	
+	wait3(&status, WNOHANG, (struct rusage *)0);
+	/* Try this wait if wait3 doesnt work */
+	/*wait4(-1, &status, WNOHANG, (struct rusage *)0); */
+#endif
 }

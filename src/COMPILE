@@ -1,0 +1,46 @@
+Compile-time options
+====================
+
+  Define the following in your Makefile before compiling to enable the 
+following options:
+
+
+DMALLOC --  This is for serious debugging, or if you are interested in 
+looking at the memory usage of Mordor.  You also need to install the 
+associated library funxtions.  See http://www.letters.com for more 
+information.
+ 
+IRIX -- This is for IRIX (Silicon Graphics) systems.
+
+PARANOID -- This will block access to all non-RFC1413 accounts.
+
+CHECKDOUBLE -- This will enable a double log checking routine that used 
+the files in ~/player/simul.  If you want to block double 
+logging using this function you need to create files named 
+after the character you wish to block double logging.  In 
+the file put the other names of the persons characters.
+
+RECORD_ALL -- This will output all the keystrokes by all players to 
+~/log/all_cmd.
+
+SECURE -- This will block access to broadcasting for all 
+non-RFC1413 accounts that have not been authorized.  It will also prevent 
+them from playing past level 3.
+
+LASTCOMMAND -- This causes WHO to output all players last commands.
+
+SUICIDE -- This keeps track of all suicided characters in ~/log/SUICIDE
+
+COMPRESS -- This enables file compression.  It is on by default and is 
+recommended.
+
+FINGERACCT -- This enables the *finger command for DMs.  You must have 
+~/bin/fing compiled properly from ~/src/finger.c.  This option is not 
+available on Win95/NT at this time.
+
+AUTOSHUTDOWN -- This enables automatic shutdowns of the program.
+
+WIN32 -- Use this if you are compiling for Win95/NT.
+
+GETHOSTBYNAME -- This enables the system call gethostbyname.
+

@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /************************************************************************/
 /*				dm_stat					*/
@@ -212,6 +215,7 @@ room		*rom_ptr;
 	if(F_ISSET(rom_ptr, RPMEXT)) strcat(str, "Pmagic, ");
 	if(F_ISSET(rom_ptr, RNOLOG)) strcat(str, "NoLog, ");
 	if(F_ISSET(rom_ptr, RELECT)) strcat(str, "Elect, ");
+	if(F_ISSET(rom_ptr, RNDOOR)) strcat(str, "InDoors, ");
 	if(strlen(str) > 13) {
 		str[strlen(str)-2] = '.';
 		str[strlen(str)-1] = 0;
@@ -244,6 +248,20 @@ room		*rom_ptr;
 		if(F_ISSET(ext, XMALES)) strcat(str, "Male, ");
 		if(F_ISSET(ext, XNGHTO)) strcat(str, "Night, ");
 		if(F_ISSET(ext, XDAYON)) strcat(str, "Day, ");
+		if(F_ISSET(ext, XPLSEL)) {
+			strcat(str ,"Cls-sel: ");
+		if (F_ISSET(ext, XPASSN)) strcat(str, "A, ");
+		if (F_ISSET(ext, XPBARB)) strcat(str, "Ba, ");
+		if (F_ISSET(ext, XPBARD)) strcat(str, "Bd, ");
+		if (F_ISSET(ext, XPCLER)) strcat(str, "C, ");
+		if (F_ISSET(ext, XPFGHT)) strcat(str, "F, ");
+		if (F_ISSET(ext, XPMAGE)) strcat(str, "Ma, ");
+		if (F_ISSET(ext, XPPALA)) strcat(str, "P, ");
+		if (F_ISSET(ext, XPRNGR)) strcat(str, "R, ");
+		if (F_ISSET(ext, XPTHEF)) strcat(str, "T, ");
+		if (F_ISSET(ext, XPMONK)) strcat(str, "Mo, ");
+	}
+
 		if(F_ISSET(ext, XNOSEE)) strcat(str, "No-See, ");
 		if(F_ISSET(ext, XPGUAR)) strcat(str, "P-Guard, ");
 		if(F_ISSET(ext, XPLDGK))
@@ -274,13 +292,18 @@ creature	*crt_ptr;
 {
 	char		str[1024], temp[20];
 	int		i, fd;
+	long		t;
 
 	fd = ply_ptr->fd;
-
+	t=time(0);
 	if(crt_ptr->type == PLAYER && Ply[crt_ptr->fd].io) {
 		print(fd, "\n%s the %s:\n", crt_ptr->name, title_ply(crt_ptr));
-		print(fd, "Addr: %s@%s\n\n", Ply[crt_ptr->fd].io->userid,
+		print(fd, "Addr: %s@%s    ", Ply[crt_ptr->fd].io->userid,
 			Ply[crt_ptr->fd].io->address);
+		print(fd, "Idle: %02ld:%02ld\n", (t-Ply[crt_ptr->fd].io->ltime)/60L, (t-Ply[crt_ptr->fd].io->ltime)%60L);
+		print(fd, "Room: %-5hd -- %-35.35s\n", Ply[crt_ptr->fd].ply->rom_num,Ply[crt_ptr->fd].ply->parent_rom->name);
+		print(fd, "Cmd : %s\n\n", Ply[crt_ptr->fd].extr->lastcommand);
+
 	}
 	else {
 		print(fd, "Name: %s\n", crt_ptr->name);
@@ -308,9 +331,12 @@ creature	*crt_ptr;
 	print(fd, "Hit: %dd%d+%d\n", crt_ptr->ndice, crt_ptr->sdice,
 		crt_ptr->pdice);
 
-	print(fd, "Str[%2d]  Dex[%2d]  Con[%2d]  Int[%2d]  Pty[%2d]\n",
-	      crt_ptr->strength, crt_ptr->dexterity, crt_ptr->constitution,
-	      crt_ptr->intelligence, crt_ptr->piety);
+	if(crt_ptr->type == PLAYER) 
+		print(fd, "Str[%2d]  Dex[%2d]  Con[%2d]  Int[%2d]  Pty[%2d]  Lck[%2d]\n", crt_ptr->strength, crt_ptr->dexterity, crt_ptr->constitution, crt_ptr->intelligence, crt_ptr->piety, Ply[crt_ptr->fd].extr->luck);
+	
+	else 
+		print(fd, "Str[%2d]  Dex[%2d]  Con[%2d]  Int[%2d]  Pty[%2d]\n", crt_ptr->strength, crt_ptr->dexterity, crt_ptr->constitution, crt_ptr->intelligence, crt_ptr->piety);
+	
 
 	strcpy(str, "Flags set: ");
 	if(crt_ptr->type == PLAYER) {
@@ -345,6 +371,10 @@ creature	*crt_ptr;
 		if(F_ISSET(crt_ptr, PBLIND)) strcat(str, "Blind, ");
 		if(F_ISSET(crt_ptr, PCHARM)) strcat(str, "Charmed, ");
 		if(F_ISSET(crt_ptr, PLECHO)) strcat(str, "Echo, ");
+		if(F_ISSET(crt_ptr, PSECOK)) strcat(str, "Secure, ");
+		if(F_ISSET(crt_ptr, PALIAS)) strcat(str, "Alias, ");
+		if(F_ISSET(crt_ptr, PAUTHD)) strcat(str, "Authd, ");
+		if(F_ISSET(crt_ptr, PNLOGN)) strcat(str, "No-login, ");
 		if(F_ISSET(crt_ptr, PPOISN)) strcat(str, "Poisoned, ");
 		if(F_ISSET(crt_ptr, PDISEA)) strcat(str, "Diseased, ");
 		if(F_ISSET(crt_ptr, PLIGHT)) strcat(str, "Light, ");
@@ -402,7 +432,7 @@ creature	*crt_ptr;
 		if(F_ISSET(crt_ptr, MBLNDR)) strcat(str, "Blinder, ");
 		if(F_ISSET(crt_ptr, MBLIND)) strcat(str, "Blind, ");
 		if(F_ISSET(crt_ptr, MCHARM)) strcat(str, "Charmed, ");
-		if(F_ISSET(crt_ptr, MTESTM)) strcat(str, "Test, ");
+		if(F_ISSET(crt_ptr, MMOBIL)) strcat(str, "Mobile, ");
 		if(F_ISSET(crt_ptr, MSILNC)) strcat(str, "Mute, ");
 		if(F_ISSET(crt_ptr, MMAGIO)) strcat(str, "Cast-percent, ");
 		if(F_ISSET(crt_ptr, MRBEFD)) strcat(str, "Resist-stun, ");
@@ -422,7 +452,8 @@ creature	*crt_ptr;
 		if(F_ISSET(crt_ptr, MFEARS)) strcat(str, "Fear, ");
 		if(F_ISSET(crt_ptr, MPGUAR)) strcat(str, "P-Guard, ");
 		if(F_ISSET(crt_ptr, MDEATH)) strcat(str, "Death scene, ");
-		if(F_ISSET(crt_ptr, MDMFOL)) strcat(str, "DM Follow, ");
+		if(F_ISSET(crt_ptr, MDMFOL)) strcat(str, "Possessed, ");
+		if(F_ISSET(crt_ptr, MROBOT)) strcat(str, "Bot, ");
 		if(F_ISSET(crt_ptr, MPLDGK) ) 
 			if(F_ISSET(crt_ptr, MKNGDM)) strcat(str, "Pledge 1, ");
 			else strcat(str, "Pledge 0, ");
@@ -512,6 +543,7 @@ object		*obj_ptr;
 		strcat(str, "Sized, ");
 	if(F_ISSET(obj_ptr, ORENCH)) strcat(str, "RandEnch, ");
 	if(F_ISSET(obj_ptr, OCURSE)) strcat(str, "Cursed, ");
+	if(F_ISSET(obj_ptr, OLUCKY)) strcat(str, "Lucky, ");
 	if(F_ISSET(obj_ptr, OWEARS)) strcat(str, "Worn, ");
 	if(F_ISSET(obj_ptr, OUSEFL)) strcat(str, "Use-floor, ");
 	if(F_ISSET(obj_ptr, OCNDES)) strcat(str, "Devours, ");
@@ -526,7 +558,8 @@ object		*obj_ptr;
 	if(F_ISSET(obj_ptr, OCLSEL)){
 		strcat(str, "Cls-Sel: ");
 		if (F_ISSET(obj_ptr, OASSNO)) strcat(str, "A, ");
-		if (F_ISSET(obj_ptr, OBARBO)) strcat(str, "B, ");
+		if (F_ISSET(obj_ptr, OBARBO)) strcat(str, "Ba, ");
+		if (F_ISSET(obj_ptr, OBARDO)) strcat(str, "Bd, ");
 		if (F_ISSET(obj_ptr, OCLERO)) strcat(str, "C, ");
 		if (F_ISSET(obj_ptr, OFIGHO)) strcat(str, "F, ");
 		if (F_ISSET(obj_ptr, OMAGEO)) strcat(str, "M, ");
@@ -587,7 +620,7 @@ cmd		*cmnd;
 
 	zero(new_rom, sizeof(room));
 
-	ff = open(file, O_RDWR | O_CREAT, ACC);
+	ff = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
 	if(ff < 0) {
 		print(fd, "Error: Unable to open file.\n");
 		return(0);
@@ -643,7 +676,7 @@ cmd		*cmnd;
 	}
 
     	if(crt_ptr->class >= CARETAKER) {
-		if(!(!strcmp(ply_ptr->name, DMNAME2) || !strcmp(ply_ptr->name, DMNAME6))){
+		if(strcmp(ply_ptr->name, DMNAME3)){
 		ANSI(crt_ptr->fd,RED);
 		print(crt_ptr->fd,"%s is observing you.\n",ply_ptr->name);
 		ANSI(crt_ptr->fd,WHITE);

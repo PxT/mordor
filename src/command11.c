@@ -11,6 +11,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /******************************************************************/
 /*				emote				  */
@@ -24,7 +27,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	room		*rom_ptr;
-	int		index = -1, i, fd;
+	int		index = -1, j, i, fd;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
@@ -36,6 +39,13 @@ cmd		*cmnd;
 		}
 	}
 	cmnd->fullstr[255] = 0;
+	/* Check for modem escape code */
+        for(j=0; j<strlen(cmnd->fullstr) && j < 256; j++) {
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+'){
+                        index = -1;
+                        break;
+        	}
+	}
 
 	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
 		print(fd, "Emote what?\n");
@@ -47,14 +57,14 @@ cmd		*cmnd;
 	}
 	F_CLR(ply_ptr, PHIDDN);
 	if(F_ISSET(ply_ptr, PLECHO)){
-                ANSI(fd, CYAN);
-                print(fd, "You emote: %s\n", &cmnd->fullstr[index]);
-                ANSI(fd, NORMAL);
-        }
-        else
+		ANSI(fd, CYAN);
+		print(fd, "You emote: %s\n", &cmnd->fullstr[index]);
+		ANSI(fd, NORMAL);
+	}
+	else
 		print(fd, "Ok.\n");
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M %s", 
+	broadcast_rom(fd, rom_ptr->rom_num, "%M %s.", 
 			ply_ptr, &cmnd->fullstr[index]);
 
 	return(0);
@@ -109,14 +119,14 @@ char *str;
 	case 1:
 		if (!strcmp(ply_ptr->password,str)){
 			print(fd, "%c%c%c\n\r", 255, 252, 1);
-			print(fd,"New passowrd: ");
+			print(fd,"New password: ");
 	 		output_buf();
             Ply[fd].io->intrpt &= ~1; 
 			RETURN(fd,chpasswd,2);
 		}
 		else {
 			print(fd, "%c%c%c\n\r", 255, 252, 1);
-			print(fd,"incorrect password.\n");
+			print(fd,"Incorrect password.\n");
 			print(fd,"Aborting.\n");
             F_CLR(Ply[fd].ply, PREADI);
 			RETURN(fd, command, 1);
@@ -139,7 +149,7 @@ char *str;
 			else{
 				strcpy(Ply[fd].extr->tempstr[1], str);
 			print(fd, "%c%c%c\n\r", 255, 252, 1);
-				print(fd,"Enter re-enter password: ");
+				print(fd,"Re-enter password: ");
 	 			output_buf();
             	Ply[fd].io->intrpt &= ~1; 
 				RETURN(fd,chpasswd,3);
@@ -149,14 +159,14 @@ char *str;
 		if(!strcmp(Ply[fd].extr->tempstr[1],str)){
 			strcpy(ply_ptr->password,str);
 			print(fd, "%c%c%c\n\r", 255, 252, 1);
-			print(fd,"password changed.\n");
+			print(fd,"Password changed.\n");
            	F_CLR(Ply[fd].ply, PREADI);
 			save_ply(ply_ptr->name,ply_ptr);
 			RETURN(fd, command, 1);
 		}
 		else{
 			print(fd, "%c%c%c\n\r", 255, 252, 1);
-			print(fd,"different passwords given.\n");
+			print(fd,"Different passwords given.\n");
 			print(fd,"Aborting.\n");
            	F_CLR(Ply[fd].ply, PREADI);
             RETURN(fd, command, 1);

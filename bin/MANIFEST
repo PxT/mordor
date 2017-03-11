@@ -1,24 +1,24 @@
 
 The following is the directory structure and files that you should 
-have to run Mordor.
+have to run Mordor (NOTE:  Win95/NT users need to use the 
+/home/mordor/Isengard path instead).
 
 /home/mordor/bin:
-	frp -- the driver
-	fing -- DM finger command forks to this
+	frp -- the driver for Linux
 	auth -- authorizes the port for frp connections
 	editor -- the database offline editor
-	list -- lists the database given parameters
-	muddle -- a client written by Brett for use with muds
+	MORDOR.ZIP -- the driver for Win95/NT.
 
 /home/mordor/rooms:
-	You should have about 220 or so.  Feel free to erase ours and
-begin your own world. If you wish you can just add to the city of Celduin
-as well.  Note:  You MUST have rooms 50 & 1 (limbo and the tree of life), 
-though you can change their properties.
+	Feel free to erase ours and begin your own world. If you wish you
+can just add to the city of Ocenacrest as well.  Note:  You MUST have rooms
+50 & 1 (limbo and the tree of life), though you can change their
+properties. 
 
 /home/mordor/objmon:
 	All the objects and monsters information.  Talk contains the 
-scripts for the interactive talking monsters.
+scripts for the interactive talking monsters, as well as the Logic Action 
+Monsters.
 
 /home/mordor/post:
 	The game mail is held here.
@@ -38,13 +38,10 @@ for use by the auth program.
 /home/mordor/player:
 	The player files are all kept here.
 
-/home/mordor/muddle:
-	This is the source code for the client; muddle.
-
 /home/mordor/src:
 	This is the source code for frp (the driver).
 
 /home/mordor/util:
-	This is source code for several useful utility programs.  Documentation is not 
-included and you are on your own.  You will need the editor at least.
+	This is source code for several useful utility programs.  You will
+need the editor at least. 
 

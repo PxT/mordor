@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*				yell				      */
 /**********************************************************************/
@@ -25,7 +27,7 @@ cmd		*cmnd;
 	room		*rom_ptr;
 	xtag		*xp;
 	char		str[300];
-	int		index = -1, i, fd;
+	int		index = -1, i, j, fd;
 	int		len;
 
 	fd = ply_ptr->fd;
@@ -38,6 +40,13 @@ cmd		*cmnd;
 		}
 	}
 	str[256]=0;
+	/* Check for modem escape code */
+        for(j=0; j<len && j < 256; j++) {
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+                        index = -1;
+                        break;
+                }
+        }
 
 	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
 		print(fd, "Yell what?\n");
@@ -82,7 +91,7 @@ cmd		*cmnd;
 	ctag		*cp, *temp;
 	exit_		*ext_ptr;
 	long		i, t;
-	int		fd, old_rom_num, fall, dmg, n;
+	int		fd, old_rom_num, fall, dmg, n, s, p;
 
 	rom_ptr = ply_ptr->parent_rom;
 	fd = ply_ptr->fd;
@@ -113,7 +122,10 @@ cmd		*cmnd;
 		print(fd, "You must fly to get there.\n");
 		return(0);
 	}
-
+	if((F_ISSET(ext_ptr, XPLSEL) && !F_ISSET(ext_ptr, XPLSEL+ply_ptr->class) && ply_ptr->class < CARETAKER)) {
+		print(fd, "Your class prevents you from going there.\n");
+		return(0);
+	}
         t = Time%24L;
 	if(F_ISSET(ext_ptr, XNGHTO) && (t>6 && t < 20)) {
        		print(fd, "That exit is not open during the day.\n");
@@ -198,10 +210,12 @@ if(F_ISSET(ext_ptr, XPLDGK))
 	}
 
 	i = LT(ply_ptr, LT_ATTCK);
+	s = LT(ply_ptr, LT_SPELL);
 	t = time(0);
 
-	if(t < i) {
-		please_wait(fd, i-t);
+	if(t < i || t < s) {
+		p = MAX(i, s);
+		please_wait(fd, p-t);
 		return(0);
 	}
 
@@ -260,6 +274,11 @@ if(F_ISSET(ext_ptr, XPLDGK))
 		broadcast_rom(fd, old_rom_ptr->rom_num, "%M went %s.", 
 			      ply_ptr, ext_ptr->name);
 	}
+	if(F_ISSET(ply_ptr, PALIAS)) {
+                del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+                broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered to the %s.", Ply[ply_ptr->fd].extr->alias_crt, ext_ptr->name);
+                add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
+	}
 
 	del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 	add_ply_rom(ply_ptr, rom_ptr);
@@ -268,13 +287,8 @@ if(F_ISSET(ext_ptr, XPLDGK))
 	while(cp) {
 		if(cp->crt->rom_num == old_rom_num && cp->crt->type != MONSTER)
 			go(cp->crt, cmnd);
-		if(F_ISSET(cp->crt, MDMFOL) && cp->crt->type == MONSTER) {
-                del_crt_rom(cp->crt, old_rom_ptr);
-                broadcast_rom(fd, old_rom_ptr->rom_num, "%M just wandered to the %s.\n", cp->crt,ext_ptr->name);
-                add_crt_rom(cp->crt, rom_ptr, 1);
-                add_active(cp->crt);
-                }
 		cp = cp->next_tag;
+	
 	}
 
 	if(is_rom_loaded(old_rom_num)) {
@@ -304,7 +318,7 @@ if(F_ISSET(ext_ptr, XPLDGK))
 			crt_ptr = cp->crt;
 			del_crt_rom(crt_ptr, old_rom_ptr);
 			add_crt_rom(crt_ptr, rom_ptr, 1);
-			add_active(crt_ptr);
+			add_active(crt_ptr); 
 			F_CLR(crt_ptr, MPERMT);
 			cp = temp;
 		}
@@ -609,8 +623,8 @@ cmd		*cmnd;
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 
-	if(ply_ptr->class != THIEF && ply_ptr->class < CARETAKER) {
-		print(fd, "Only thieves may pick locks.\n");
+	if(ply_ptr->class != THIEF && ply_ptr->class != MONK && ply_ptr->class < CARETAKER) {
+		print(fd, "Only thieves and monks may pick locks.\n");
 		return(0);
 	}
 
@@ -755,7 +769,7 @@ cmd		*cmnd;
 		}
 	}
 	else {
-		if(F_ISSET(rom_ptr, RNOKIL)) {
+		if(F_ISSET(rom_ptr, RNOKIL) && ply_ptr->class < DM) {
 			print(fd, "No stealing allowed in this room.\n");
 			return(0);
 		}
@@ -763,11 +777,11 @@ cmd		*cmnd;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS)) {
+                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, you're lawful.\n");
                     return (0);
                 }
-                if(!F_ISSET(crt_ptr, PCHAOS)) {
+                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
                 }     

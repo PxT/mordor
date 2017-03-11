@@ -6,18 +6,17 @@
  *	Copyright (C) 1992, 1993 Brett J. Vickers
  *
  */
-
+#ifdef IRIX
+	#define _BSD_COMPAT
+#endif 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/time.h>
-#include <sys/signal.h>
-#include <ctype.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
-#include <stdio.h> 
+#include <stdio.h>
 
 #define write_fd(a,b)	write(a, b, strlen(b));
 

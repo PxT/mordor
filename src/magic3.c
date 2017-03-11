@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*				bless				      */
 /**********************************************************************/
@@ -40,7 +42,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+	if(ply_ptr->class != CLERIC && ply_ptr->class != PALADIN && spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 10;
                 return(0);
@@ -276,7 +278,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(spell_fail(ply_ptr)) {
+        if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 15;
                 return(0);
@@ -475,6 +477,7 @@ int		how;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
+	luck(ply_ptr); /* luck for stun */
 
 	if(ply_ptr->mpcur < 10 && how == CAST) {
 		print(fd, "Not enough magic points.\n");
@@ -492,7 +495,7 @@ int		how;
 		broadcast_rom(fd, ply_ptr->rom_num, "%M fades into view.",
 			      ply_ptr);
 	}
-	if(spell_fail(ply_ptr)) {
+        if(spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 10;
                 return(0);
@@ -500,13 +503,15 @@ int		how;
 
 	/* Befuddle self */
 	if(cmnd->num == 2) {
-
+		
 		if(how == CAST) {
 			dur = bonus[ply_ptr->intelligence]*2 + 
-			      dice(2,6,0) + (ply_ptr->class == MAGE ?
-			      ply_ptr->level/2 : 0);
+			      (Ply[fd].extr->luck/10) + (ply_ptr->class == MAGE ?
+			      ply_ptr->level/3 : 0);
 			ply_ptr->mpcur -= 10;
 		}
+		
+		
 		else
 			dur = dice(2,6,0);
 
@@ -555,7 +560,17 @@ int		how;
 				F_ISSET(crt_ptr, MMALES) ? "him":"her");
 			return(0);
 		}
-
+		if(crt_ptr->type == PLAYER && ply_ptr->type == PLAYER) {
+                   if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
+                     print(fd, "Sorry, you're lawful.\n");
+                     return(0);
+                   }
+                   if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
+                     print(fd, "Sorry, that player is lawful.\n");
+                     return(0);
+                   }
+                }
+		
 		if(how == CAST) {
 			dur = bonus[ply_ptr->intelligence]*2 + dice(2,6,0);
 			ply_ptr->mpcur -= 10;

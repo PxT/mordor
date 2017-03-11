@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				dm_teleport			      */
@@ -35,16 +38,23 @@ cmd		*cmnd;
 			print(ply_ptr->fd, "Error (%d)\n", cmnd->val[0]);
 			return(0);
 		}
+/* OLD DM-FOLLOW CODE */
+/*
 	cp = ply_ptr->first_fol;
         while(cp) {
                 if(F_ISSET(cp->crt, MDMFOL) && cp->crt->parent_rom == ply_ptr->parent_rom) {
                 del_crt_rom(cp->crt, ply_ptr->parent_rom);
 		broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.\n", cp->crt);
                 add_crt_rom(cp->crt, rom_ptr, 1);
-                add_active(cp->crt);
+                add_active(cp->crt); 
                 }
                 cp = cp->next_tag;
-        }
+        }*/
+	    if(F_ISSET(ply_ptr, PALIAS)) {
+		del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+		broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);
+		add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
+	    }
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 		add_ply_rom(ply_ptr, rom_ptr);
 	}
@@ -57,16 +67,23 @@ cmd		*cmnd;
 			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
 			return(0);
 		}
+/* OLD DM-FOLLOW CODE */
+/*
 	cp = ply_ptr->first_fol;
         while(cp) {
                 if(F_ISSET(cp->crt, MDMFOL) && cp->crt->parent_rom == ply_ptr->parent_rom) {
                 del_crt_rom(cp->crt, ply_ptr->parent_rom);
 		broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.\n", cp->crt);
 	        add_crt_rom(cp->crt, crt_ptr->parent_rom, 1);
-                add_active(cp->crt);
                 }
                 cp = cp->next_tag;
-        }
+        } */
+	    if(F_ISSET(ply_ptr, PALIAS)) {
+                del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+                broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);                
+		add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, crt_ptr->parent_rom, 1);
+            }
+
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 		add_ply_rom(ply_ptr, crt_ptr->parent_rom);
 	}
@@ -127,7 +144,7 @@ cmd		*cmnd;
 	}
 
 	print(fd, "Ok.\n");
-	broadcast_wiz(">>> %s sent, \"%s\".", ply_ptr->name, 
+	broadcast_wiz("+++ %s sent, \"%s\".", ply_ptr->name, 
 		      &cmnd->fullstr[i+1]);
 
 	return(0);
@@ -145,7 +162,7 @@ int dm_purge(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
-	ctag	*cp, *cp2, *ctemp;
+	ctag	*cp, *fol, *ctemp, *folprev;
 	otag	*op, *otemp;
 	room	*rom_ptr;
 	int	fd;
@@ -160,12 +177,26 @@ cmd		*cmnd;
 	rom_ptr->first_mon = 0;
 	while(cp) {
 		ctemp = cp->next_tag;
-		if(F_ISSET (cp->crt, MDMFOL)) {
-                	print (cp->crt->following->fd, "%M stops following you.\n", cp->crt);
-                	cp2 = cp->crt->following->first_fol;
-                	if(cp2->crt == cp->crt) 
-                        cp->crt->following->first_fol = cp->next_tag;
-			
+		if(F_ISSET (cp->crt, MDMFOL)) { /* clear relevant follow lists */
+                	F_CLR(cp->crt->following, PALIAS);
+			Ply[cp->crt->following->fd].extr->alias_crt = 0;
+                	print (cp->crt->following->fd, "%1M's soul was purged.\n", cp->crt);
+			fol = cp->crt->following->first_fol;
+                	if(fol->crt == cp->crt) { 
+                        	cp->crt->following->first_fol = fol->next_tag;
+				free(fol); 
+			}
+			else {
+			  while(fol) {	
+				if(fol->crt == cp->crt) {
+					folprev == fol->next_tag;
+        				free(fol);
+					break;
+				}
+				folprev = fol;
+				fol = fol->next_tag;
+			  }
+			}
 		}
 			free_crt(cp->crt);
 			free(cp);
@@ -215,7 +246,6 @@ cmd		*cmnd;
 	t = time(0);
 	fd = ply_ptr->fd;
 	ANSI(fd, BLUE);
-	ANSI(fd, BOLD);
 	if(fulluser){
 		print(fd, "%-9s %-10s %-52s", "Lev  Clas", " Player", " Email address");
 	}
@@ -231,7 +261,12 @@ cmd		*cmnd;
 		   F_ISSET(Ply[i].ply, PDMINV)) continue;
 		print(fd, "[%2d] ", Ply[i].ply->level);
 		print(fd, "%-4.4s ", class_str[Ply[i].ply->class]);
-		ANSI(fd, YELLOW);
+		if(!F_ISSET(Ply[i].ply, PSECOK)){
+			 ANSI(fd, RED);
+		}
+		else {
+			 ANSI(fd, YELLOW);
+		}
 		print(fd, "%s%-10.10s ", 
 		      (F_ISSET(Ply[i].ply, PDMINV) || 
 		      F_ISSET(Ply[i].ply, PINVIS)) ? "*":" ",
@@ -240,6 +275,8 @@ cmd		*cmnd;
 		if(fulluser) {
 			sprintf(idstr, "%s@%s", Ply[i].io->userid,
 				Ply[i].io->address);
+			if(!strcmp(Ply[i].io->userid, "no_port") || !strcmp(Ply[i].io->userid, "unknown"))
+				ANSI(fd, MAGENTA);
 			print(fd, "%-51.51s ", idstr);
 		}
 		else {
@@ -280,7 +317,7 @@ cmd		*cmnd;
 	room		*rom_ptr;
 	int		index = -1, i, fd;
 
-	if(ply_ptr->class < DM)
+	if(ply_ptr->class < CARETAKER)
 		return(PROMPT);
 
 	fd = ply_ptr->fd;
@@ -513,7 +550,7 @@ cmd		*cmnd;
 		return(0);
 	}
 	t = time(0);
-        for(l=0; l<total; l++) {
+        for(l=0; l<total;) {
             crt_ptr->lasttime[LT_ATTCK].ltime = 
             crt_ptr->lasttime[LT_MSCAV].ltime =
             crt_ptr->lasttime[LT_MWAND].ltime = t;
@@ -553,6 +590,7 @@ cmd		*cmnd;
                 add_crt_rom(crt_ptr, rom_ptr, 0);
 
             add_active(crt_ptr);
+	l++;
 	if(l < total)
 		load_crt(num, &crt_ptr);
         }

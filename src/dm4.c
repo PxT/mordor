@@ -11,6 +11,9 @@
 #include "mextern.h"
 
 #include <ctype.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /************************************************************************/
 /*              dm_param                */
@@ -24,7 +27,7 @@ cmd     *cmnd;
     extern short   Random_update_interval;
     extern long   TX_interval; 
     extern long   last_exit_update;
-    long           t;
+    long           t, days, hours, minutes;
 
     fd = ply_ptr->fd;
 
@@ -38,14 +41,27 @@ cmd     *cmnd;
 
         t = time(0);
 
-
     switch(low(cmnd->str[1][0])) {
     case 'r': Random_update_interval = cmnd->val[1]; return(PROMPT);
     case 'd': 
-        print(fd,"Random Update: %d\n",Random_update_interval);
+        print(fd,"\nRandom Update: %d\n",Random_update_interval);
+#ifdef AUTOSHUTDOWN
         print(fd,"Time to next shutdown: %ld\n", (Shutdown.ltime +
             Shutdown.interval) -t);
-        print(fd,"Ship sailing interval %ld\n",TX_interval);
+#else
+	days = (t-StartTime)/86400L;
+	hours =(t-StartTime)/3600L;
+	hours %= 24;
+	minutes = (t-StartTime)/60L;
+	minutes %= 60;
+	if(!days)
+		print(fd,"Uptime: %02ld:%02ld:%02ld\n", hours, minutes, (t-StartTime)%60L); 
+	else if (days==1)
+		print(fd,"Uptime: %ld day %02ld:%02ld:%02ld\n", days, hours, minutes, (t-StartTime)%60L); 
+	else
+		print(fd,"Uptime: %ld days %02ld:%02ld:%02ld\n", days, hours, minutes, (t-StartTime)%60L); 
+#endif /* AUTOSHUTDOWN */
+        print(fd,"Ship sailing interval: %ld\n",TX_interval);
         print(fd,"Time to Sail: %ld\n", (last_exit_update + TX_interval)-t);
         return (PROMPT);
     case 's':
@@ -175,7 +191,7 @@ cmd         *cmnd;
 	char	match=0,rcast = 0, *sp;
     int     splno =0,c = 0, fd, i;
 	ctag	*cp;
-static	int	dm_gspells();
+static int	dm_gspells(); 
 
 	fd = ply_ptr->fd;
  

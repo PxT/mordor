@@ -11,6 +11,9 @@
 #include "mextern.h"
 #include <string.h>
 #include <ctype.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /************************************************************************/
 /*				write_obj_to_mem			*/
@@ -206,6 +209,8 @@ creature 	*crt_ptr;
 	crt_ptr->first_enm = 0;
 	crt_ptr->parent_rom = 0;
 	crt_ptr->following = 0;
+	crt_ptr->first_tlk = 0;
+
 	for(n=0; n<20; n++)
 		crt_ptr->ready[n] = 0;
 	if(crt_ptr->mpcur > crt_ptr->mpmax)

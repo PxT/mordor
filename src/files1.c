@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				count_obj			      */
@@ -656,7 +659,8 @@ room 	*rom_ptr;
 
 	if(cnt) {
 		ob = (char *)malloc(cnt);
-		if(lo) {
+/*		if(lo) { */
+		if(ob) {
 			n = read(fd, ob, cnt);
 			if(n < cnt)
 				error = 1;
@@ -746,6 +750,7 @@ creature	*crt_ptr;
 	}
 
 	tp = crt_ptr->first_tlk;
+	crt_ptr->first_tlk = 0;
 	while(tp) {
 		tempt = tp->next_tag;
 		if(tp->key) free(tp->key);
@@ -755,8 +760,9 @@ creature	*crt_ptr;
 		free(tp);
 		tp = tempt;
 	}
-
-	del_active(crt_ptr);
+	if (crt_ptr->type == MONSTER)
+		del_active(crt_ptr);
+	
 	free(crt_ptr);
 }
 
@@ -775,9 +781,16 @@ room	*rom_ptr;
 	otag	*op, *otemp;
 	ctag	*cp, *ctemp;
 
-	free(rom_ptr->short_desc);
-	free(rom_ptr->long_desc);
-	free(rom_ptr->obj_desc);
+#ifdef DMALLOC
+	dmalloc_verify (rom_ptr);
+#endif /* DMALLOC */
+	
+	if(rom_ptr->short_desc)
+		free(rom_ptr->short_desc);
+	if(rom_ptr->long_desc)
+		free(rom_ptr->long_desc);
+	if(rom_ptr->obj_desc)
+		free(rom_ptr->obj_desc);
 
 	xp = rom_ptr->first_ext;
 	while(xp) {

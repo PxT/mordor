@@ -9,8 +9,10 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-#include <sys/time.h>
 #include <string.h>
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				health				      */
@@ -128,6 +130,11 @@ cmd		*cmnd;
 		}
 		c++;
 	} while(cmdlist[c].cmdno);
+
+	if(num > 200 && ply_ptr->class < CARETAKER) {
+                print(fd, "Command not found.\n");
+                return(0);
+        }
 
 	if(match == 1) {
 		sprintf(file, "%s/help.%d", DOCPATH, cmdlist[num].cmdno);
@@ -348,19 +355,19 @@ char 	*instr;
 }
 
 /**********************************************************************/
-/*				send				      */
+/*				psend				      */
 /**********************************************************************/
 
 /* This function allows a player to send a message to another player.  If */
 /* the other player is logged in, the message is sent successfully.       */
 
-int send(ply_ptr, cmnd)
+int psend(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
 	creature	*crt_ptr = 0;
 	etag		*ign;
-	int		spaces=0, i, fd;
+	int		spaces=0, i, j, fd;
 	int 		len;
 
 	fd = ply_ptr->fd;
@@ -411,6 +418,13 @@ cmd		*cmnd;
 		if(spaces==2) break;
 	}
 	cmnd->fullstr[255] = 0;
+	/* Check for modem escape code */
+        for(j=0; j<len && j < 256; j++) {
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+                        spaces = 0;
+                        break;
+                }
+        }
 
 	if(spaces < 2 || strlen(&cmnd->fullstr[i+1]) < 1) {
 		print(fd, "Send what?\n");
@@ -430,6 +444,12 @@ cmd		*cmnd;
 	
 	print(crt_ptr->fd, "### %M just flashed, \"%s\".\n", ply_ptr,
 	      &cmnd->fullstr[i+1]);
+	
+	if(F_ISSET(ply_ptr, PDMINV) && crt_ptr->class < CARETAKER) {
+                print(fd, "They will be unable to reply.\n");
+          if(F_ISSET(ply_ptr, PALIAS)) 
+                print(fd, "Sent from: %s.\n", Ply[fd].extr->alias_crt);
+        }
 
 	if(ply_ptr->class > CARETAKER || crt_ptr->class > CARETAKER)
 		return(0);
@@ -454,7 +474,7 @@ int broadsend(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
-	int	i, found=0, fd;
+	int	i, j, found=0, fd;
 	int 	len;
 
 	fd = ply_ptr->fd;
@@ -466,11 +486,28 @@ cmd		*cmnd;
 	}
 	cmnd->fullstr[255] = 0;
 
+	/* Check for modem escape code */
+        for(j=0; j<len && j < 256; j++) {
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+                        found=0;
+                        break;
+		}
+        }
+
 	if(found < 1 || strlen(&cmnd->fullstr[i+1]) < 1) {
 		print(fd, "Send what?\n");
 		return(0);
 	}
-
+#ifdef SECURE
+	if((!strcmp(Ply[fd].io->userid, "no_port") || !strcmp(Ply[fd].io->userid, "unknown")) && !F_ISSET(ply_ptr, PAUTHD)){
+                print(fd, "You are not authorized to broadcast.\n");
+                return(0);
+        }
+#endif /* SECURE */
+        if(!F_ISSET(ply_ptr, PSECOK)) {
+                print(fd, "You may not do that yet.\n");
+                return(0);
+        }
 	if(!dec_daily(&ply_ptr->daily[DL_BROAD])) {
 		print(fd,"You've used up all your broadcasts today.\n");
 		return(0);

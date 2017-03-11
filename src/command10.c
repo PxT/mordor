@@ -8,6 +8,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*                           sneak                                   */
@@ -29,7 +32,7 @@ cmd     *cmnd;
     rom_ptr = ply_ptr->parent_rom;
     fd = ply_ptr->fd;
 
-    if(ply_ptr->class != ASSASSIN && ply_ptr->class != THIEF && ply_ptr->class < CARETAKER) {
+    if(ply_ptr->class != ASSASSIN && ply_ptr->class != THIEF && ply_ptr->class != MONK && ply_ptr->class < CARETAKER) {
                 print(fd, "Only thieves & assassins may sneak.\n");
                 return(0);
         }                  
@@ -65,6 +68,12 @@ cmd     *cmnd;
         print(fd, "You must fly to get there.\n");
         return(0);
     }
+	if(F_ISSET(ext_ptr, XPLSEL)) {
+		if(!F_ISSET(ext_ptr, XPLSEL + ply_ptr->class) && ply_ptr->class < CARETAKER) {
+			print(fd, "Your class prohibits you from entering there.\n");
+			return(0);
+		}
+	}
 
     if(F_ISSET(ext_ptr, XNAKED) && weight_ply(ply_ptr)) {
         print(fd, "You cannot bring anything through that exit.\n");
@@ -245,7 +254,7 @@ cmd     *cmnd;
 {
     creature *leader;
     ctag    *cp;
-    int     found=0, i, fd;
+    int     found=0, i, j, fd;
     int     len;
 
     fd = ply_ptr->fd;
@@ -272,7 +281,14 @@ if(ply_ptr->following)
         if(found==1) break;
     }
     cmnd->fullstr[255] = 0;
- 
+ 	/* Check for modem escape code */
+        for(j=0; j<len && j < 256; j++) {
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+                        found=0;
+                        break;
+                }
+        }
+
     if(found < 1 || strlen(&cmnd->fullstr[i+1]) < 1) {
         print(fd, "Group mention what?\n");
         return(0);
@@ -444,13 +460,20 @@ cmd             *cmnd;
                 return(0);
         }
 
+#ifdef ISENGARD
+	if(!F_ISSET(ply_ptr, PCHAOS) && !(ply_ptr->class == FIGHTER || ply_ptr->class == ASSASSIN || ply_ptr->class == THIEF || ply_ptr->class == PALADIN)) {
+		print(fd, "You cannot join %m's organization.\n",crt_ptr);
+            return(0);
+        }
+#endif /* ISENGARD */
+
         if (!F_ISSET(crt_ptr,MPLDGK))
         {
-            print(fd, "You can not join %m's organization.\n",crt_ptr);
+            print(fd, "You cannot join %m's organization.\n",crt_ptr);
             return(0);
         }
 
-         broadcast_rom(fd, ply_ptr->rom_num, "%M pledges %s allegiance to %m.\n", 
+         broadcast_rom(fd, ply_ptr->rom_num, "%M pledges %s allegiance to %m.", 
                         ply_ptr,F_ISSET(crt_ptr, PMALES) ? "his":"her", crt_ptr);      
         print(fd, "You kneel before %m as you join the organization.\n",crt_ptr);
   /*      print(fd, "%M draws %s sword and dubs you a member of %s organization.\n", */
@@ -536,7 +559,7 @@ cmd             *cmnd;
             return(0);
         }
 
-         broadcast_rom(fd, ply_ptr->rom_num, "%M rescinds %s allegiance to %m.\n", 
+         broadcast_rom(fd, ply_ptr->rom_num, "%M rescinds %s allegiance to %m.", 
                   ply_ptr,F_ISSET(crt_ptr, PMALES) ? "his":"her", crt_ptr);      
         print(fd, "%M scourns you as you are stripped of all your rights and privileges!\n", crt_ptr);
         print(fd, "\nThe room fills with boos and hisses as you are ostracized from %m's organization.\n", 

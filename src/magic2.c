@@ -9,7 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
-
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 /**********************************************************************/
 /*              vigor                     */
 /**********************************************************************/
@@ -40,15 +42,13 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-
-    if(ply_ptr->class == BARBARIAN || ply_ptr->class == FIGHTER) {
-        if(spell_fail(ply_ptr)){
-                if(how == CAST)
-                        ply_ptr->mpcur -= 2;
-                return(0);
-        }
+    if(ply_ptr->class == BARBARIAN) {
+    	if(spell_fail(ply_ptr, how)){
+        	if(how == CAST)
+                	ply_ptr->mpcur -= 2;
+        	return(0);
+    	}  
     }
-
     /* Vigor self */
     if(cmnd->num == 2) {
 
@@ -59,6 +59,8 @@ int     how;
               mrand(1,1+ply_ptr->level/2) : 0) + 
             ((ply_ptr->class == PALADIN) ? ply_ptr->level/3 +
               mrand(1,1+ply_ptr->level/4) : 0) +
+	    ((ply_ptr->class == BARD) ? ply_ptr->level/4 +
+              mrand(1,1+ply_ptr->level/5) : 0) +
             mrand(1,6);
             ply_ptr->mpcur -= 2;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
@@ -121,6 +123,8 @@ int     how;
               mrand(1,1+ply_ptr->level/2) : 0) + 
             ((ply_ptr->class == PALADIN) ? ply_ptr->level/3 +
               mrand(1,1+ply_ptr->level/4) : 0) +
+	    ((ply_ptr->class == MONK) ? ply_ptr->level/3 +
+              mrand(1,1+ply_ptr->level/5) : 0) +
             mrand(1,6);
             ply_ptr->mpcur -= 2;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
@@ -182,7 +186,7 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-    if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how)) {
        if(how==CAST)
                  ply_ptr->mpcur -= 6;
         return(0);
@@ -278,12 +282,6 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-    if(spell_fail(ply_ptr)) {
-        if(how==CAST)
-                ply_ptr->mpcur -= 5;
-        return(0);
-    }
-
     if(how == CAST){
     	if (F_ISSET(ply_ptr->parent_rom,RPMEXT))
 	print(fd,"The room's magical properties increase the power of your spell.\n");
@@ -333,8 +331,7 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-
-    if(spell_fail(ply_ptr)) {
+    if(spell_fail(ply_ptr, how) && ply_ptr->class != CLERIC && ply_ptr->class != PALADIN && how != POTION) {
         if(how==CAST)
               ply_ptr->mpcur -= 10;
         return(0);
@@ -459,14 +456,13 @@ int     how;
         print(fd, "You don't know that spell.\n");
         return(0);
     }
-    if(ply_ptr->class == BARBARIAN || ply_ptr->class == FIGHTER || ply_ptr->class == ASSASSIN) {
-            if(spell_fail(ply_ptr)) {
-                if(how==CAST)
-                        ply_ptr->mpcur -= 4;
-                return(0);
-            }
+    if(ply_ptr->class == BARBARIAN || ply_ptr->class == FIGHTER || ply_ptr->class == MONK) {
+	    if(spell_fail(ply_ptr, how)) {
+	        if(how==CAST)
+        	        ply_ptr->mpcur -= 4;
+        	return(0);
+    	    }
     }
-
     /* Mend self */
     if(cmnd->num == 2) {
 
@@ -477,6 +473,9 @@ int     how;
               mrand(1, 1+ply_ptr->level/2) : 0) + 
             ((ply_ptr->class == PALADIN) ? ply_ptr->level/2 +
               mrand(1, 1+ply_ptr->level/3) : 0) +
+	    ((ply_ptr->class == BARD) ? ply_ptr->level/4 +
+              mrand(1, 1+ply_ptr->level/5) : 0) +
+
             dice(2,6,0);
             ply_ptr->mpcur -= 4;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){

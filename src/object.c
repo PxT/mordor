@@ -9,6 +9,9 @@
 
 #include "mstruct.h"
 #include "mextern.h"
+#ifdef DMALLOC
+  #include "/usr/local/include/dmalloc.h"
+#endif
 
 /**********************************************************************/
 /*				add_obj_obj			      */
@@ -116,6 +119,8 @@ int		val;
 	otag	*op;
 	int	match=0, found=0;
 
+	if(!first_ot)
+		return(0);
 	op = first_ot;
 	while(op) {
 		if(EQUAL(op->obj, str) &&
@@ -162,7 +167,7 @@ otag		*first_otag;
 
 	str[0] = 0;
 	op = first_otag;
-	while(op && strlen(str) < 1970) {
+	while(op && strlen(str) < 2048) {
 		if((F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->obj, OINVIS)) &&
 		   !F_ISSET(op->obj, OHIDDN) && !F_ISSET(op->obj, OSCENE)) {
 			m=1;

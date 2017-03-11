@@ -1,0 +1,17 @@
+
+frp -- This is the game itself.  The version given has been compiled under
+Linux 1.3.32.  If you have another OS, you will need to compile it
+yourself.  Look in the src/ directory for more information.  
+	You can call frp from a shell program if you like, or just from
+the command line.  It accepts flags, with the two most important being the
+port and the reuse command.  To run the game on a port other than the
+default (4040) you can start it with: frp <port#>.
+	If you are having trouble with it running try: 
+
+			frp -r &  
+
+	This will tell it to reuse the ports (we saw ocassional problems
+with this under Linux 1.1.59). 
+	Another common problem is that this distribution is installed in 
+the improper place.  It *MUST* be installed in the paths defined in mtype.h	
+(default is /home/mordor).
