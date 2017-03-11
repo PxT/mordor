@@ -1,0 +1,22 @@
+
+	These are guidelines for the creation of custom equipment.
+You should also read the Book of Custom equipment.
+
+	Generic versions of most items can be purchased from this room. 
+You can then use the [*oname] and [*set o] commands to customize them
+easily for each person. 
+
+--- General Guidelines ---
+
+1. The maximum damage a custom weapon should do is 3d4+4.
+2. The maximum number of shots any item should be given is 150.
+3. The maximum armor an item of armor should have is 10.
+4. The maximum number of shots a magic item should be given is 5.
+
+	These guidelines are to insure a balanced scenario, and to insure
+that the weapons monsters carry will still be in demand.  The cost for a
+custom item should be at least its initial value plus an amount that
+reflects the additions you make to it.  A general rule of thumb is to
+charge the base price +$25,000 gp per minute it takes you to modify the
+item.  Remember, you can never charge too much.
+

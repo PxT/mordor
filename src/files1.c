@@ -3,7 +3,7 @@
  *
  *	File I/O Routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -509,7 +509,9 @@ room 	*rom_ptr;
 	otag		*op;
 	otag		**oprev;
 	object 		*obj;
-	char		*sh, *lo, *ob;
+	char		*sh, *lo, *ob, errstr[20], errtmp[10];
+
+	sprintf(errstr,"read_rom");
 
 	n = read(fd, rom_ptr, sizeof(room));
 	if(n < sizeof(room))
@@ -546,11 +548,19 @@ room 	*rom_ptr;
 				*xprev = xp;
 				xprev = &xp->next_tag;
 			}
-			else
-				merror("read_rom", FATAL);
+			else {
+				sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+				strcat(errstr, errtmp);
+				strcat(errstr," in loading exits");
+				merror(errstr, FATAL);
 		}
-		else
-			merror("read_rom", FATAL);
+		}
+		else {
+			sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+			strcat(errstr, errtmp);
+			strcat(errstr," in loading exits");
+			merror(errstr, FATAL);
+		}
 	}
 
 	/* Read the monsters */
@@ -576,11 +586,19 @@ room 	*rom_ptr;
 				*cprev = cp;
 				cprev = &cp->next_tag;
 			}
-			else
-				merror("read_rom", FATAL);
+			else {
+				sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+				strcat(errstr, errtmp);
+				strcat(errstr," in loading monsters");
+				merror(errstr, FATAL);
 		}
-		else
-			merror("read_rom", FATAL);
+		}
+		else {
+			sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+			strcat(errstr, errtmp);
+			strcat(errstr," in loading monsters");
+			merror(errstr, FATAL);
+	}
 	}
 
 	/* Read the items */
@@ -606,11 +624,19 @@ room 	*rom_ptr;
 				*oprev = op;
 				oprev = &op->next_tag;
 			}
-			else
-				merror("read_rom", FATAL);
+			else {
+				sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+				strcat(errstr, errtmp);
+				strcat(errstr," in loading items");
+				merror(errstr, FATAL);
 		}
-		else
-			merror("read_rom", FATAL);
+		}
+		else {
+			sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+			strcat(errstr, errtmp);
+			strcat(errstr," in loading items");
+			merror(errstr, FATAL);
+			}
 	}
 
 	/* Read the descriptions */
@@ -629,8 +655,12 @@ room 	*rom_ptr;
 				error = 1;
 			rom_ptr->short_desc = sh;
 		}
-		else
-			merror("read_rom", FATAL);
+		else {
+			sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+			strcat(errstr, errtmp);
+			strcat(errstr," in loading descriptions");
+			merror(errstr, FATAL);
+		}
 	}
 
 	n = read(fd, &cnt, sizeof(int));
@@ -647,8 +677,12 @@ room 	*rom_ptr;
 				error = 1;
 			rom_ptr->long_desc = lo;
 		}
-		else
-			merror("read_rom", FATAL);
+		else {
+			sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+			strcat(errstr, errtmp);
+			strcat(errstr," in loading descriptions");
+			merror(errstr, FATAL);
+		}
 	}
 
 	n = read(fd, &cnt, sizeof(int));
@@ -666,8 +700,12 @@ room 	*rom_ptr;
 				error = 1;
 			rom_ptr->obj_desc = ob;
 		}
-		else
-			merror("read_rom", FATAL);
+		else {
+			sprintf(errtmp," in room %d.", rom_ptr->rom_num);
+			strcat(errstr, errtmp);
+			strcat(errstr," in loading at the bottom");
+			merror(errstr, FATAL);
+	}
 	}
 
 	if(error)

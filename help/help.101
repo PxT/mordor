@@ -1,11 +1,9 @@
-
-Help on command:
-
+Help on:
 	*TELEPORT <room # | player > [ player2 | . ]
+        *T <room # | player > [ player2 | . ]
 
-	This is the DM mode of transit.  You can teleport to anyone or 
-any room.  You can also use this to teleport players to you or to another 
-player.
+This is the DM mode of transit.  You can teleport to anyone or any room.
+You can also use this to teleport players to you or to another player.
 
 examples:
 :*teleport gonzo 

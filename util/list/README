@@ -1,0 +1,6 @@
+
+  list is used to list the contents of your Moror MUD database.  If placed
+in ../../bin/ is can be accessed from within the MUD with the *list 
+command.
+  Use from within the MUD is not supported yet for Win32.
+

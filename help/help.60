@@ -1,14 +1,8 @@
-
-Help on command:
-
-	ZAP
-
-Syntax:
-
+Help on:
 	ZAP <item> <monster>
 
-	With this command you can use a wand or magic item to attack a 
-monster or player.
+With this command you can use a wand or magic item to attack a monster
+or player.
 
 Example:
 :zap bronze

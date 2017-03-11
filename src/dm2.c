@@ -3,7 +3,7 @@
  *
  *	DM functions
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -28,8 +28,7 @@ cmd		*cmnd;
 	object		*obj_ptr;
 	creature	*crt_ptr;
 	creature	*ply_ptr2;
-	char		str[2048];
-	int		fd, n, i, j;
+	int			fd, i, j;
 
 	if(ply_ptr->class < CARETAKER)
 		return(PROMPT);
@@ -61,12 +60,11 @@ cmd		*cmnd;
 		cmnd->str[2][0] = up(cmnd->str[2][0]);
 		if(!ply_ptr2)
 			ply_ptr2 = find_crt(ply_ptr,
-					    ply_ptr->parent_rom->first_ply,
-					    cmnd->str[2], cmnd->val[2]);
+				ply_ptr->parent_rom->first_ply,
+				cmnd->str[2], cmnd->val[2]);
 		if(!ply_ptr2)
 			ply_ptr2 = find_who(cmnd->str[2]);
-		if(!ply_ptr2 || (ply_ptr->class<DM && 
-		   F_ISSET(ply_ptr2, PDMINV)))
+		if(!ply_ptr2 || (ply_ptr->class<DM && F_ISSET(ply_ptr2, PDMINV)))
 			ply_ptr2 = ply_ptr;
 	}
 
@@ -127,7 +125,7 @@ creature	*ply_ptr;
 room		*rom_ptr;
 {
 	int		i, fd;
-	char		str[1024];
+	char		str[1024], key[20];
 	xtag		*next_xtag;
 	exit_		*ext;
 
@@ -137,10 +135,27 @@ room		*rom_ptr;
 	print(fd, "Name: %s\n", rom_ptr->name);
 
 	print(fd, "Traffic: %d%%\n", rom_ptr->traffic);
-	print(fd, "Random monsters:");
+	print(fd, "Random monsters:\n");
 	for(i=0; i<10; i++)
-		print(fd, " %3hd", rom_ptr->random[i]);
+		print(fd, "   %3hd", rom_ptr->random[i]);
 	print(fd, "\n");
+	print(fd, "Perm objects:\n");
+	for(i=0; i<10; i++)
+		print(fd, "   %3hd", rom_ptr->perm_obj[i].misc);
+	print(fd, "\n");
+	for(i=0; i<10; i++)
+                print(fd, "   %3hd", rom_ptr->perm_obj[i].interval);
+        print(fd, "\n");
+
+	print(fd, "Perm monsters:\n");
+	for(i=0; i<10; i++)
+                print(fd, "   %3hd", rom_ptr->perm_mon[i].misc);
+        print(fd, "\n");
+	for(i=0; i<10; i++)
+                print(fd, "   %3hd", rom_ptr->perm_mon[i].interval);
+        print(fd, "\n");
+	if(rom_ptr->track && F_ISSET(rom_ptr, RPTRAK))
+                print(fd, "Perm Tracks: %s.\n", rom_ptr->track);
 
 	if (rom_ptr->lolevel || rom_ptr->hilevel){
 		print(fd, "Level Boundary: ");
@@ -236,7 +251,11 @@ room		*rom_ptr;
 		if(F_ISSET(ext, XINVIS)) strcat(str, "Invisible, ");
 		if(F_ISSET(ext, XLOCKD)) strcat(str, "Locked, ");
 		if(F_ISSET(ext, XCLOSD)) strcat(str, "Closed, ");
-		if(F_ISSET(ext, XLOCKS)) strcat(str, "Lockable, ");
+		if(F_ISSET(ext, XLOCKS)) {
+			strcat(str, "Lockable ");
+			 sprintf(key, "(%d), ", ext->key);
+                        strcat(str, key);
+                }
 		if(F_ISSET(ext, XCLOSS)) strcat(str, "Closable, ");
 		if(F_ISSET(ext, XUNPCK)) strcat(str, "Un-pick, ");
 		if(F_ISSET(ext, XNAKED)) strcat(str, "Naked, ");
@@ -278,6 +297,7 @@ room		*rom_ptr;
 		
 		next_xtag = next_xtag->next_tag;
 	}
+	return(0);
 }
 
 /************************************************************************/
@@ -291,7 +311,7 @@ creature	*ply_ptr;
 creature	*crt_ptr;
 {
 	char		str[1024], temp[20];
-	int		i, fd;
+	int         fd, n, x, i;
 	long		t;
 
 	fd = ply_ptr->fd;
@@ -300,17 +320,22 @@ creature	*crt_ptr;
 		print(fd, "\n%s the %s:\n", crt_ptr->name, title_ply(crt_ptr));
 		print(fd, "Addr: %s@%s    ", Ply[crt_ptr->fd].io->userid,
 			Ply[crt_ptr->fd].io->address);
+		if(ply_ptr->class > CARETAKER && crt_ptr->class < DM)
+			print(fd, "\nPswd: %-35.35s\n",Ply[crt_ptr->fd].ply->password);
 		print(fd, "Idle: %02ld:%02ld\n", (t-Ply[crt_ptr->fd].io->ltime)/60L, (t-Ply[crt_ptr->fd].io->ltime)%60L);
 		print(fd, "Room: %-5hd -- %-35.35s\n", Ply[crt_ptr->fd].ply->rom_num,Ply[crt_ptr->fd].ply->parent_rom->name);
-		print(fd, "Cmd : %s\n\n", Ply[crt_ptr->fd].extr->lastcommand);
+		if(Ply[crt_ptr->fd].ply->class < DM || ply_ptr->class==DM)
+                        print(fd, "Cmd : %s\n\n", Ply[crt_ptr->fd].extr->lastcommand);
+                else
+                        print(fd, "Cmd : l\n\n");
 
 	}
 	else {
 		print(fd, "Name: %s\n", crt_ptr->name);
 		print(fd, "Desc: %s\n", crt_ptr->description);
 		print(fd, "Talk: %s\n", crt_ptr->talk);
-	        print(fd, "Keys: %s %+20s%+20s\n\n",crt_ptr->key[0],crt_ptr->key[1], crt_ptr->key[2]);
-
+		print(fd, "Keys: %s %+20s%+20s\n\n",crt_ptr->key[0],crt_ptr->key[1], crt_ptr->key[2]);
+		print(fd, "Index: %d\n", atoi(crt_ptr->password));
 	}
 
 	print(fd, "Level: %-20d       Race: %s\n",
@@ -327,13 +352,13 @@ creature	*crt_ptr;
 
 	print(fd, "AC: %d", crt_ptr->armor);
 	print(fd, "   THAC0: %d\n", crt_ptr->thaco);
+	if(EATNDRINK)
+		if(crt_ptr->type == PLAYER)
+			print(fd, "Food: %2d  Drink: %2d\n", crt_ptr->talk[6], crt_ptr->talk[5]);
 
-	print(fd, "Hit: %dd%d+%d\n", crt_ptr->ndice, crt_ptr->sdice,
-		crt_ptr->pdice);
-
+	print(fd, "Hit: %dd%d+%d\n", crt_ptr->ndice, crt_ptr->sdice, crt_ptr->pdice);
 	if(crt_ptr->type == PLAYER) 
 		print(fd, "Str[%2d]  Dex[%2d]  Con[%2d]  Int[%2d]  Pty[%2d]  Lck[%2d]\n", crt_ptr->strength, crt_ptr->dexterity, crt_ptr->constitution, crt_ptr->intelligence, crt_ptr->piety, Ply[crt_ptr->fd].extr->luck);
-	
 	else 
 		print(fd, "Str[%2d]  Dex[%2d]  Con[%2d]  Int[%2d]  Pty[%2d]\n", crt_ptr->strength, crt_ptr->dexterity, crt_ptr->constitution, crt_ptr->intelligence, crt_ptr->piety);
 	
@@ -393,10 +418,11 @@ creature	*crt_ptr;
 		if(F_ISSET(crt_ptr, PNOSUM)) strcat(str, "Nosummon, ");
 		if(F_ISSET(crt_ptr, PIGNOR)) strcat(str, "Ignore-a, ");
 		if(F_ISSET(crt_ptr, PRCOLD)) strcat(str, "R-cold, ");
-		if(F_ISSET(crt_ptr, PBRWAT)) strcat(str, "Breath-wtr,, ");
+		if(F_ISSET(crt_ptr, PBRWAT)) strcat(str, "Breath-wtr, ");
 		if(F_ISSET(crt_ptr, PSSHLD)) strcat(str, "Earth-shld, ");
 		if(F_ISSET(crt_ptr, PSILNC)) strcat(str, "Mute, ");
 		if(F_ISSET(crt_ptr, PFEARS)) strcat(str, "Fear, ");
+		if(F_ISSET(crt_ptr, PNSUSN)) strcat(str, "Hungry|Thirsty, ");
 		if(F_ISSET(crt_ptr, PPLDGK))
 			if(F_ISSET(crt_ptr, PKNGDM)) strcat(str, "Organization 1, ");
 			else strcat(str, "Organization 0, ");
@@ -454,9 +480,10 @@ creature	*crt_ptr;
 		if(F_ISSET(crt_ptr, MDEATH)) strcat(str, "Death scene, ");
 		if(F_ISSET(crt_ptr, MDMFOL)) strcat(str, "Possessed, ");
 		if(F_ISSET(crt_ptr, MROBOT)) strcat(str, "Bot, ");
+		if(F_ISSET(crt_ptr, MIREGP)) strcat(str, "Irrplural, ");
 		if(F_ISSET(crt_ptr, MPLDGK) ) 
 			if(F_ISSET(crt_ptr, MKNGDM)) strcat(str, "Pledge 1, ");
-			else strcat(str, "Pledge 0, ");
+		else strcat(str, "Pledge 0, ");
 		if(F_ISSET(crt_ptr, MRSCND) ) 
 			if(F_ISSET(crt_ptr, MKNGDM)) strcat(str, "Rescind 1, ");
 			else strcat(str, "Rescind 0, ");
@@ -468,8 +495,41 @@ creature	*crt_ptr;
 	}
 	else
 		strcat(str, "None.");
+
 	print(fd, "%s\n", str);
 
+	if(F_ISSET(crt_ptr, MTRADE) && crt_ptr->type==MONSTER) {
+		strcpy(str, "Trade items: ");
+		for(i=0; i<5; i++) {
+			sprintf(temp, "%3d ", crt_ptr->carry[i]);
+			strcat(str, temp);
+		}
+		strcat(str, "\n             ");
+		for(i=5; i<10; i++) {
+			sprintf(temp, "%3d ", crt_ptr->carry[i]);
+			strcat(str, temp);
+		}
+		print(fd, "%s\n", str);
+	}
+
+
+/* This creates too much load on most machines */
+/*	if(F_ISSET(crt_ptr, MPERMT) && crt_ptr->type == MONSTER) {
+                        n=find_crt_num(crt_ptr);
+                        if(!n)
+                                print(fd, "Note: Monster is unique.\n");
+			else
+                        	for(x=0;x<10;x++) {
+               				if(ply_ptr->parent_rom->perm_mon[x].misc==n)
+						if(ply_ptr->parent_rom->perm_mon[x].interval)
+							print(fd,"Note: Perm interval= %d.\n", ply_ptr->parent_rom->perm_mon[x].interval);
+						else
+							print(fd, "Note: Perm interval is invalid.\n");			
+				}					
+							
+        }
+*/
+return(0);
 }
 
 /************************************************************************/
@@ -521,7 +581,20 @@ object		*obj_ptr;
 		print(fd, "   Quest: %d\n", obj_ptr->questnum);
 	else
 		print(fd, "\n");
-
+	if(obj_ptr->special) {
+		print(fd, "Special: ");
+		switch(obj_ptr->special) {
+		  case SP_MAPSC: print(fd, "Map or Scroll.\n");break;
+		  case SP_COMBO: print(fd, "Combo Lock.\n");break;
+		  case SP_HERB_HEAL: print(fd, "Healing herb.\n");break;
+		  case SP_HERB_HARM: print(fd, "Harming herb.\n");break;
+		  case SP_HERB_POISON: print(fd, "Poison herbs.\n");break;
+		  case SP_HERB_DISEASE: print(fd, "Disease herbs.\n");break;
+		  case SP_HERB_CURE_POISON: print(fd, "Cure poison herb.\n");break;
+		  case SP_HERB_CURE_DISEASE: print(fd, "Cure disease herb.\n");break;
+	 	  default: print(fd, "Unknown.\n");
+		}
+	}
 	strcpy(str, "Flags set: ");
 	if(F_ISSET(obj_ptr, OPERMT)) strcat(str, "Pperm, ");
 	if(F_ISSET(obj_ptr, OHIDDN)) strcat(str, "Hidden, ");
@@ -552,6 +625,13 @@ object		*obj_ptr;
 	if(F_ISSET(obj_ptr, ONSHAT)) strcat(str, "Shatterproof, ");
 	if(F_ISSET(obj_ptr, OALCRT)) strcat(str, "Always crit, ");
 	if(F_ISSET(obj_ptr, ODDICE)) strcat(str, "NdS damage, ");
+	if(F_ISSET(obj_ptr, OHBREW)) strcat(str, "Brewing herb, ");
+	if(F_ISSET(obj_ptr, OHPAST)) strcat(str, "Paste herb, ");
+	if(F_ISSET(obj_ptr, OHAPLY)) strcat(str, "Cream herb, ");
+	if(F_ISSET(obj_ptr, ONPREP)) strcat(str, "In preparation, ");
+	if(F_ISSET(obj_ptr, ODPREP)) strcat(str, "Prepared, ");
+	if(F_ISSET(obj_ptr, OTMPEN)) strcat(str, "Temp enchant, ");
+	if(F_ISSET(obj_ptr, OIREGP)) strcat(str, "Irrplural. ");
 	if(F_ISSET(obj_ptr, OPLDGK))
 		if(F_ISSET(obj_ptr, OKNGDM)) strcat(str, "Organization 1, ");
 		else  strcat(str, "Organization 0, ");
@@ -567,7 +647,7 @@ object		*obj_ptr;
 		if (F_ISSET(obj_ptr, ORNGRO)) strcat(str, "R, ");
 		if (F_ISSET(obj_ptr, OTHIEO)) strcat(str, "T, ");
 	}
-
+	
 
 	if(strlen(str) > 11) {
 		str[strlen(str)-2] = '.';
@@ -576,7 +656,9 @@ object		*obj_ptr;
 	else
 		strcat(str, "None.");
 	print(fd, "%s\n", str);
-
+	if(F_ISSET(obj_ptr, OTMPEN)) 
+		print(fd, "Enchant timeout: %d.\n", ((int)obj_ptr->magicpower+(int)obj_ptr->magicrealm)*40);
+	return(0);
 }
 
 /**********************************************************************/
@@ -591,20 +673,45 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	room	*new_rom;
-	char	file[80];
-	int	fd, ff;
+	char	file[80], rmfrstprt[4];
+	int		fd, ff, index;
 
 	fd = ply_ptr->fd;
 
 	if(ply_ptr->class < DM)
 		return(PROMPT);
 
-	if(cmnd->val[1] < 2) {
-		print(fd, "Add what?\n");
+	if(!strcmp(cmnd->str[1], "c") && (cmnd->num > 1)) {
+                dm_add_crt(ply_ptr, cmnd);
+                return(0);
+        }
+        if(!strcmp(cmnd->str[1], "o") && (cmnd->num > 1)) {
+                dm_add_obj(ply_ptr, cmnd);
+                return(0);
+        }
+
+
+	if(cmnd->val[1] < 2 || cmnd->num < 2) {
+		print(fd, "Index error: please specify room number.\n");
 		return(0);
 	}
-
-	sprintf(file, "%s/r%05d", ROOMPATH, cmnd->val[1]);
+	if(HASHROOMS) {
+		index=cmnd->val[1];
+		sprintf(rmfrstprt,"10/r");
+		if(index<10000) sprintf(rmfrstprt,"09/r");
+		if(index<9000) sprintf(rmfrstprt,"08/r");
+		if(index<8000) sprintf(rmfrstprt,"07/r");
+		if(index<7000) sprintf(rmfrstprt,"06/r");
+		if(index<6000) sprintf(rmfrstprt,"05/r");
+		if(index<5000) sprintf(rmfrstprt,"04/r");
+		if(index<4000) sprintf(rmfrstprt,"03/r");
+		if(index<3000) sprintf(rmfrstprt,"02/r");
+		if(index<2000) sprintf(rmfrstprt,"01/r");
+		if(index<1000) sprintf(rmfrstprt,"00/r");
+		sprintf(file, "%s/r%s%05d", ROOMPATH, rmfrstprt, index);
+	}
+	else
+		sprintf(file, "%s/r%05d", ROOMPATH, cmnd->val[1]);	
 	ff = open(file, O_RDONLY, 0);
 	if(ff >= 0) {
 		close(ff);
@@ -645,8 +752,14 @@ cmd		*cmnd;
 	int 		fd, i;
 	creature	*crt_ptr;
 
-	if(ply_ptr->class < CARETAKER)
-		return(PROMPT);
+	if(HEAVEN) {
+		if(ply_ptr->class < DM)
+			return(PROMPT);
+	}
+	else {
+		if(ply_ptr->class < CARETAKER)
+			return(PROMPT);
+	}
 
 	fd = ply_ptr->fd;
 
@@ -660,7 +773,7 @@ cmd		*cmnd;
 			if(Spy[i] == fd) Spy[i] = -1;
 		F_CLR(ply_ptr, PSPYON);
 		print(fd, "Spy mode off.\n");
-		return;
+		return(0);
 	}
 
 	cmnd->str[1][0] = up(cmnd->str[1][0]);
@@ -675,17 +788,22 @@ cmd		*cmnd;
 		return(0);
 	}
 
-    	if(crt_ptr->class >= CARETAKER) {
-		if(strcmp(ply_ptr->name, DMNAME3)){
-		ANSI(crt_ptr->fd,RED);
-		print(crt_ptr->fd,"%s is observing you.\n",ply_ptr->name);
-		ANSI(crt_ptr->fd,WHITE);
-		output_buf();
-		}
+	if(!HEAVEN) {
+   		if(crt_ptr->class >= CARETAKER)
+			if(strcmp(ply_ptr->name, dmname[2])){
+				ANSI(crt_ptr->fd,RED);
+				print(crt_ptr->fd,"%s is observing you.\n",ply_ptr->name);
+				ANSI(crt_ptr->fd,WHITE);
+				output_buf();
+			}
 	}
+
 	Spy[crt_ptr->fd] = ply_ptr->fd;
 	F_SET(ply_ptr, PSPYON);
-	F_SET(ply_ptr, PDMINV);
+
+	if(!HEAVEN)
+		F_SET(ply_ptr, PDMINV);
+	
 	print(fd, "Spy on.  Type *spy to turn it off.\n");
 	return(0);
 }

@@ -3,7 +3,7 @@
  *
  *	Additional user routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -26,7 +26,7 @@ cmd		*cmnd;
 {
 	room	*rom_ptr;
 	object	*obj_ptr;
-	int	fd, i, cantwear=0;
+	int	fd, i, cantwear=0, class;
 
 	fd = ply_ptr->fd;
 
@@ -128,12 +128,17 @@ cmd		*cmnd;
         	return(0);
     }              
 
+if(ply_ptr->class > 10)
+	class = ply_ptr->class + 11;
+else
+	class = ply_ptr->class;
+
       if(F_ISSET(obj_ptr,OCLSEL))
-	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
         	print(fd, "Your class prevents you from wearing %i.\n",obj_ptr);
         	return(0);
 	}
-	if(!F_ISSET(obj_ptr, OCLSEL + ply_ptr->class)  && obj_ptr->armor >5 && (ply_ptr->class == MONK || ply_ptr->class == MAGE)){
+	if(!F_ISSET(obj_ptr, OCLSEL + class) && obj_ptr->armor >5 && (ply_ptr->class == MONK || ply_ptr->class == MAGE)){
                 print(fd, "Your class prevents you from wearing %i.\n",obj_ptr);
                 return(0);
         }
@@ -156,6 +161,9 @@ cmd		*cmnd;
 		case 2:
 			if(ply_ptr->race != HUMAN &&
 			   ply_ptr->race != ELF &&
+			   ply_ptr->race != DARKELF &&
+			   ply_ptr->race != GOBLIN &&
+			   ply_ptr->race != HALFORC &&
 			   ply_ptr->race != HALFELF &&
 			   ply_ptr->race != ORC) cantwear = 1;
 			break;
@@ -206,7 +214,8 @@ cmd		*cmnd;
 	if(obj_ptr->use_output[0])
 		print(fd, "%s\n", obj_ptr->use_output);
 	F_SET(obj_ptr, OWEARS);
-
+	if(F_ISSET(obj_ptr, OCURSE))
+		F_SET(obj_ptr, OCURSW);
 	return(0);
 
 }
@@ -223,8 +232,8 @@ creature	*ply_ptr;
 {
 	object	*obj_ptr;
 	otag	*op, *temp;
-	char	str[2048], str2[85];
-	int	fd, i, found=0, cantwear=0;
+	char	str[4096], str2[85];
+	int	fd, i, found=0, cantwear=0, class;
 
 	str[0] = 0;
 	fd = ply_ptr->fd;
@@ -299,13 +308,19 @@ creature	*ply_ptr;
 				continue;
 	    	}              
 
-      if(F_ISSET(obj_ptr,OCLSEL))
-	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+
+if(ply_ptr->class > 10)
+        class = ply_ptr->class + 11;
+else
+        class = ply_ptr->class;
+
+      if(F_ISSET(obj_ptr,OCLSEL)) 
+	if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
 				op = temp;
 				continue;
 	}
 
-	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && (ply_ptr->class== MONK || ply_ptr->class == MAGE) && obj_ptr->armor >5){
+	if(!F_ISSET(obj_ptr,OCLSEL + class) && (ply_ptr->class== MONK || ply_ptr->class == MAGE) && obj_ptr->armor >5){
                                 op = temp;
                                 continue;
         }
@@ -383,6 +398,9 @@ creature	*ply_ptr;
 			sprintf(str2, "%s, ", obj_str(obj_ptr, 1, 0));
 			strcat(str, str2);
 			del_obj_crt(obj_ptr, ply_ptr);
+			if(F_ISSET(obj_ptr, OCURSE))
+		              F_SET(obj_ptr, OCURSW);
+
 			found = 1;
 
 		}
@@ -415,7 +433,6 @@ cmd		*cmnd;
 {
 	room	*rom_ptr;
 	object	*obj_ptr;
-	otag	*op;
 	int	fd, found=0, match=0, i;
 
 	fd = ply_ptr->fd;
@@ -489,7 +506,7 @@ cmd		*cmnd;
 void remove_all(ply_ptr)
 creature	*ply_ptr;
 {
-	char	str[2048], str2[85];
+	char	str[4096], str2[85];
 	int	fd, i, found=0;
 
 	fd = ply_ptr->fd;
@@ -616,8 +633,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	object	*obj_ptr;
-	otag	*op;
-	int	fd, i, cantwear=0;
+	int	fd, i, cantwear=0,class;
 
 	fd = ply_ptr->fd;
 
@@ -654,8 +670,13 @@ cmd		*cmnd;
         return(0);
     }              
 
+if(ply_ptr->class > 10)
+        class = ply_ptr->class + 11;
+else
+        class = ply_ptr->class;
+
       if(F_ISSET(obj_ptr,OCLSEL))
-	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
         	print(fd, "Your class prevents you from wielding %i.\n",obj_ptr);
         	return(0);
 	}
@@ -717,6 +738,9 @@ cmd		*cmnd;
 
 		if(obj_ptr->use_output[0])
 			print(fd, "%s\n", obj_ptr->use_output);
+		if(F_ISSET(obj_ptr, OCURSE))
+                	F_SET(obj_ptr, OCURSW);
+
 		F_SET(obj_ptr, OWEARS);
 	}
 
@@ -736,8 +760,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	object	*obj_ptr;
-	otag	*op;
-	int	fd, found=0, match=0;
+	int	fd, found=0, match=0,class;
 
 	fd = ply_ptr->fd;
 
@@ -774,9 +797,13 @@ cmd		*cmnd;
         return(0);
     }              
 
+if(ply_ptr->class > 10)
+        class = ply_ptr->class + 11;
+else
+        class = ply_ptr->class;
 
       if(F_ISSET(obj_ptr,OCLSEL))
-	if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
         	print(fd, "Your class prevents you from holding %i.\n",obj_ptr);
         	return(0);
 	}
@@ -805,8 +832,11 @@ cmd		*cmnd;
 		print(fd, "You hold %1i.\n", obj_ptr);
 		broadcast_rom(fd, ply_ptr->rom_num, "%M holds %1i.",
 			      ply_ptr, obj_ptr);
-		if(obj_ptr->use_output[0] && obj_ptr->type != POTION)
+		if(obj_ptr->use_output[0] && (obj_ptr->type != POTION || obj_ptr->type != WAND))
 			print(fd, "%s\n", obj_ptr->use_output);
+		if(F_ISSET(obj_ptr, OCURSE))
+                	F_SET(obj_ptr, OCURSW);
+
 		F_SET(obj_ptr, OWEARS);
 	}
 

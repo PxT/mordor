@@ -4,7 +4,7 @@
  *  User routines dealing with magic spells.  Potions, wands,
  *  scrolls, and casting are all covered.
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -26,7 +26,7 @@ int cast(ply_ptr, cmnd)
 creature    *ply_ptr;
 cmd     *cmnd;
 {
-    long    i, t, z, chance;
+    long    i, t;
     int (*fn)();
     int fd, splno, c = 0, match = 0, n;
 
@@ -101,9 +101,9 @@ cmd     *cmnd;
 
     if(n) {
         ply_ptr->lasttime[LT_SPELL].ltime = t;
-        if(ply_ptr->class == CLERIC || ply_ptr->class == MAGE)
+        if(ply_ptr->class == ALCHEMIST || ply_ptr->class == MAGE)
             ply_ptr->lasttime[LT_SPELL].interval = 3;
-        else if(ply_ptr->class == BARD)
+        else if(ply_ptr->class == BARD || ply_ptr->class == CLERIC)
 	    ply_ptr->lasttime[LT_SPELL].interval = 4;
 	else
             ply_ptr->lasttime[LT_SPELL].interval = 5;
@@ -235,7 +235,7 @@ creature    *ply_ptr;
 cmd     *cmnd;
 {
     object  *obj_ptr;
-    int fd, n, match=0;
+    int fd, n, match=0, class;
 
     fd = ply_ptr->fd;
 
@@ -290,8 +290,13 @@ cmd     *cmnd;
         return(0);
 	}
 
-  if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(ply_ptr->class>10)
+		class=ply_ptr->class+11;
+	else
+		class=ply_ptr->class;
+
+	if(F_ISSET(obj_ptr,OCLSEL))
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
                 print(fd, "Your class prevents you from using %i.\n",obj_ptr);
                 return(0);
         }                 
@@ -327,7 +332,7 @@ cmd     *cmnd;
     object  *obj_ptr;
     int (*fn)();
     long    i, t;
-    int fd, n, match=0, c, splno;
+    int fd, n, match=0, c, splno, class;
 
     fd = ply_ptr->fd;
     fn = 0;
@@ -387,9 +392,13 @@ cmd     *cmnd;
         return(0);
     }              
 
+	if(ply_ptr->class>10)
+		class=ply_ptr->class+11;
+	else
+		class=ply_ptr->class;
 
-  if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(F_ISSET(obj_ptr,OCLSEL))
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
                 print(fd, "Your class prevents you from reading %i.\n",obj_ptr);
                 return(0);
         }                 
@@ -459,8 +468,7 @@ cmd     *cmnd;
 {
     object  *obj_ptr;
     int (*fn)();
-    long    i, t;
-    int fd, n, match=0, c, splno;
+    int fd, n, match=0, c, splno, class;
 
     fd = ply_ptr->fd;
     fn = 0;
@@ -492,7 +500,7 @@ cmd     *cmnd;
     }
 
     if(obj_ptr->type != POTION) {
-        print(fd, "That's not a potion.\n");
+	eat(ply_ptr, cmnd);
         return(0);
     }
 
@@ -520,9 +528,13 @@ cmd     *cmnd;
         return(0);
     }              
 
+	if(ply_ptr->class>10)
+		class=ply_ptr->class+11;
+	else
+		class=ply_ptr->class;
 
-  if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(F_ISSET(obj_ptr,OCLSEL))
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
                 print(fd, "Your class prevents you from drinking %i.\n",obj_ptr);
                 return(0);
         }                 
@@ -574,7 +586,7 @@ cmd     *cmnd;
 {
     object  *obj_ptr;
     long    i, t;
-    int fd, n, match=0;
+    int fd, n, match=0, class;
 
     fd = ply_ptr->fd;
 
@@ -634,9 +646,13 @@ cmd     *cmnd;
         return(0);
     }              
 
+	if(ply_ptr->class>10)
+		class=ply_ptr->class+11;
+	else
+		class=ply_ptr->class;
 
-  if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + ply_ptr->class) && ( ply_ptr->class < CARETAKER)){
+	if(F_ISSET(obj_ptr,OCLSEL))
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
                 print(fd, "Your class prevents you from using %i.\n",obj_ptr);
                 return(0);
         }                 
@@ -728,7 +744,7 @@ osp_t       *osp;
     creature    *crt_ptr;
     room        *rom_ptr;
     int     m, fd, dmg, bns=0;
-    long        addrealm, f,t;
+    long        addrealm;
 
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -849,20 +865,18 @@ osp_t       *osp;
         }
 
         if(crt_ptr->type == MONSTER && F_ISSET(crt_ptr, MUNKIL)) {
-            print(fd, "You cannot harm %s.\n",
-                F_ISSET(crt_ptr, MMALES) ? "him":"her");
+            print(fd, "You cannot harm %s.\n", F_ISSET(crt_ptr, MMALES) ? "him":"her");
             return(0);
         }
 
-        if(ply_ptr->type == PLAYER && crt_ptr->type == PLAYER &&
-            crt_ptr != ply_ptr) {
+        if(ply_ptr->type == PLAYER && crt_ptr->type == PLAYER && crt_ptr != ply_ptr) {
             if(F_ISSET(rom_ptr, RNOKIL) && ply_ptr->class < DM) {
                 print(fd,"No killing allowed in this room.\n");
-                return;
+                return(0);
             }
 	    if(ply_ptr->level<4 && crt_ptr->level>9){
 		print(fd, "That would be foolish.\n");
-		return;
+		return(0);
 	    }
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
@@ -895,9 +909,7 @@ osp_t       *osp;
 
         if((crt_ptr->type == PLAYER && F_ISSET(crt_ptr, PRMAGI)) ||
            (crt_ptr->type != PLAYER && F_ISSET(crt_ptr, MRMAGI)))
-            dmg -= (dmg * 2 *
-              MIN(50, crt_ptr->piety + crt_ptr->intelligence)) /
-              100;
+            dmg -= (dmg * 2 * MIN(50, crt_ptr->piety + crt_ptr->intelligence)) / 100;
 
         m = MIN(crt_ptr->hpcur, dmg);
 

@@ -1,10 +1,9 @@
 Help on:
-
 	*SPY [player]
 
-	This allows you to spy on a specified player.  A given player may 
-only be spied on by one caretaker/DM at a time.  If the player is not 
-specified, then the spy mode is shut off.
+This allows you to spy on a specified player.  A given player may only be
+spied on by one caretaker/DM at a time.  If the player is not specified,
+then the spy mode is shut off.
 
 example:
 :*spy

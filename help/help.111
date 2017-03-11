@@ -1,9 +1,7 @@
 Help on:
-
 	*USERS [f]
 
-	This function lists all the users online with various info about 
-them. 
+This function lists all the users online with various info about them. 
 
 example:
 :*users

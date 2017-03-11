@@ -5,12 +5,12 @@
  *	Compression code was adapted from another program
  *	and modified to perform in-memory compression.
  *
- *	Copyright (C) 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
 #ifdef COMPRESS
-
+#define MIGNORE
 #include <stdio.h>
 #include "mstruct.h"
 #include "mextern.h"
@@ -104,7 +104,7 @@ unsigned int unhash(prev, next)
 unsigned int prev;
 unsigned char next;
 {
-	unsigned int i, offset;
+	unsigned int i;
 	struct tabent *ep;
 
 	i = h(prev, next);
@@ -174,7 +174,6 @@ unsigned int getcode()
 void putcode(code)
 unsigned int code;
 {
-	unsigned int localbuf;
 
 	if(temp_outbuf == EMPTY) {
 		writec((code >> 4) & 0xFF);
@@ -202,6 +201,7 @@ int ch;
 	*outbuf = (char)ch;
 	outbuf++;
 	sizeof_outbuf++;
+	return(0);
 }
 
 void flushout()

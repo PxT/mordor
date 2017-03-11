@@ -3,12 +3,19 @@
  *
  *	Additional user routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
 #include "mstruct.h"
 #include "mextern.h"
+
+#ifndef WIN32
+        #include <sys/time.h>
+#else
+        #include <time.h>
+#endif
+
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
 #endif
@@ -340,11 +347,21 @@ cmd		*cmnd;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
-                    print(fd, "Sorry, you're lawful.\n");
-                    return (0);
-                }
-                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
+
+				if(ISENGARD) {
+					if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM && (ply_ptr->class != THIEF || ply_ptr->class != ASSASSIN || ply_ptr->class != PALADIN || ply_ptr->class != FIGHTER)) {
+		                print(fd, "Sorry, you're lawful.\n");
+			            return (0);
+				    }
+				}
+				else {
+					if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
+						print(fd, "Sorry, you're lawful.\n");
+	                    return (0);
+		            }
+				}
+
+				if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
                 }     
@@ -557,6 +574,15 @@ cmd		*cmnd;
 			if(ply_ptr->ready[WIELD-1]->shotscur < 1) {
 				print(fd, "Your %s is broken.\n", 
 				      ply_ptr->ready[WIELD-1]->name);
+				if(F_ISSET(ply_ptr->ready[WIELD-1], OTMPEN)) {
+                			ply_ptr->ready[WIELD-1]->pdice=0;
+                			F_CLR(ply_ptr->ready[WIELD-1], OTMPEN);
+                			F_CLR(ply_ptr->ready[WIELD-1], ORENCH);
+                			F_CLR(ply_ptr->ready[WIELD-1], OENCHA);
+                			if(F_ISSET(ply_ptr, PDMAGI))
+                   				print(ply_ptr->fd, "The enchantment fades on your %s.\n", ply_ptr->ready[WIELD-1]);
+            			}
+
 				add_obj_crt(ply_ptr->ready[WIELD-1], ply_ptr);
 				ply_ptr->ready[WIELD-1] = 0;
 				return(0);
@@ -676,7 +702,7 @@ cmd		*cmnd;
 		}
 	}
 
-	if(!dum_ptr->name[0]) return;
+	if(!dum_ptr->name[0]) return(1);
 
 	if(save_ply(dum_ptr->name, dum_ptr) < 0)
 		merror("ERROR - savegame", NONFATAL);
@@ -707,7 +733,7 @@ cmd		*cmnd;
 	creature	*crt_ptr;
 	ttag		*tp;
 	char		str[160];
-	int		fd;
+	int			fd;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
@@ -751,18 +777,14 @@ cmd		*cmnd;
 		if(!crt_ptr->first_tlk)
 			if(!load_crt_tlk(crt_ptr))
 				return(PROMPT);
-
 		broadcast_rom(fd, ply_ptr->rom_num, "%M asks %m about \"%s\".",
 			ply_ptr, crt_ptr, cmnd->str[2]);
-
 		tp = crt_ptr->first_tlk;
 		while(tp) {
 			if(!strcmp(cmnd->str[2], tp->key)) {
-				broadcast_rom(fd, ply_ptr->rom_num,
-					"%M says to %M, \"%s\".", crt_ptr,
+				broadcast_rom(fd, ply_ptr->rom_num,	"%M says to %M, \"%s\".", crt_ptr,
 					ply_ptr, tp->response);
-				print(fd, "%M says to you, \"%s\"\n",
-					crt_ptr, tp->response);
+				print(fd, "%M says to you, \"%s\"\n", crt_ptr, tp->response);
 				talk_action(ply_ptr, crt_ptr, tp);
 				return(0);
 			}

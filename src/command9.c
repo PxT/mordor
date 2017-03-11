@@ -3,7 +3,7 @@
  *
  *	Additional user routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1993-1997 Brooke Paul
  *
  */
 
@@ -250,7 +250,7 @@ cmd		*cmnd;
 {
 	object	*obj_ptr;
 	room	*rom_ptr;
-	int	fd, n, rtn, onfloor=0;
+	int		fd, rtn, onfloor=0;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;

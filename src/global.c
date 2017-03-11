@@ -1,9 +1,8 @@
-/*
- * GLOBAL.C:
+/* GLOBAL.C:
  *
  *	Global variables.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -13,16 +12,91 @@
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
 #endif
+
+/*****************************************************************
+*
+* Configurable settings.  These are the defaults for setting that
+* can be overridden from the mordor.cf file in the BINPATH
+*
+******************************************************************/
+
+/* DM's name */
+	char dmname[][20] = {
+		"Sorahl", "China", "Sandman", "Ugluk", "Darwin", "Tesseract", "Erech"
+	};
+	char title[80]="Mordor MUD Server";
+	char auth_questions_email[80]="";
+	char questions_to_email[80]="";
+	char register_questions_email[80]="";
+	char account_exists[80]="You already have an account here.";
+	char dm_pass[20]="";  /* No DM creation by default */
+
+
+	char tx_mesg1[80]="The Ithil Express has docked in Parth.";
+	char tx_mesg2[80]="The Ithil Express has docked in Celduin.";
+
+	char sunrise[80]="The sun rises.";
+	char sunset[80]="The sun disappears over the horizon.";
+	char earth_trembles[80]="The earth trembles under your feet.";
+	char heavy_fog[80]="A heavy fog blankets the earth.";
+	char beautiful_day[80]="It's a beautiful day today.";
+	char bright_sun[80]="The sun shines brightly across the land.";
+	char glaring_sun[80]="The glaring sun beats down upon the inhabitants of the world.";
+	char heat[80]="The heat today is unbearable.";
+	char still[80]="The air is still and quiet.";
+	char light_breeze[80]="A light breeze blows from the south.";
+	char strong_wind[80]="A strong wind blows across the land.";
+	char wind_gusts[80]="The wind gusts, blowing debris through the streets.";
+	char gale_force[80]="Gale force winds blow in from the sea.";
+	char clear_skies[80]="Clear, blue skies cover the land.";
+	char light_clouds[80]="Light clouds appear over the mountains.";
+	char thunderheads[80]="Thunderheads roll in from the east.";
+	char light_rain[80]="A light rain falls quietly.";
+	char heavy_rain[80]="A heavy rain begins to fall.";
+	char sheets_rain[80]="Sheets of rain pour down from the skies.";
+	char torrent_rain[80]="A torrent soaks the ground.";
+	char no_moon[80]="The sky is dark as pitch.";
+	char sliver_moon[80]="A sliver of silver can be seen in the night sky.";
+	char half_moon[80]="Half a moon lights the evening skies.";
+	char waxing_moon[80]="The night sky is lit by the waxing moon.";
+	char full_moon[80]="The full moon shines across the land.";
+
+
+	int		ANSILINE=0;
+	int		AUTOSHUTDOWN=0;
+	int		CHECKDOUBLE=0;
+	int		EATNDRINK=0;
+	int		GETHOSTBYNAME=0;
+	int		HEAVEN=0;
+	int		ISENGARD=0;
+	int		LASTCOMMAND=0;
+	int		PARANOID=0;
+	int		RECORD_ALL=0;
+	int		RFC1413=0;
+	int		SECURE=0;
+	int		SCHED=0;
+	int		SUICIDE=0;
+
+	int		PORTNUM=4040;
+	int		CRASHTRAP=0;
+	int		HASHROOMS=0;
+	int		NICEEXP=0;
+	int		SAVEONDROP=0;
+
+
+/*	char	ROOMPATH, MONPATH, OBJPATH, PLAYERPATH;
+	char	DOCPATH, POSTPATH, BINPATH, LOGPATH; */
+/* end configurable settings */
+
 int		Tablesize;
 int		Cmdnum;
-long		Time;
-long		StartTime;
-struct lasttime	Shutdown;
-struct lasttime Weather[5];
+long	Time;
+long	StartTime;
+struct	lasttime	Shutdown;
+struct	lasttime	Weather[5];
 int		Spy[PMAX];
 int		Numlockedout;
-lockout		*Lockout;
-extern char     report;
+lockout	*Lockout;
 
 struct {
 	creature	*ply;
@@ -38,7 +112,7 @@ struct {
 	short		ndice;
 	short		sdice;
 	short		pdice;
-} class_stats[13] = {
+} class_stats[15] = {
 	{  0,  0,  0,  0,  0,  0,  0},
 	{ 19,  2,  6,  2,  1,  6,  0},	/* assassin */
 	{ 24,  1,  8,  1,  1,  3,  1},	/* barbarian */
@@ -50,6 +124,8 @@ struct {
 	{ 18,  3,  5,  2,  2,  2,  1},	/* thief */
 	{ 15,  3,  5,  4,  2,  2,  1},  /* bard */
 	{ 17,  3,  6,  2,  1,  3,  0},  /* monk */
+	{ 15,  4,  5,  3,  1,  4,  0},  /* druid */
+	{ 15,  4,  4,  4,  1,  3,  0},	/* alchemist */
 	{ 30, 30, 10, 10,  5,  5,  5},	/* caretaker */
 	{ 30, 30, 10, 10,  5,  5,  5}	/* DM */
 };
@@ -58,34 +134,37 @@ int bonus[35] = { -4, -4, -4, -3, -3, -2, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 		  2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
 
 char class_str[][15] = { "None", "Assassin", "Barbarian", "Cleric",
-	"Fighter", "Mage", "Paladin", "Ranger", "Thief", "Bard", "Monk", "Caretaker",
-	"Dungeonmaster" };
+	"Fighter", "Mage", "Paladin", "Ranger", "Thief", "Bard", "Monk",
+	"Druid", "Alchemist", "Caretaker","Dungeonmaster" };
 
 char race_str[][15] = { "Unknown", "Dwarf", "Elf", "Half-elf", "Halfling",
 	"Human", "Orc", "Half-giant", "Gnome", "Troll", "Half-orc", "Ogre","Dark-elf", "Goblin" };
 
 char race_adj[][15] = { "Unknown", "Dwarven", "Elven", "Half-elven",
-	"Halfling", "Mannish", "Orcish", "Half-giant", "Gnomish", "Trollkin", 
-"Half-orc", "Ogre", "Dark-elf", "Goblin" };
+	"Halfling", "Mannish", "Orcish", "Half-giant", "Gnomish", "Trollkin",
+	"Half-orc", "Ogre", "Dark-elf", "Goblin" };
 
 short level_cycle[][10] = {
+   /* 2    3    4    5    6    7    8    9    10   11 */
 	{ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0   },
-	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },
-	{ INT, DEX, PTY, CON, STR, CON, DEX, STR, PTY, STR },
-	{ STR, DEX, CON, PTY, INT, PTY, INT, DEX, CON, INT },
-	{ PTY, INT, DEX, CON, STR, CON, INT, STR, DEX, STR },
-	{ STR, DEX, PTY, CON, INT, CON, INT, DEX, PTY, INT },
-	{ DEX, INT, CON, STR, PTY, STR, INT, PTY, CON, PTY },
-	{ PTY, STR, INT, CON, DEX, CON, DEX, STR, INT, DEX },
-	{ INT, CON, PTY, STR, DEX, STR, CON, DEX, PTY, DEX },
-	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },
-	{ PTY, CON, STR, DEX, INT, CON, INT, PTY, CON, STR },
-	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY },
-	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY }
+	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },  /* assassin */
+	{ INT, DEX, PTY, CON, STR, CON, DEX, STR, PTY, STR },  /* barbarian */
+	{ STR, DEX, CON, PTY, INT, PTY, INT, DEX, CON, INT },  /* cleric */
+	{ PTY, INT, DEX, CON, STR, CON, INT, STR, DEX, STR },  /* fighter */
+	{ STR, DEX, PTY, CON, INT, CON, INT, DEX, PTY, INT },  /* mage */
+	{ DEX, INT, CON, STR, PTY, STR, INT, PTY, CON, PTY },  /* paladin */
+	{ PTY, STR, INT, CON, DEX, CON, DEX, STR, INT, DEX },  /* ranger */
+	{ INT, CON, PTY, STR, DEX, STR, CON, DEX, PTY, DEX },  /* thief */
+	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },  /* bard */
+	{ PTY, CON, STR, DEX, INT, CON, INT, PTY, CON, STR },  /* monk */
+	{ STR, DEX, CON, PTY, INT, CON, INT, DEX, CON, INT },  /* druid */
+	{ STR, DEX, PTY, CON, INT, CON, INT, CON, PTY, INT },  /* alchemist */
+	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY },  /* caretaker */
+	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY }   /* DM */
 };
 
 short thaco_list[][20] = { 
-	{ 20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20 }, 
+		{ 20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20 }, 
 /*a*/	{ 18,18,18,17,17,16,16,15,15,14,14,13,13,12,12,11,10,10, 9, 9 },
 /*b*/	{ 20,19,18,17,16,15,14,13,12,11,10, 9, 8, 7, 6, 5, 4, 3, 3, 2 },
 /*c*/	{ 20,20,19,18,18,17,16,16,15,14,14,13,13,12,12,11,10,10, 9, 8 },
@@ -96,8 +175,10 @@ short thaco_list[][20] = {
 /*t*/	{ 20,20,19,19,18,18,17,17,16,16,15,15,14,14,13,13,12,12,11,11 },
 /*bd*/  { 18,18,18,17,17,16,16,15,15,14,14,13,12,11,11,10, 9, 9, 8, 7 },
 /*mn*/  { 18,18,17,17,16,16,15,15,14,14,13,12,11,11,10,10, 9, 8, 7, 6 },	
-	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+/*dr*/  { 20,19,19,18,18,17,17,16,15,14,14,13,13,12,12,11,10,10, 9, 8 },
+/*al*/  { 20,20,19,19,18,18,17,17,16,16,15,15,15,14,14,13,13,12,11,10 },
+		{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+		{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 };
 
 long quest_exp[] = {
@@ -120,6 +201,7 @@ long quest_exp[] = {
 };
  
 long needed_exp[] = {
+    /*2   3     4     5     6     7      8      9      10 */
     512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 100000,
     166410, 277360, 394171, 560992, 757125, 1087504, 1402815,
     1739616, 2203457, 2799000, 3505139, 4465120, 5792661, 7319072,
@@ -147,6 +229,10 @@ char lev_title[][8][20] = {
 	  "Minstrel", "Muse", "Bard", "Master Bard" },
 	{ "Novice", "Initiate", "Brother", "Disciple", "Immaculate",  
 	  "Master", "Superior Master", "Grand Master" },
+	{ "Aspiriant", "Ovate", "Initiate", "Master Initiate",
+	  "Druid", "Master Druid", "Archdruid", "Great Druid" },
+	{ "Scholar", "Sage", "Artificer", "Runemaster",
+	  "Alchemist", "Mechanician", "Archeus", "Master Archeus" },
 	{ "Builder", "Creator", "Slave", "Daemon",
 	  "Addict", "Hero", "Dungeonmaster", "Caretaker" },
 	{ "Builder", "Creator", "Programmer", "Dungeon Lord", 
@@ -224,8 +310,8 @@ struct {
 	{ "kill", 23, attack },
 	{ "k", 23, attack },
 	{ "search", 24, search },
-        { "emote",25, emote},    
-        { ":",25, emote},    
+	{ "emote",25, emote},    
+	{ ":",25, emote},    
 	{ "hide", 26, hide },
 	{ "set", 27, set },
 	{ "clear", 28, clear },
@@ -287,9 +373,9 @@ struct {
 	{ "teach", 71, teach },
 	{ "pledge",72, pledge },
 	{ "rescind",73, rescind },
-        { "purchase",74, purchase },    
-        { "selection",75, selection }, 
-        { "trade",76, trade},    
+	{ "purchase",74, purchase },    
+	{ "selection",75, selection }, 
+	{ "trade",76, trade},    
 	{ "suicide", 77, ply_suicide },
 	{ "passwd", 78, passwd},
 	{ "password", 78, passwd },
@@ -298,6 +384,24 @@ struct {
 	{ "charm", 81, bard_song2},
 	{ "meditate", 82, meditate},
 	{ "touch", 83, touch_of_death},
+	{ "prep",84,prep_herb },
+	{ "apply",85,apply_herb },
+	{ "ingest",86,ingest_herb },
+	{ "eat",87,eat },
+	{ "paste",88,paste_herb },
+	{ "transmute", 89, recharge_wand },
+	{ "description", 90, describe_me },
+	{ "enchant", 91, tmp_enchant },
+/*
+	{ "channelemote", 97, channelemote},
+	{ "chemote", 97, channelemote},
+	{ "broe", 97, channelemote},
+*/
+	{ "classemote", 98, classemote},
+	{ "clemote", 98, classemote},
+	{ "classsend", 99, class_send},
+	{ "clsend", 99, class_send},
+	
 	{ "nod", 100, action },
 	{ "sleep", 100, action },
 	{ "grab", 100, action },
@@ -439,11 +543,11 @@ struct {
 	{ "*silence", 128, dm_silence},
 	{ "*broad", 129, dm_broadecho},
  	{ "*replace",130, dm_replace},    
-    	{ "*name",131, dm_nameroom},    
+	{ "*name",131, dm_nameroom},    
    	{ "*append",132, dm_append},    
    	{ "*prepend",133, dm_prepend},    
    	{ "*gcast",134, dm_cast},    
-    	{ "*group",135, dm_group},    
+	{ "*group",135, dm_group},    
 	{ "*notepad",136, notepad},
  	{ "*delete",137, dm_delete},    
 	{ "*oname", 138, dm_obj_name },
@@ -458,6 +562,11 @@ struct {
 	{ "*possess", 147, dm_alias }, 
 	{ "*tell", 148, dm_flash }, 
 	{ "*memory", 149, dm_memory },
+	{ "*find", 150, dm_find_db },
+	{ "*clear", 151, dm_delete_db },
+	{ "*talk", 152, dm_talk },
+	{ "*gamestat", 153, dm_game_status },
+	{ "*advance", 154, dm_advance },
 	{ "push", -2, 0 },
 	{ "press", -2, 0 },
 	{ "@", 0, 0 }
@@ -522,23 +631,34 @@ struct {
 	{ "flamefill", SFLFIL, offensive_spell },
 	{ "know-aura", SKNOWA, know_alignment },
 	{ "remove-curse", SREMOV, remove_curse },
-	{ "resist-cold", SRCOLD, resist_cold},
-	{ "breathe-water", SBRWAT, breathe_water},
-	{ "earth-shield", SSSHLD, earth_shield},
-	{ "clairvoyance", SLOCAT, locate_player},
-	{ "drain-exp", SDREXP, drain_exp},
-	{ "remove-disease", SRMDIS, rm_disease},
-	{ "cure-blindness", SRMBLD, rm_blind},
-	{ "fear", SFEARS, fear}, 
-	{ "room-vigor", SRVIGO, room_vigor}, 
-	{ "transport", STRANO, object_send},
-	{ "blind", SBLIND, blind},
-	{ "silence", SSILNC, silence},
-	{ "fortune", SFORTU, fortune},
+	{ "resist-cold", SRCOLD, resist_cold },
+	{ "breathe-water", SBRWAT, breathe_water },
+	{ "earth-shield", SSSHLD, earth_shield },
+	{ "clairvoyance", SLOCAT, locate_player },
+	{ "drain-exp", SDREXP, drain_exp },
+	{ "remove-disease", SRMDIS, rm_disease },
+	{ "cure-blindness", SRMBLD, rm_blind },
+	{ "fear", SFEARS, fear }, 
+	{ "room-vigor", SRVIGO, room_vigor }, 
+	{ "transport", STRANO, object_send },
+	{ "blind", SBLIND, blind },
+	{ "silence", SSILNC, silence },
+	{ "fortune", SFORTU, fortune },
 	{ "@", -1,0 }
 };
 
+int spllist_size = sizeof(spllist)/sizeof(*spllist);
+
 struct osp_t ospell[] = {
+	/*
+	int	splno;
+	char	realm;
+	int	mp;
+	int	ndice;
+	int	sdice;
+	int	pdice;
+	char	bonus_type;
+	*/
 	{ SHURTS,  WIND,  3, 1, 8,  0, 1 },	/* hurt */
 	{ SRUMBL, EARTH,  3, 1, 8,  0, 1 },	/* rumble */
 	{ SBURNS,  FIRE,  3, 1, 7,  1, 1 },	/* burn */

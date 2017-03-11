@@ -1,0 +1,41 @@
+PLIST COMMAND:
+
+    The plist commands provides a simply way to list a given player's
+class, level, password, and inventory without having to use the editor
+or actually log the player in.  
+
+syntax: 
+    plist [[-inp] [-l #]] <players>
+
+    -n    The '-n' tells plist to only list the name of the player.
+          The '-n' flag is intented to be used with the '-l #' 
+          flag to allow the output list of players to be piped
+          or redirected into another command.
+
+    -i    The '-i' flag requires plist to list all the objects in the
+          player inventory, including items in containers.  The
+          output format is a bit rough, so some line wrap around
+          may occur.  NOTE:  It is not wise to type "plist -i *" in
+          the player directory due to the massive amount of data
+          that would be produced.
+
+    -p    The '-p' requires plist to display the player password.
+
+    -l #  The '-l #' requires plist to list all players equal to the 
+          given level #.
+
+
+Examples:
+    plist -p Foo Bar
+      -- this will list the class, level, race and password for 
+         Foo and Bar.
+
+    plist -l 1 Player1 ... Player10
+      -- this will list all the players that are level 1 in the list
+         of players Player1 to Player10.
+
+    plist -i Fubar
+      --this will list the class, race, level  and inventory
+        for the player Fubar.
+
+

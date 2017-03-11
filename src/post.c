@@ -3,15 +3,15 @@
  *
  *	These routines are for the game post office.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
-
 #include "mstruct.h"
 #include "mextern.h"
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
 #endif
+
 /************************************************************************/
 /*				postsend				*/
 /************************************************************************/
@@ -186,7 +186,7 @@ cmd     *cmnd;
 {
     room    *rom_ptr;
     char    file[80];
-    int fd, ff;
+    int		fd;
  
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -233,7 +233,6 @@ int param;
 char    *str;
 {
     char    outstr[85], tmpstr[40];
-    long    t;
     int ff;
  
     if(str[0] == '.') {

@@ -1,0 +1,15 @@
+Help on:
+	*find [c|o] [name] [#]
+
+This function returns the database index number for the selected object 
+or creature.  Use of this command may result in lag, particularly when 
+searching large databases on slow comupters.
+
+example:
+:*find c monk
+Creature is #9.
+:*find o bow
+Object is #115.
+:*find o sleeve
+Object is unique.
+

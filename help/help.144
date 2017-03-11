@@ -1,13 +1,11 @@
+Help on:
+	*ENEMY <creature>
 
-Help on command:
-
-	*ATTACK <monster> <player>
-
-	Causes the named monster to attack the named player.
+Outputs the current enemy list for a given creature.
 
 example:
-:*att nobleman enforcer
-Adding Enforcer to attack list of nobleman.
-A nobleman attacks Enforcer.
+:*enemy nobleman
+Enemy list for nobleman:
+None.
 
 

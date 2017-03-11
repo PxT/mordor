@@ -1,26 +1,38 @@
-		Quest for Mordor v3.00 MUD driver
-	  -------------------------------------------------
+                       Mordor v4.0 MUD driver
+          -------------------------------------------------
+		       Written by Brooke Paul
+ 		 	   (C) 1994-1997
+                  
+	    Based upon Quest for Mordor v2.2 by Brett Vickers
 
- 		  Written by Brett Vickers & Brooke Paul
-	  		  (C) 1992, 1995, 1996
+       Contributions by Paul Telford, Eric Krichbaum, Steve Smith,
+	     Charles Marchant, John Freeman, and Bill Dyess.
 
-		Contributions by Steve Smith, Charles Marchant,
-			    and John Freeman.
-
-  This should compile out of the box on Win95/NT, Linux, FreeBSD or SunOS. 
-Be sure to take a look at mtype.h to define your paths properly and to set
-your DMNAMES.  Also, check out the COMPILE file for information on
-compile-time options.  Then just cd src/ and type make.  You should have
-an executable file named frp.new within a few minutes.
+			   
+  This should compile out of the box on Win95/NT, Linux, FreeBSD, IRIX,
+ULTRIX, NeXT Mach or SunOS.  Be sure to take a look at mtype.h to define
+your paths properly and to set your DMNAMES.  Also, check out the
+COMPILE file for information on compile-time options.  Then just cd src/
+and type make. You should have an executable file named mordor within a
+few minutes. 
   If you prefer you can just run the executables provided for Win95/NT 
-and Linux (in bin/).  You will need to have the installation made in the 
-/home/mordor path for Linux and in the /home/Isengard/mordor path for 
-Win95/NT. 
-  I know that the docs suck, but I am too busy to write more.  If
-you have questions post to rec.games.mud.admin or rec.games.mud.misc, or 
-check out our online documentation at:
+and Linux (in bin/).
+  I know that the docs are lacking, and I am working on them.  Check the
+Mordor web site for updates.  If you have questions post to
+rec.games.mud.admin or rec.games.mud.misc.  There is also a listserver
+available for Mordor administrators.  Send email to majordomo@gnt.net
+with the words 'subscribe mordor_admins' in the body. 
+  In addition you can check out our online documentation at:
 
-	http://moria.bio.uci.edu
+                http://mordor.nazgul.com
 
-	Have fun!
+Windows notes:
+A project file for Microsoft's Visual C++ (Win32/NT) is also included.
 
+~/bin/95/MORDOR.EXE is the standalone executable for both platforms.
+
+~/bin/NT/MORDORNT.EXE is the NT service version and will only run as a
+service on NT.  ~/bin/NT/SERVICE.EXE will install/uninstall the service
+version into NT.
+
+        Have fun!

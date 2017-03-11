@@ -1,0 +1,65 @@
+GSTAT COMMAND:
+
+The gstat command produces various statistical information about all
+the characters in mordor.  In addition, gstat can list all the 
+mordor characters that exceed a given amount of gold, play time,
+or level.
+
+Syntax:
+        gstat [-glts #] [-d] [-P <players ...>]
+
+The flags can appear in any order except for the '-P' which must be 
+the last flag in the command arguement list.  Also each flag must 
+appear separately.   i.e. -gl 10 needs to be -g 10 -l 10
+Also, due to the amount of data output, the static breakdown will not be
+listed if the -d, -g, -l or -t flags are used.
+
+    -d    The '-d' flag will list all the players that are either
+          a DM, a caretaker or None.
+
+    -g #  The '-g' flag will list all players with '#' or more
+          gold.
+
+    -l #  The '-l' flag will list all players that are '#'+
+          level. 
+
+          breakdown on players '#'+ level.  This is intended to allow
+          for a more accurate statical breakdown.  Often times
+          players create a 'one time' character which can skew
+          the true static brekadown of the game..
+
+    -t #  The '-t flag will list all players that have a play
+          time greater than '#' seconds..
+
+    -P <players...> The '-P' tells gstat to run gstat only on the 
+          player's names specified after the '-P'.  If the '-P
+          is not present, gstat will use all the characters in
+          the players directory.  Note: the player's names following
+          '-P' still must be in the player/ directory. The '-P'
+          was intended as a means to limit gstat static domain.
+
+Examples:
+      gstat -l 10
+         -- list all the players that are 10+ level.
+
+      gstat -d -P P1 P2 P3
+         -- list all the DMs in the player list P1, P2, P3
+
+      gstat -s 2
+         -- only preform the statical breakdown on players that
+            are 2nd or higher level.el.
+
+Other notes:
+
+Class / Level Breakdown:
+    The number following the Class number tells the total 
+    number of players of that class.  The two lines of numbers
+    represents the number of players of the given class at
+    at each level.  The first line of numbers corresponds to 
+    1st to 13th level , the second line of numbers corresponds to
+    14th to 26th level, where 26 slot is for all players that are
+    26+ level..
+
+    Due to the amount of output from gstat, and the length of time to
+    search all the players, it might be easier to redirect gstat 
+    output to a file: gstat > gstat_file.

@@ -3,7 +3,7 @@
  *
  *  Routines that act on creatures.
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -35,6 +35,8 @@ int     val;
     if(!ply_ptr)
 	return(0);
     if(!str)
+	return(0);
+    if(!first_ct)
 	return(0);
 	
     cp = first_ct;
@@ -247,7 +249,8 @@ creature    *att_ptr;
     object      *obj_ptr;
     char        str[2048];
     long        i, t, profloss, total, xpv;
-    int     n, levels = 0, expdiv, lessthanzero=0;
+    double	lost_fraction;
+    int     n, levels = 0, expdiv, lessthanzero=0, wielding=0;
 
    str[0] =0;
     if(crt_ptr->type == MONSTER) {
@@ -283,7 +286,9 @@ creature    *att_ptr;
 	if(!F_ISSET(crt_ptr, MTRADE)){
         sprintf(str, "%s was carrying: ", crt_str(crt_ptr, 0,CAP|INV));
         n = strlen(str);
-        i = list_obj(&str[n], att_ptr, crt_ptr->first_obj);
+	/* i = list_obj(&str[n], sizeof(str)-n, att_ptr, 
+crt_ptr->first_obj); */
+         i = list_obj(&str[n], att_ptr, crt_ptr->first_obj); 
 	}
         if(F_ISSET(crt_ptr, MPERMT))
             die_perm_crt(crt_ptr);
@@ -327,6 +332,8 @@ creature    *att_ptr;
         }
 	Ply[ply_ptr->fd].extr->alias_crt = 0;
 	F_CLR(Ply[ply_ptr->fd].ply, PALIAS);
+	ply_ptr->lasttime[LT_ATTCK].ltime = time(0);
+        ply_ptr->lasttime[LT_ATTCK].interval = 10;
 	ANSI(ply_ptr->fd, RED);
 	ANSI(ply_ptr->fd, BLINK);
 	print (ply_ptr->fd, "%M's body has been destroyed.\n", crt_ptr);
@@ -351,7 +358,12 @@ creature    *att_ptr;
 
         i = LT(crt_ptr, LT_PLYKL);
         t = time(0);
-
+if(EATNDRINK){
+	/* reset food and water */
+	att_ptr->talk[5]=1;
+	att_ptr->talk[6]=1;
+	F_CLR(att_ptr, PNSUSN);
+}
         if(att_ptr->type != PLAYER || att_ptr == crt_ptr) {
             if(crt_ptr->level < 4)
                 crt_ptr->experience -= crt_ptr->experience/10;
@@ -416,37 +428,25 @@ creature    *att_ptr;
             total += crt_ptr->realm[n];
 
         profloss = MAX(0L, total - crt_ptr->experience - 1024L);
-        while(profloss > 9L && lessthanzero < 9) {
-            lessthanzero = 0;
-            for(n=0; n<9; n++) {
-                if(n < 5) {
-                    crt_ptr->proficiency[n] -=
-                       profloss/(9-n);
-                    profloss -= profloss/(9-n);
-                    if(crt_ptr->proficiency[n] < 0L) {
-                        lessthanzero++;
-                        profloss -=
-                           crt_ptr->proficiency[n];
-                        crt_ptr->proficiency[n] = 0L;
-                    }
-                }
-                else {
-                    crt_ptr->realm[n-5] -= profloss/(9-n);
-                    profloss -= profloss/(9-n);
-                    if(crt_ptr->realm[n-5] < 0L) {
-                        lessthanzero++;
-                        profloss -=
-                            crt_ptr->realm[n-5];
-                        crt_ptr->realm[n-5] = 0L;
-                    }
-                }
-            }
+
+       /* decrement each proficiency and realm by the same percentage,
+          evenly distributing the xp loss.*/
+       lost_fraction = (double)profloss / total;
+       /* print(crt_ptr->fd, "profloss = %d, total = %d, lost_fraction = %f\n",
+                           profloss,      total,      lost_fraction); */
+       if(lost_fraction > 0) {
+         for(n=0;n<5;n++) {
+           crt_ptr->proficiency[n] -= crt_ptr->proficiency[n] * lost_fraction;
+             }
+         for(n=0;n<4;n++) {
+           crt_ptr->realm[n] -= crt_ptr->realm[n] * lost_fraction;
         }
         for(n=1,total=0; n<5; n++)
             if(crt_ptr->proficiency[n] >
                 crt_ptr->proficiency[total]) total = n;
         if(crt_ptr->proficiency[total] < 1024L)
             crt_ptr->proficiency[total] = 1024L;
+	}
 
         n = exp_to_lev(crt_ptr->experience);
         while(crt_ptr->level > n)
@@ -465,6 +465,7 @@ creature    *att_ptr;
 
         if(crt_ptr->ready[WIELD-1] &&
            !F_ISSET(crt_ptr->ready[WIELD-1], OCURSE)) {
+	    wielding=1;
             add_obj_rom(crt_ptr->ready[WIELD-1], 
                 crt_ptr->parent_rom);
             temp_perm(crt_ptr->ready[WIELD-1]);
@@ -492,15 +493,15 @@ creature    *att_ptr;
             broadcast("### Sadly, %s was killed by %1m.", 
                    crt_ptr->name, att_ptr);
 
+	courageous(crt_ptr);
         del_ply_rom(crt_ptr, rom_ptr);
         load_rom(50, &rom_ptr);
         add_ply_rom(crt_ptr, rom_ptr);
 
         savegame(crt_ptr, 0);
-        print(crt_ptr->fd, 
-            "If you had a weapon, it was dropped where you died.\n");
+	if(wielding)
+        print(crt_ptr->fd, "Your weapon was dropped where you died.\n");
     }
-        
 }
 
 void temp_perm(obj_ptr)
@@ -552,7 +553,7 @@ creature    *crt_ptr;
         free_crt(temp_crt);
     }
 
-	if(F_ISSET(crt_ptr,MDEATH)){
+	if(F_ISSET(crt_ptr,MDEATH)&&!F_ISSET(crt_ptr,MFOLLO)){
 	  	int     fd,n;
     	char    tmp[2048], file[80],name[80];
    
@@ -561,7 +562,7 @@ creature    *crt_ptr;
             if(name[i] == ' ') name[i] = '_';
 
     	sprintf(file,"%s/ddesc/%s_%d",OBJPATH,name,crt_ptr->level);
-    	fd = open(file,O_RDONLY | O_BINARY,0);
+    	fd = open(file,O_RDONLY,0);
     	if (fd){
 		    n = read(fd,tmp,2048);
     		tmp[n] = 0;
@@ -862,11 +863,11 @@ int	n,t, m;
 int mobile_crt(crt_ptr)
 creature	*crt_ptr;
 {
-int	i, n=0, d=0, choice=0;
+int		n=0, d=0, choice=0;
 room	*rom_ptr, *new_rom;
 xtag	*xp, *xptemp;
 
-	if(crt_ptr->type != MONSTER || !F_ISSET(crt_ptr, MMOBIL) || F_ISSET(crt_ptr, MPERMT))
+	if(crt_ptr->type != MONSTER || !F_ISSET(crt_ptr, MMOBIL) || F_ISSET(crt_ptr, MPERMT) || F_ISSET(crt_ptr, MPGUAR))
 		return(0);
 
 	if(crt_ptr->first_enm)
@@ -875,7 +876,7 @@ xtag	*xp, *xptemp;
 	rom_ptr = crt_ptr->parent_rom;
 	xptemp = rom_ptr->first_ext;
 	while(xptemp) { /* Count up exits */
-	if(!F_ISSET(xptemp->ext, XSECRT) && !F_ISSET(xptemp->ext, XNOSEE) &&!F_ISSET(xptemp->ext, XLOCKD) && !F_ISSET(xptemp->ext, XPGUAR) && is_rom_loaded(xptemp->ext->room)) 
+	if(!F_ISSET(xptemp->ext, XSECRT) && !F_ISSET(xptemp->ext, XNOSEE) && !F_ISSET(xptemp->ext, XLOCKD) && !F_ISSET(xptemp->ext, XPGUAR) && is_rom_loaded(xptemp->ext->room)) 
 		d += 1;
 	xptemp=xptemp->next_tag;
 	}
@@ -886,7 +887,7 @@ xtag	*xp, *xptemp;
 	choice = mrand(1,d);
 	xp = rom_ptr->first_ext;
     	while(xp) {  
-        if(!F_ISSET(xp->ext, XSECRT) && F_ISSET(xp->ext, XNOSEE) && !F_ISSET(xp->ext, XLOCKD) && !F_ISSET(xp->ext, XPGUAR) && is_rom_loaded(xp->ext->room)) {
+        if(!F_ISSET(xp->ext, XSECRT) && !F_ISSET(xp->ext, XNOSEE) && !F_ISSET(xp->ext, XLOCKD) && !F_ISSET(xp->ext, XPGUAR) && is_rom_loaded(xp->ext->room)) {
             choice -= 1;
 	    if(!choice) {
 		if(F_ISSET(xp->ext, XCLOSD) && !F_ISSET(xp->ext, XLOCKD)) {
@@ -911,20 +912,31 @@ xtag	*xp, *xptemp;
  return(n);
 }
 
-/****************************************************************/
-/*		monster_combat					*/
-/****************************************************************/
-/*	This function should make monsters attack ewach other   */
-/* 	My ultimate dream -BP 					*/
-
-void monster_combat(att_ptr, atd_ptr)
-creature	*att_ptr;
-creature	*atd_ptr;
+/***********************************************************************
+*       This function finds the creature number of the given creature
+*       from the database
+*/
+        
+int find_crt_num(crt_ptr) 
+creature  *crt_ptr;
 {
-room	*rom_ptr;
-int	dmg;
-	rom_ptr = att_ptr->parent_rom;
+        int i;
+        creature  *crt_src;
 
-	broadcast_rom(-1, rom_ptr, "%1M attacks %1m.\n", att_ptr, atd_ptr);
-	return;
-}	
+        for (i=0;i<CMAX;i++) {
+                if(load_crt_from_file(i, &crt_src) < 0)
+                        continue;
+                if(!strcmp(crt_ptr->name, crt_src->name) && crt_ptr->experience == crt_src->experience) {
+                        free(crt_src);
+			break;
+		}
+   		free(crt_src); 
+        }
+
+        if(i<CMAX)
+                return(i);
+        else
+                return(0);
+
+}
+

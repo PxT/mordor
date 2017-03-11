@@ -3,7 +3,7 @@
  *
  *	Additional spell-casting routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -68,7 +68,7 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 			ply_ptr->lasttime[LT_DINVI].interval = 1200;
 
 		if(how == CAST || how == SCROLL || how == WAND) {
-			print(fd,"Detect-invisibile spell cast.\n");
+			print(fd,"Detect-invisible spell cast.\n");
 			broadcast_rom(fd, ply_ptr->rom_num, 
 				      "%M casts detect-invisible on %sself.", 
 				      ply_ptr,
@@ -180,7 +180,7 @@ int		how;
 				ply_ptr->lasttime[LT_DMAGI].interval += 
 				60*ply_ptr->level;
 			ply_ptr->mpcur -= 10;
-if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
+		if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
             print(fd,"The room's magical properties increase the power of your spell.\n");
             ply_ptr->lasttime[LT_DMAGI].interval += 600L;
         }                                
@@ -282,13 +282,17 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
+
 	if(F_ISSET(rom_ptr, RNOTEL)) {
                 print(fd, "The spell fizzles.\n");
                 if(how == CAST)
                         ply_ptr->mpcur -= 30;
                 return(0);
         }
-
+	if(!dec_daily(&ply_ptr->daily[DL_TELEP]) && ply_ptr->class < CARETAKER) {
+		print(fd, "You are too weak to teleport again today.\n");
+		return(0);
+	}
 	if(spell_fail(ply_ptr, how)) {
                 if(how == CAST)
                         ply_ptr->mpcur -= 30;
@@ -354,14 +358,14 @@ int		how;
 			print(fd, "Your magic is too weak to teleport %m.\n", crt_ptr);
 			print(crt_ptr->fd, "%M tried to cast teleport on you.\n", ply_ptr);
 				if(how == CAST)
-				ply_ptr->mpcur -= 20;
+				ply_ptr->mpcur -= 30;
 			return(0);
 		}
 
 		
 
 		if(how == CAST)
-			ply_ptr->mpcur -=20;
+			ply_ptr->mpcur -= 30;
 	
 		if(how == CAST || how == SCROLL || how == WAND) {
 			print(fd, "Teleport cast on %m.\n", crt_ptr);

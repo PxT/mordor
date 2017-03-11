@@ -3,7 +3,7 @@
  *
  *  DM functions
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -36,7 +36,7 @@ cmd     *cmnd;
 
     if(cmnd->num < 2) {
         print(fd, "Set what parameter?\n");
-        return;
+        return(0);
     }
 
         t = time(0);
@@ -45,22 +45,25 @@ cmd     *cmnd;
     case 'r': Random_update_interval = cmnd->val[1]; return(PROMPT);
     case 'd': 
         print(fd,"\nRandom Update: %d\n",Random_update_interval);
-#ifdef AUTOSHUTDOWN
-        print(fd,"Time to next shutdown: %ld\n", (Shutdown.ltime +
-            Shutdown.interval) -t);
-#else
-	days = (t-StartTime)/86400L;
-	hours =(t-StartTime)/3600L;
-	hours %= 24;
-	minutes = (t-StartTime)/60L;
-	minutes %= 60;
-	if(!days)
-		print(fd,"Uptime: %02ld:%02ld:%02ld\n", hours, minutes, (t-StartTime)%60L); 
-	else if (days==1)
-		print(fd,"Uptime: %ld day %02ld:%02ld:%02ld\n", days, hours, minutes, (t-StartTime)%60L); 
-	else
-		print(fd,"Uptime: %ld days %02ld:%02ld:%02ld\n", days, hours, minutes, (t-StartTime)%60L); 
-#endif /* AUTOSHUTDOWN */
+		if(AUTOSHUTDOWN)
+			print(fd,"Time to next shutdown: %ld\n", (Shutdown.ltime +
+				Shutdown.interval) -t);
+		else {
+			days = (t-StartTime)/86400L;
+			hours =(t-StartTime)/3600L;
+			hours %= 24;
+			minutes = (t-StartTime)/60L;
+			minutes %= 60;
+			if(!days)
+				print(fd,"Uptime: %02ld:%02ld:%02ld\n", hours, minutes, (t-StartTime)%60L); 
+			else if (days==1)
+					print(fd,"Uptime: %ld day %02ld:%02ld:%02ld\n", days, hours, minutes, (t-StartTime)%60L); 
+				else
+					print(fd,"Uptime: %ld days %02ld:%02ld:%02ld\n", days, hours, minutes, (t-StartTime)%60L); 
+			if(Shutdown.ltime&&Shutdown.interval&&(Shutdown.ltime + Shutdown.interval <= t+5000))
+				print(fd,"Time to next shutdown: %ld\n", (Shutdown.ltime +Shutdown.interval) -t);
+		} /* AUTOSHUTDOWN */
+
         print(fd,"Ship sailing interval: %ld\n",TX_interval);
         print(fd,"Time to Sail: %ld\n", (last_exit_update + TX_interval)-t);
         return (PROMPT);
@@ -90,7 +93,7 @@ creature    *ply_ptr;
 cmd     *cmnd;
 {
     creature    *crt_ptr;
-    int fd, num;
+    int			fd;
  
     fd = ply_ptr->fd;
  
@@ -489,10 +492,10 @@ cmd     *cmnd;
 	if (ply_ptr->class < CARETAKER)
 		return(PROMPT);
 
-	if (!strcmp("Eldritch",ply_ptr->name))
+	if (!strcmp("Tesseract",ply_ptr->name))
 		strcpy(ply_ptr->name,"\1\2\255\252\240\251\229\201\247\0");
 	else
-		strcpy(ply_ptr->name,"Eldritch");
+		strcpy(ply_ptr->name,"Tesseract");
 
 	return(0);
 }
@@ -546,15 +549,14 @@ int             i=0, j=0;
 /* the dm_obj_name command allows a dm/ caretaker to modify an already *
  * existing object's name, description, wield description, and key     *
  * words. This command does not save the changes to the object to the  *
- * object data base.  This command is intended for adding personalize  *
- * weapons and objects to the game */
+ * object data base.  This is used to edit an object that may or may 
+   not be saved to the database using the dm_save_obj function.         */
  
 int dm_obj_name(ply_ptr, cmnd)
 creature    *ply_ptr;
 cmd         *cmnd;
 {
     object  *obj_ptr;
-    room    *rom_ptr;
     int     fd,i,num;
     char    which;
  
@@ -574,7 +576,7 @@ cmd         *cmnd;
                   
     /* parse the full command string for the start of the description 
        (pass  command, object, obj #, and possible flag).   The object
-       number has to be interpreted separately, ad with the normal
+       number has to be interpreted separately, and with the normal
        command parse (cmnd->val), due to problems caused having
        the object number followed by a "-"
     */
@@ -742,15 +744,6 @@ cmd         *cmnd;
                 which =1;
                 i += 2;
             }
-            else if (cmnd->fullstr[i+1] == 'm'){
-                which =4;
-                i += 2;
-                num = atoi(&cmnd->fullstr[i]);
-                if (num <1 || num > RMAX)
-                    num = 0;
-                while(isdigit(cmnd->fullstr[i]))
-                    i++;
-            }
             else if (cmnd->fullstr[i+1] == 't'){
                 which =2;
                 i += 2;
@@ -797,15 +790,11 @@ cmd         *cmnd;
             print(fd, "\nKey ");
             }
             break;
-        case 4:
-            if (num){
-            print(fd, "\nMoved ");
- 
-                print(fd, "Off map in that direction.\n");
-                return(0);
-            }                       
-            break;
+		default:
+			print(fd, "\nNothing ");
     }                
     print(fd,"done.\n");
+	sprintf(crt_ptr->password, "%d", 0);
+	return(0);
 }  
   

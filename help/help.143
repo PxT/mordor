@@ -1,19 +1,11 @@
+Help on:
+	*ATTACK <monster> <player>
 
-Help on command:
-
-	*dmhelp <topic>
-
-	This provides a wide variety of information on the DM commands.  
-Just typing *dmhelp will provide a list of current help topics.  
-Following it with a topic will provide information on that topic.
+Causes the named monster to attack the named player.
 
 example:
-: *dmhelp otypes
-Object types
+:*att nobleman enforcer
+Adding Enforcer to attack list of nobleman.
+A nobleman attacks Enforcer.
 
-Sharp            0
-Thrust           1
-Blunt            2
-Pole             3
-Missle           4
 

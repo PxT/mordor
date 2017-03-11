@@ -1,0 +1,69 @@
+PSEARCH COMMAND:
+
+   The psearch command searchs all the characters in the mordor/player
+directory for a specified item.  Psearch will search a characters entire 
+inventory including the contents of containers.  Psearch will list a player's
+name, the total number of specified object in the player's possession,
+and the number of the specified objects that are in containers.
+Psearch also has the option to list any weapon that does more than
+a specified amount of damage, or armor that exceeds a given armor
+rating.
+
+syntax:
+    psearch <[object #] [-adnsv #] [-N <name>]> [-P <players>]
+
+
+    If the first argument for psearch is a number, then psearch 
+will search for the object corresponding to that number.  The item
+number does not have to be given if any of the other flags are set.
+The flags may appear in any order.
+
+
+    -a #   The '-a' will list all objects on players that have
+           an armor rating equal or greater to '#'.
+
+    -d #   The '-d' will list all objects on players that do
+           a maxium damage equal or greater than '#'.  This is
+           based on ndice*sdice + pdice.
+
+    -n #   The '-n' flag specifies the object number to search for.
+           This flag is redundant if the object number has already 
+           been specified as the first argument of psearch.
+
+    -s #   The '-s' will list all players that know the spell 
+           which corresponds to '#'. The first spell starts at 0.
+
+    -v #   The '-v' will list all objects on players with value
+           exceeding '#'.
+
+    -N <name> Requires psearch to use the name following the -N as
+           the name of the object to search for.  The given name
+           has to perfectly match the object name in ordor for the object
+           to be listed.  In cases where the object name is more than
+           one word or contains single quotes, the entire name needs
+           to be double quoted.   i.e. psearch -N "dragon's blade"
+
+   -P <players> Normally psearch will search all the players in
+           the mordor/player/ directory. The '-P' flag requires psearch
+           to only search the following list of players.  Note:  the
+           list of players still must exist in mordor/player/. The '-P'
+           allows a way to limit psearch's search domain.
+
+Examples:
+    psearch 212
+     --this will list all the players that have object 212 
+       (assassin daggers)
+
+    psearch -d 20
+     --this will search and list all the players and objects that
+       can do 20+ damage. 
+
+    psearch -N "small knife" -P P1 P2 P3
+     -- this will search all the given players (P1, P2, P3) that
+        have objects with the name of small knife. 
+
+
+Errors:
+     If a player cannot be loaded, the user will be notifed of a
+     player load error.or.
+

@@ -3,8 +3,7 @@
  *
  *  DM functions
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
- *  Copyright (C) 1995 Brooke Paul
+ *  Copyright (C) 1995, 1997 Brooke Paul
  *
  */
 
@@ -25,8 +24,7 @@ creature        *ply_ptr;
 cmd             *cmnd;
 {
         creature        *crt_ptr;
-        int             cfd, fd;
-        char            str[IBUFSIZE+1]; 
+	int             cfd;
 	char		file[80];
 
         if(ply_ptr->class < DM)
@@ -54,13 +52,17 @@ cmd             *cmnd;
 		return(0);
 	}
 	ANSI(cfd, MAGENTA);
-	write(cfd, "Lightning comes down from on high!  You have angered the gods!\n", 63);
+	#ifdef WIN32
+		scwrite(cfd, "\nLightning comes down from on high!  You have angered the gods!\n", 64);
+	#else
+		write(cfd, "\n[35mLightning comes down from on high!  You have angered the gods![37m\n", 74);
+	#endif /* WIN32 */
 	ANSI(cfd, WHITE);
 	broadcast_rom(cfd, crt_ptr->rom_num,"A bolt of lightning strikes %s from on high.\n",crt_ptr->name);
-	broadcast("\n### %s has been turned to dust! We'll miss %s dearly.", Ply[cfd].ply->name, F_ISSET(Ply[cfd].ply, PMALES) ? "him":"her");
+	broadcast_rom(cfd, crt_ptr->rom_num,"%s has been turned to dust!\n", crt_ptr->name);
+		last_dust_output=time(0)+5L;
                 sprintf(file, "%s/%s", PLAYERPATH, Ply[cfd].ply->name);
                 disconnect(cfd);
-        broadcast("### Ominous thunder rumbles in the distance.\n");
 	        unlink(file);
                 return(0);
 
@@ -87,7 +89,7 @@ cmd             *cmnd;
                 return(PROMPT);	
 
 	if (cmnd->num < 2) {
-		print (fd, "syntax: *possess <creature>\n");
+		print (fd, "Syntax: *possess <creature>\n");
 		return(0);
 	}
 	
@@ -193,7 +195,6 @@ cmd             *cmnd;
 {
 	creature	*atr_ptr, *atd_ptr;
 	room		*rom_ptr;
-	ctag		*pp, *cp, *prev;
 	int		fd, inroom=1;
 
 	fd = ply_ptr->fd;
@@ -257,7 +258,6 @@ creature *ply_ptr;
 cmd     *cmnd;
 
 {
-etag	*first_enm;
 etag    *ep;
 room	*rom_ptr;
 creature *crt_ptr;

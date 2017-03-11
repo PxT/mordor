@@ -1,0 +1,109 @@
+; This file need to be in ~/bin.
+; at the beginning will comment out the line and take the default string
+
+[Game Settings]
+;Port # for game.  DO NOT CHANGE THIS and reload ini from inside game!
+PORTNUM=4040
+;Ansi Bottom line.  Only used in Player Creation at this time.
+ANSILINE=Yes
+;Perform automatic shutdowns
+AUTOSHUTDOWN=No
+;Check for double logins
+Checkdouble=Yes
+;Enable Crashtrapping with signal functions (experimental)
+CRASHTRAP=No
+;Enable food and drink
+EATNDRINK=No
+;Use hash tables for room directories.  r00/r00001 r01/r01001 etc.
+HASHROOMS=No
+;Use heaven specific settings
+HEAVEN=No
+;Use Isengard specific settings
+ISENGARD=Yes
+;Experience for healing players
+NICEEXP=Yes
+; This will block access to all non-RFC1413 accounts.
+Paranoid=No
+;This will output all the keystrokes by all players to ~/log/all_cmd.
+Record_all=No
+;This will block access to broadcasting for all non-RFC1413 accounts that
+;have not been authorized.  It will also prevent them from playing past
+;level 3.
+RFC1413=No
+;Runs schedule_g()
+Sched=No
+;This will disallow multiple logins from RFC1413 compliant accounts.
+Secure=Yes
+;This keeps track of all suicided characters in ~/log/SUICIDE
+SUICIDE=No
+;This will save a player's file whenever s/he "drop"s something
+SAVEONDROP=No
+
+[Text Strings]
+Title=Mordor MUD: Oceancrest Stock Database
+Authorization_questions_email=auth@I.NEED.TO.SET.THIS
+Register_questions_email=auth@I.NEED.TO.SET.THIS 
+Questions_to_email=auth@I.NEED.TO.SET.THIS 
+Account_exists=Your account already exists here.
+
+; Password needed to create a new DM 
+; (comment it out to disable new DM creation)
+DM_password=NaZg0OL
+
+[Weather]
+;Sunrise=The sun rises.
+;Sunset=The sun disappears over the horizon.
+;
+;Earth_trembles=The earth trembles under your feet.
+;Heavy_fog=A heavy fog blankets the earth.
+;
+;Beautiful_day=It's a beautiful day today.
+;Bright_sun=The sun shines brightly across the land.
+;Glaring_sun=The glaring sun beats down upon the inhabitants of the world.
+;Heat=The heat today is unbearable.
+;
+;Still=The air is still and quiet.
+;Light_breeze=A light breeze blows from the south.
+;Strong_wind=A strong wind blows across the land.
+;Wind_gusts=The wind gusts, blowing debris through the streets.
+;Gale_force=Gale force winds blow in from the Sea of Tranquility.
+;
+;Clear_skies=Clear, blue skies cover the land.
+;Light_clouds=Light clouds appear over the mountains.
+;Thunderheads=Thunderheads roll in from the east.
+;Light_rain=A light rain falls quietly.
+;Heavy_rain=A heavy rain begins to fall.
+;Sheets_rain=Sheets of rain pour down from the skies.
+;Torrent_rain=A torrent soaks the ground.
+;
+;No_moon=The sky is dark as pitch.
+;Sliver_moon=A sliver of silver can be seen in the night sky.
+;Half_moon=Half a moon lights the evening skies.
+;Waxing_moon=The night sky is lit by the waxing moon.
+;Full_moon=The full moon shines across the land.
+
+[DM's names]
+DMNAME=Garth
+DMNAME2=Tesseract
+DMNAME3=Erech
+DMNAME4=Azog
+DMNAME5=Darwin
+DMNAME6=Eldritch
+DMNAME7=Fangorn
+
+; DO NOT CHANGE THESE and reload ini from inside game!
+[pathnames]
+ROOMPATH=/home/mordor/rooms
+MONPATH=/home/mordor/objmon
+OBJPATH=/home/mordor/objmon
+PLAYERPATH=/home/mordor/player
+DOCPATH=/home/mordor/help
+POSTPATH=/home/mordor/post
+BINPATH=/home/mordor/bin
+LOGPATH=/home/mordor/log
+
+[Timed Exit settings]
+tx_mesg1=The Ithil Express has docked in Parth.
+tx_mesg2=The Ithil Express has docked in Celduin.
+
+

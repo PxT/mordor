@@ -3,7 +3,7 @@
  *
  *  Additional user routines dealing with magic spells.  
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -28,7 +28,7 @@ int     how;
 {
     creature    *crt_ptr;
     room        *rom_ptr;
-    int     fd, heal;
+    int     fd, heal, exp;
 
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -59,6 +59,8 @@ int     how;
               mrand(1,1+ply_ptr->level/2) : 0) + 
             ((ply_ptr->class == PALADIN) ? ply_ptr->level/3 +
               mrand(1,1+ply_ptr->level/4) : 0) +
+	    ((ply_ptr->class == DRUID) ? ply_ptr->level/4 +
+	      mrand(1,1+ply_ptr->level/4) : 0) +
 	    ((ply_ptr->class == BARD) ? ply_ptr->level/4 +
               mrand(1,1+ply_ptr->level/5) : 0) +
             mrand(1,6);
@@ -137,7 +139,22 @@ int     how;
 
         heal = MAX(1, heal);
 
-        crt_ptr->hpcur += MAX(1, heal);
+	if(NICEEXP) {
+		if(ply_ptr != crt_ptr && crt_ptr->type == PLAYER) {
+			exp=0;
+			if((ply_ptr->class == CLERIC || ply_ptr->class == PALADIN)&& how==CAST) 
+				exp=MAX(1, heal)/4;
+			else 
+				if(how==CAST)
+					exp=MAX(1, heal)/2;
+
+			if(exp && (crt_ptr->hpcur < crt_ptr->hpmax)) {
+				ply_ptr->experience+=exp;
+				print(fd, "You gain %d experience for your deed.\n", exp);
+			}
+		}
+	}
+	crt_ptr->hpcur += MAX(1, heal);
 
         if(crt_ptr->hpcur > crt_ptr->hpmax)
             crt_ptr->hpcur = crt_ptr->hpmax;
@@ -316,7 +333,7 @@ int     how;
     creature    *crt_ptr;
     room        *rom_ptr;
     long        t;
-    int     fd, heal;
+    int     fd;
 
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -442,7 +459,7 @@ int     how;
 {
     creature    *crt_ptr;
     room        *rom_ptr;
-    int     fd, heal;
+    int     fd, heal, exp;
 
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -473,6 +490,8 @@ int     how;
               mrand(1, 1+ply_ptr->level/2) : 0) + 
             ((ply_ptr->class == PALADIN) ? ply_ptr->level/2 +
               mrand(1, 1+ply_ptr->level/3) : 0) +
+	    ((ply_ptr->class == DRUID) ? ply_ptr->level/3 +
+	      mrand(1, 1+ply_ptr->level/4) : 0) +
 	    ((ply_ptr->class == BARD) ? ply_ptr->level/4 +
               mrand(1, 1+ply_ptr->level/5) : 0) +
 
@@ -549,6 +568,21 @@ int     how;
             heal = dice(2,6,0);
 
         heal = MAX(1, heal);
+
+		if(NICEEXP) {
+			if(ply_ptr != crt_ptr && crt_ptr->type == PLAYER) {
+                exp=0;
+				if((ply_ptr->class == CLERIC || ply_ptr->class == PALADIN)&& how==CAST)
+					exp=MAX(1, heal)/4;
+				else
+					if(how==CAST)
+						exp=MAX(1, heal)/2;
+				if(exp && (crt_ptr->hpcur < crt_ptr->hpmax)) {
+					ply_ptr->experience+=exp;
+					print(fd, "You gain %d experience for your deed.\n", exp);
+				}
+			}
+		}
 
         crt_ptr->hpcur += MAX(1, heal);
 

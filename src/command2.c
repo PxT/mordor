@@ -3,15 +3,12 @@
  *
  *	Addition user command routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
 #include "mstruct.h"
 #include "mextern.h"
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
 
 /**********************************************************************/
 /*				look				      */
@@ -112,6 +109,9 @@ cmd		*cmnd;
 				print(fd, "It's broken or used up.\n");
 			else if(obj_ptr->shotscur <= obj_ptr->shotsmax/10)
 				print(fd, "It looks about ready to break.\n");
+
+			if(F_ISSET(obj_ptr, OTMPEN) &&(ply_ptr->class == ALCHEMIST || ply_ptr->class ==MAGE && F_ISSET(ply_ptr, PDMAGI) || ply_ptr->class >= CARETAKER)) 
+				print(fd, "It is weakly enchanted.\n");
 		}
 
 		return(0);
@@ -162,6 +162,8 @@ cmd		*cmnd;
 	if(crt_ptr) {
 		print(fd, "You see %s the %s %s.\n", crt_ptr->name,
 		      race_adj[crt_ptr->race], title_ply(crt_ptr));
+		if(crt_ptr->description[0])
+			print(fd, "%s\n", crt_ptr->description);
 		if(F_ISSET(ply_ptr, PKNOWA)) {
 			print(fd, "%s ",
 				F_ISSET(crt_ptr, MMALES) ? "He":"She");
@@ -415,27 +417,24 @@ cmd		*cmnd;
 		broadcast_rom(fd, old_rom_ptr->rom_num, "%M leaves %s.", 
 			      ply_ptr, tempstr);
 	}
-	if(F_ISSET(ply_ptr, PALIAS) && ply_ptr->type == PLAYER) { 
-                del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
-                broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered to the %s.", Ply[ply_ptr->fd].extr->alias_crt, tempstr);
-                add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
-        }
-        if(ply_ptr->type == PLAYER) {
-		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
-		add_ply_rom(ply_ptr, rom_ptr);
-	}
-	else {
-		del_crt_rom(ply_ptr, ply_ptr->parent_rom);
-	        add_crt_rom(ply_ptr, rom_ptr);
-        }
-	
+
+	del_ply_rom(ply_ptr, ply_ptr->parent_rom);
+	add_ply_rom(ply_ptr, rom_ptr);
+
+
 	cp = ply_ptr->first_fol;
 	while(cp) {
 		if(cp->crt->rom_num == old_rom_num && cp->crt->type != MONSTER)
 			move(cp->crt, cmnd);
+		if(F_ISSET(cp->crt, MDMFOL) && cp->crt->rom_num == old_rom_num && cp->crt->type == MONSTER) {
+		del_crt_rom(cp->crt, old_rom_ptr);
+		broadcast_rom(fd, old_rom_ptr->rom_num, "%M just wandered to the %s.\n", cp->crt, tempstr); 
+		add_crt_rom(cp->crt, rom_ptr, 1);
+                add_active(cp->crt); 
+	        }	
 	cp = cp->next_tag;
 	}
-	
+
 	if(is_rom_loaded(old_rom_num)) {
 		cp = old_rom_ptr->first_mon;
 		while(cp) {
@@ -453,6 +452,11 @@ cmd		*cmnd;
 			}
 			if(mrand(1,20) > 15 - ply_ptr->dexterity +
 			   cp->crt->dexterity) {
+				cp = cp->next_tag;
+				continue;
+			}
+/* Protect the newbie areas from aggro-dragging */
+			if(F_ISSET(cp->crt,MAGGRE) && F_ISSET(xp->ext,XPGUAR)) {
 				cp = cp->next_tag;
 				continue;
 			}
@@ -502,14 +506,15 @@ cmd		*cmnd;
 			break;
 		}
 	}
+
 	cmnd->fullstr[255] = 0;
 	/* Check for modem escape code */
-        for(j=0; j<len && j < 256; j++) {
-                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
-                        index = -1;
-                        break;
-                }
-        }
+	for(j=0; j<len && j < 256; j++) {
+		if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+			index = -1;
+		break;
+	}
+    }
 
 	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
 		print(fd, "Say what?\n");
@@ -530,7 +535,7 @@ cmd		*cmnd;
 		print(fd, "Ok.\n");
 
 	broadcast_rom(fd, rom_ptr->rom_num, "%M says, \"%s.\"", 
-		      ply_ptr, &cmnd->fullstr[index]);
+		ply_ptr, &cmnd->fullstr[index]);
 
 	return(0);
 
@@ -735,7 +740,7 @@ creature	*ply_ptr;
 	room	*rom_ptr;
 	object	*obj_ptr, *last_obj;
 	otag	*op;
-	char	str[2048];
+	char	str[2048], *str2;
 	int 	fd, n = 1, found = 0, heavy = 0, dogoldmsg = 0;
 
 	last_obj = 0; str[0] = 0;
@@ -744,7 +749,7 @@ creature	*ply_ptr;
 	rom_ptr = ply_ptr->parent_rom;
 
 	op = rom_ptr->first_obj;
-	while(op) {
+	while(op && strlen(str)< 2040) {
 		if(!F_ISSET(op->obj, OSCENE) &&
 		   !F_ISSET(op->obj, ONOTAK) && !F_ISSET(op->obj, OHIDDN) && 
 		   (F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->obj, OINVIS))) {
@@ -783,13 +788,19 @@ creature	*ply_ptr;
 			   last_obj->adjustment == obj_ptr->adjustment)
 				n++;
 			else if(last_obj) {
-				strcat(str, obj_str(last_obj, n, 0));
-				strcat(str, ", ");
+				str2 = obj_str(last_obj, n, 0);
+                                if(strlen(str2)+strlen(str) < 2040){
+					strcat(str, str2);
+					strcat(str, ", ");
 				n=1;
+				}
 			}
 			if(obj_ptr->type == MONEY) {
-				strcat(str, obj_str(obj_ptr, 1, 0));
-				strcat(str, ", ");
+		   	str2 = obj_str(obj_ptr, 1, 0);
+				if(strlen(str2)+strlen(str) < 2040){
+					strcat(str, str2);
+					strcat(str, ", ");
+				}
 				ply_ptr->gold += obj_ptr->value;
 				free_obj(obj_ptr);
 				last_obj = 0;
@@ -804,8 +815,11 @@ creature	*ply_ptr;
 			op = op->next_tag;
 	}
 
-	if(found && last_obj)
-		strcat(str, obj_str(last_obj, n, 0));
+	if(found && last_obj) {
+		str2 = obj_str(last_obj, n, 0);
+                if(strlen(str2)+strlen(str) < 2040)
+			strcat(str, str2);
+	}
 	else if(!found) {
 		print(fd, "There's nothing here.\n");
 		return;
@@ -844,7 +858,7 @@ object		*cnt_ptr;
 	room	*rom_ptr;
 	object	*obj_ptr, *last_obj;
 	otag	*op;
-	char	str[2048];
+	char	str[2048], *str2;
 	int	fd, n = 1, found = 0, heavy = 0;
 
 	last_obj = 0; str[0] = 0;
@@ -877,9 +891,12 @@ object		*cnt_ptr;
 				last_obj->adjustment == obj_ptr->adjustment)
 				n++;
 			else if(last_obj) {
-				strcat(str, obj_str(last_obj, n, 0));
+			str2 = obj_str(last_obj, n, 0);
+                                if(strlen(str2)+strlen(str) < 2040){
+				strcat(str, str2);
 				strcat(str, ", ");
 				n = 1;
+				}
 			}
 			if(obj_ptr->type == MONEY) {
 				ply_ptr->gold += obj_ptr->value;
@@ -897,8 +914,11 @@ object		*cnt_ptr;
 			op = op->next_tag;
 	}
 
-	if(found && last_obj)
-		strcat(str, obj_str(last_obj, n, 0));
+	if(found && last_obj) {
+	str2 = obj_str(obj_ptr, n, 0);
+           if(strlen(str2)+strlen(str) < 2040)
+		strcat(str, str2);
+	}
 	else if(!found) {
 		print(fd, "There's nothing in it.\n");
 		return;
@@ -968,7 +988,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	otag		*op;
-	char		str[2048];
+	char		str[2048], *str2;
 	int		m, n, fd, flags = 0;
 
 	fd = ply_ptr->fd;
@@ -1007,9 +1027,12 @@ cmd		*cmnd;
 				else
 					break;
 			}
-			strcat(str, obj_str(op->obj, m, flags));
-			strcat(str, ", ");
-			n++;
+			str2 = obj_str(op->obj, m, flags);
+                        if(strlen(str2)+strlen(str) < 2040){
+				strcat(str, str2);
+				strcat(str, ", ");
+				n++;
+			}
 		}
 		op = op->next_tag;
 	}
@@ -1035,15 +1058,18 @@ cmd		*cmnd;
 {
 	room		*rom_ptr;
 	object		*obj_ptr, *cnt_ptr;
-	int		fd, n, match=0;
-
+	int		fd, n, match=0, gold=0;
+	
 	fd = ply_ptr->fd;
-
+	
 	if(cmnd->num < 2) {
 		print(fd, "Drop what?\n");
 		return(0);
 	}
-
+	
+	if(F_ISSET(ply_ptr, PALIAS))
+               ply_ptr=Ply[fd].extr->alias_crt;
+	
 	rom_ptr = ply_ptr->parent_rom;
 	F_CLR(ply_ptr, PHIDDN);
 
@@ -1051,18 +1077,35 @@ cmd		*cmnd;
 
 		if(!strcmp(cmnd->str[1], "all")) {
 			drop_all_rom(ply_ptr);
+if(SAVEONDROP)
+			if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
 			return(0);
 		}
+		/* drop gold [BDyess] */
+		if(cmnd->str[1][0] == '$' && !F_ISSET(rom_ptr, RDUMPR)) {
+                 gold = atoi(cmnd->str[1]+1);
+                  if(gold > 0 && gold <= ply_ptr->gold) {
+		     load_obj(0, &obj_ptr);
+                     sprintf(obj_ptr->name, "%d gold coins", gold);
+                     obj_ptr->value = gold;
+                     ply_ptr->gold -= gold;
+                   } 
+		   else { 
+                     print(fd, "You don't have that much!\n");
+                     return(0);
+                   }
+		}
 
-		obj_ptr = find_obj(ply_ptr, ply_ptr->first_obj,
-				   cmnd->str[1], cmnd->val[1]);
-
+		else 
+		obj_ptr = find_obj(ply_ptr, ply_ptr->first_obj, cmnd->str[1], cmnd->val[1]);
+		
 		if(!obj_ptr) {
 			print(fd, "You don't have that.\n");
 			return(0);
 		}
-
-		del_obj_crt(obj_ptr, ply_ptr);
+		if(!gold)
+			del_obj_crt(obj_ptr, ply_ptr);
+		
 		print(fd, "You drop %1i.\n", obj_ptr);
 		broadcast_rom(fd, rom_ptr->rom_num, "%M dropped %1i.",
 			      ply_ptr, obj_ptr);
@@ -1073,6 +1116,8 @@ cmd		*cmnd;
 			ply_ptr->gold += 5;
 			print(fd, "Thanks for recycling.\nYou have %-ld gold.\n", ply_ptr->gold);
 		}
+if(SAVEONDROP)
+		if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
 		return(0);
 	}
 
@@ -1110,6 +1155,8 @@ cmd		*cmnd;
 
 		if(!strcmp(cmnd->str[1], "all")) {
 			drop_all_obj(ply_ptr, cnt_ptr);
+if(SAVEONDROP)
+			if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
 			return(0);
 		}
 
@@ -1153,6 +1200,8 @@ cmd		*cmnd;
 		print(fd, "You put %1i in %1i.\n", obj_ptr, cnt_ptr);
 		broadcast_rom(fd, rom_ptr->rom_num, "%M put %1i in %1i.",
 			      ply_ptr, obj_ptr, cnt_ptr);
+if(SAVEONDROP)
+		if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
 		return(0);
 	}
 
@@ -1171,11 +1220,14 @@ creature	*ply_ptr;
 	object	*obj_ptr;
 	room	*rom_ptr;
 	otag	*op;
-	char	str[2048], str2[2048];
+	char	str[2048];
 	int	fd, found;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
+	/* if(F_ISSET(ply_ptr, PALIAS))
+               ply_ptr=Ply[fd].extr->alias_crt; */
+
 
 	found = list_obj(str, ply_ptr, ply_ptr->first_obj);
 
@@ -1223,7 +1275,7 @@ object		*cnt_ptr;
 	object	*obj_ptr, *last_obj;
 	room	*rom_ptr;
 	otag	*op;
-	char	str[2048];
+	char	str[2048], *str2;
 	int	fd, n = 1, found = 0, full = 0;
 
 	fd = ply_ptr->fd;
@@ -1262,9 +1314,12 @@ object		*cnt_ptr;
 			   last_obj->adjustment == obj_ptr->adjustment)
 				n++;
 			else if(last_obj) {
-				strcat(str, obj_str(last_obj, n, 0));
-				strcat(str, ", ");
-				n = 1;
+			str2 = obj_str(last_obj, n, 0);
+                                if(strlen(str2)+strlen(str) < 2040){
+					strcat(str, str2);
+					strcat(str, ", ");
+					n = 1;
+				}
 			}
 			last_obj = obj_ptr;
 		}
@@ -1272,8 +1327,11 @@ object		*cnt_ptr;
 			op = op->next_tag;
 	}
 
-	if(found && last_obj)
-		strcat(str, obj_str(last_obj, n, 0));
+	if(found && last_obj) {
+		str2 = obj_str(last_obj, n, 0);
+                if(strlen(str2)+strlen(str) < 2040)
+			strcat(str, str2);
+	}
 	else {
 		print(fd, "You don't have anything to put into it.\n");
 		return;

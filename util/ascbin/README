@@ -1,0 +1,31 @@
+AsciitoBintoAscii
+_________________
+
+By Steven Wallace
+
+  This is an old (by Mordor standards) and very useful utility.  This 
+allows you to convert your database from binary form into ascii.  This 
+will let you to convert from databases created using one struct to 
+another.  It can also be used to port databases to other architectures.
+  It should reside in ~/util/ascbin and will compile using the headers 
+contained in your source tree.  The binary was compiled under Linux 
+2.0.29.
+
+  It operates in 2 modes:
+
+Binary to Ascii:
+  Most of the datafiles in Mordor are binary format.  You can convert 
+them to ascii with --
+
+	ab b [r|p|c|o] ascfile binfile
+ 
+  This this will convert the binary room, player, creature, or object 
+file to ascii.  The ascii file can then be turned back to binary with --
+
+	ab a ascfile
+
+  Note: this will overwrite the output file if you do not rename it after 
+conversion (i.e. if you are converting several files of the same type).
+
+  Please direct questions to rec.games.mud.admin, and don't bother Steve.
+

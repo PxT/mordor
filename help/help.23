@@ -1,6 +1,7 @@
 Help on:
 	ATTACK <player/monster> [#]
 	KILL <player/monster> [#]
+        K <player/monster> [#]
 
 The attack command allows a player to fight a monster or player who is
 in the same room.  Once a monster is attacked, it will remember your

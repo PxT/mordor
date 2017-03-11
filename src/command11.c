@@ -4,6 +4,7 @@
  *
  *   Additional user routines
  *
+ *	(c) 1994-1997 Brooke Paul
  */
 
 #include "mstruct.h"
@@ -41,11 +42,11 @@ cmd		*cmnd;
 	cmnd->fullstr[255] = 0;
 	/* Check for modem escape code */
         for(j=0; j<strlen(cmnd->fullstr) && j < 256; j++) {
-                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+'){
-                        index = -1;
+                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
+                        index=-1;
                         break;
-        	}
-	}
+                }
+        }
 
 	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
 		print(fd, "Emote what?\n");

@@ -1,9 +1,7 @@
-
 Help on:
-
 	*PARAMETER [r|d|s]
 
-	This function allows the DM to set various game parameters.  
+This function allows the DM to set various game parameters.  
 These parameters can be listed by using the 'd' flag.
 
 example:

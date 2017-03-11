@@ -1,15 +1,9 @@
-
-Help on command:
-
-	PURCHASE
-
-Syntax:
-
+Help on:
 	PURCHASE <item> <monster>
 
-	This command allows you to buy items from monsters, providing 
-they have something to sell.  To find out what a monster may have for 
-sale, use the SELECTION command.
+This command allows you to buy items from monsters, providing they have
+something to sell.  To find out what a monster may have for sale, use
+the SELECTION command.
 
 Example:
 

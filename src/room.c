@@ -3,7 +3,7 @@
  *
  *	Room routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -136,8 +136,6 @@ object	*obj_ptr;
 room	*rom_ptr;
 {
 	otag	*op, *temp, *prev;
-	int num;
-
 	
 	obj_ptr->parent_rom = rom_ptr;
 	obj_ptr->parent_obj = 0;
@@ -340,10 +338,7 @@ room	*rom_ptr;
 
 		n = 1;
 		for(j=i+1; j<10; j++) 
-			if(rom_ptr->perm_mon[i].misc == 
-			   rom_ptr->perm_mon[j].misc && 
-			   (rom_ptr->perm_mon[j].ltime + 
-			   rom_ptr->perm_mon[j].interval) < t) {
+			if(rom_ptr->perm_mon[i].misc == rom_ptr->perm_mon[j].misc && (rom_ptr->perm_mon[j].ltime + rom_ptr->perm_mon[j].interval) < t) {
 				n++;
 				checklist[j] = 1;
 			}
@@ -470,7 +465,6 @@ void check_exits(rom_ptr)
 room	*rom_ptr;
 {
 	xtag	*xp;
-	int	tmp;
 	long	t;
 
 	t = time(0);
@@ -506,7 +500,6 @@ room		*rom_ptr;
 {
 	xtag		*xp;
 	ctag		*cp;
-	otag		*op;
 	creature	*crt_ptr;
 	char		str[2048];
 	int		fd, n=0, m, t, light = 0;
@@ -529,7 +522,11 @@ room		*rom_ptr;
 			}
 			if(ply_ptr->race == ELF ||
 			    ply_ptr->race == DWARF ||
-			    ply_ptr->class >= CARETAKER)
+			    ply_ptr->race == TROLL ||
+			    ply_ptr->race == DARKELF ||
+			     ply_ptr->race == GOBLIN ||
+				ply_ptr->race == ORC ||	
+		    ply_ptr->class >= CARETAKER)
 				light = 1;
 		}
 		else
@@ -636,20 +633,22 @@ room		*rom_ptr;
 
 	str[0]=0;  strcat(str, "You see ");
 	n = list_obj(&str[8], ply_ptr, rom_ptr->first_obj);
-
-	if(n)
+        if(n) {
 		print(fd, "%s.\n", str);
+        }
 
 	cp = rom_ptr->first_mon;
 	while(cp) {
 		if(cp->crt->first_enm) {
 			crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-					   cp->crt->first_enm->enemy, 1);
+				cp->crt->first_enm->enemy, 1);
+			ANSI(fd,RED);
 			if(crt_ptr == ply_ptr)
 				print(fd, "%M is attacking you.\n", cp->crt);
 			else if(crt_ptr)
 				print(fd, "%M is attacking %m.\n", cp->crt,
 				      crt_ptr);
+			ANSI(fd,WHITE);
 		}
 		cp = cp->next_tag;
 	}
@@ -709,7 +708,7 @@ room		*rom_ptr;
 	room	*new_rom;
 	ctag	*cp;
 	creature *tmp_crt;
-	int		i, dmg, fd;
+	int		dmg, fd;
 
 	if(!rom_ptr->trap) {
 		F_CLR(ply_ptr, PPREPA);

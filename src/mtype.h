@@ -3,22 +3,27 @@
  *
  *      #defines required by the rest of the program
  *
- *      Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *      Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
-/* socket port number */
-#define PORTNUM         4040
+#ifndef READCFG
+	#define READCFG
  
-/* DM's name */
-#define DMNAME          "Garth"
-#define DMNAME2         "Tesseract"
-#define DMNAME3         "Gandalf"
-#define DMNAME4         "Ugluk"
-#define DMNAME5         "Darwin"
-#define DMNAME6         "Fangorn"
-#define DMNAME7         "Frodo"
- 
+	/* pathnames */
+	#define ROOMPATH        "../rooms"
+	#define MONPATH         "../objmon"
+	#define OBJPATH         "../objmon"
+	#define PLAYERPATH      "../player"
+	#define DOCPATH         "../help"
+	#define POSTPATH        "../post"
+	#define BINPATH         "../bin"
+	#define LOGPATH         "../log" 
+#endif /* READCFG */
+
+/*
+#define USEBANK 
+*/
 /* I/O buffer sizes */
 #define IBUFSIZE        1024
 #define OBUFSIZE        8192
@@ -26,22 +31,15 @@
 /* File permissions */
 /*#define S_IWRITE      00660 */
 /*#define S_IREAD       00006 */
-#define O_BINARY        0
+#ifndef WIN32
+	#define O_BINARY        0
+#endif
 #define ACC             00660
  
 /* merror() error types */
 #define FATAL           1
 #define NONFATAL        0
  
-/* pathnames */
-#define ROOMPATH        "/home/mordor/rooms"
-#define MONPATH         "/home/mordor/objmon"
-#define OBJPATH         "/home/mordor/objmon"
-#define PLAYERPATH      "/home/mordor/player"
-#define DOCPATH         "/home/mordor/help"
-#define POSTPATH        "/home/mordor/post"
-#define BINPATH         "/home/mordor/bin"
-#define LOGPATH         "/home/mordor/log" 
         
 #define COMMANDMAX      5
 
@@ -51,13 +49,13 @@
 
 /* memory limits */
 #define RMAX            9000    /* Max number of these allowed to be created */
-#define CMAX            1000
-#define OMAX            1000
+#define CMAX            2000
+#define OMAX            2000
 #define PMAX            256
 
-#define RQMAX           600     /* Max number of these allowed in memory */
-#define CQMAX           200     /* at any one time                       */
-#define OQMAX           200
+  #define RQMAX           600     /* Max number of these allowed in memory */
+  #define CQMAX           200     /* at any one time                       */
+  #define OQMAX           200
 
 /* how often (in seconds) players get saved */
 #define SAVEINTERVAL    1200
@@ -94,8 +92,10 @@
 #define THIEF           8
 #define BARD		9
 #define MONK		10
-#define CARETAKER       11
-#define DM              12
+#define DRUID		11
+#define ALCHEMIST	12
+#define CARETAKER       13
+#define DM              14
 
 /* Character races */
 #define DWARF           1
@@ -127,6 +127,9 @@
 #define KEY             11
 #define LIGHTSOURCE     12
 #define MISC            13
+#define HERB            14 
+#define FOOD		15
+#define DRINK		16
 
 /* Proficiencies */
 #define SHARP           0
@@ -148,6 +151,9 @@
 #define DL_TRACK        3       /* Daily track spells */
 #define DL_DEFEC        4       /* Daily defecations */
 #define DL_CHARM	5	/* Daily charms */
+#define DL_RCHRG	6	/* Daily wand recharges */
+#define DL_TELEP	7	/* Daily tports */
+#define DL_BROAE	8	/* Daily broad-emotes */
 
 /* Last-time specifications */
 #define LT_INVIS        0
@@ -191,6 +197,8 @@
 #define LT_MEDIT	37
 #define LT_TOUCH	38
 #define LT_SECCK	39
+#define LT_PREPN        40
+#define LT_SUSTN	41
 
 /* Maximum number of items that can be worn/readied */
 #define MAXWEAR         20
@@ -318,11 +326,12 @@
 #define RNOLEA          28      /* player can not be summon out */
 #define RPLDGK          29      /* player can pledge in room */
 #define RRSCND          30      /* player can rescind in room */
-#define RNOPOT          31      /*  no potion room */
+#define RNOPOT          31      /* No potion room */
 #define RPMEXT          32      /* Player magic spell extend */
 #define RNOLOG          33      /* No player login */
 #define RELECT          34      /* Election Booth */ 
 #define RNDOOR		35	/* Indoors */
+#define RISH2O		36	/* Room is a water source */
 
 /* Player flags */
 #define PBLESS          0       /* Bless spell */
@@ -376,6 +385,9 @@
 #define PSECOK		48	/* Player has passed security check */
 #define PAUTHD		49	/* No-port that has been authorized */
 #define	PALIAS		50	/* DM is aliasing */
+#define PPREPN		51	/* Player is preparing an object */
+#define PNSUSN		52	/* Player needs sustenance */
+#define PIGCLA		53	/* Player is ignoring class comms. */
 
 /* Monster flags */
 #define MPERMT          0       /* Permanent monster */
@@ -408,15 +420,15 @@
 #define MRMAGI          27      /* Resist magic */
 #define MBRWP1          28      /* MBRWP1 & MBRWP2 type of breath */
 #define MBRWP2          29      /* 00 =fire, 01= ice, 10 =gas, 11= acid */
-#define MENEDR          30      /* energy (exp) drain */
+#define MENEDR          30      /* Energy (exp) drain */
 #define MKNGDM          31      /* monster belongs to kingdom 0/1 */
-#define MPLDGK          32      /* players can pledge to monster */
-#define MRSCND          33      /* players can rescind to monster */
+#define MPLDGK          32      /* Players can pledge to monster */
+#define MRSCND          33      /* Players can rescind to monster */
 #define MDISEA          34      /* Monster causes disease */
 #define MDISIT          35      /* Monster can dissolve items */
-#define MPURIT          36      /* player can purchase from monster */
-#define MTRADE          37      /* monster will giuve items */
-#define MPGUAR          38      /* passive exit guard */
+#define MPURIT          36      /* Player can purchase from monster */
+#define MTRADE          37      /* Monster will give items */
+#define MPGUAR          38      /* Passive exit guard */
 #define MGAGGR          39      /* Monster aggro to good players */
 #define MEAGGR          40      /* Monster aggro to evil players */
 #define MDEATH          41      /* Monster has additon desc after death */
@@ -431,6 +443,7 @@
 #define MCHARM		50	/* Monster is charmed */
 #define MMOBIL		51	/* Mobile monster */
 #define MROBOT		52	/* Logic Monster */
+#define MIREGP		53	/* Irregular plural name */
 
 /* Object flags */
 #define OPERMT          0       /* Permanent item (not yet taken) */
@@ -478,6 +491,17 @@
 #define ONSHAT		42	/* weapon will never shatter */
 #define OALCRT		43	/* weapon will always critical */
 #define OLUCKY		44	/* Item is a luck charm */
+#define OCURSW          45      /* Item is cursed & worn */
+#define OHBREW          46      /* Herb brew */
+#define OHNGST          47      /* Herb ingest */
+#define OHPAST          48      /* Herb paste */
+#define OHAPLY          49      /* Herb apply */
+#define ONPREP		50	/* Object is being prepared */
+#define ODPREP		51	/* Object preparation is complete */
+#define OTMPEN		52	/* Object is temporarily enchanted */
+#define ODRUDO		53	/* class selective: druid */
+#define OALCHO		54	/* class selective: alchemist */
+#define OIREGP		55	/* Irregualr plural name */
 
 /* Exit flags */
 #define XSECRT          0       /* Secret */
@@ -511,16 +535,18 @@
 #define XPTHEF		28
 #define XPBARD		29
 #define XPMONK		30
-
-/* Weather */
-#define WSUNNY		1	/* Sunny outside */
-#define WWINDY		2	/* Rainy outside */
-#define	WSTORM		3	/* Storm */
-#define WMOONF		4	/* Full Moon */
+#define XPDRUD		31
+#define XPALCH		32
 
 /* specials */
-#define SP_MAPSC        1       /* Map or scroll */
-#define SP_COMBO        2       /* Combination lock */
+#define SP_MAPSC        	1       /* Map or scroll */
+#define SP_COMBO        	2       /* Combination lock */
+#define SP_HERB_HEAL          	3	/* Various Herbs */
+#define SP_HERB_HARM          	4
+#define SP_HERB_POISON        	5
+#define SP_HERB_DISEASE       	6
+#define SP_HERB_CURE_POISON   	7
+#define SP_HERB_CURE_DISEASE  	8
 
 /* obj_str and crt_str flags */
 #define CAP             1
@@ -566,6 +592,7 @@
 #define WHITE           37
 #define BOLD            1
 #define BLINK           5
+#define CANCELLED	8
 #define NORMAL          0  
 #define ANSI(a,b)       if( (a) > -1 ) { if( F_ISSET(Ply[(a)].ply, PANSIC)) \
                         print((a), "%c[%dm", 27, (b));}

@@ -1,13 +1,8 @@
-
-Help on command:
-
-	EMOTE 
-
-Syntax:
-
+Help on:
 	EMOTE <text>
+        : <text>
 
-	Emote allows you to customize the actions of your player.  It is 
+Emote allows you to customize the actions of your player.  It is 
 similar to the normal social commands (i.e. smile, laugh, etc) except 
 that the text following your name can be anything you desire.
 

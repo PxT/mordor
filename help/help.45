@@ -1,5 +1,6 @@
 Help on:
 	BACKSTAB <monster/player> [#]
+        BS <monster/player> [#]
 
 The backstab command is usable only by thieves and assassins, and allows
 them to do 2-3 times more damage than normal with sharp or thrusting

@@ -1,13 +1,7 @@
+Help on:
+       	WELCOME
 
-Help on command:
-
-	WELCOME
-
-Syntax:
-
-	WELCOME
-
-	This command will print out on your screen a helpful message 
-containing information on playing Isengard.
+This command will print out on your screen a helpful message containing
+information on playing this mud.
 
 

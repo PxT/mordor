@@ -1,0 +1,15 @@
+Help on:
+	*clear [o|c] [index]
+
+This will clear a single object or creature from the database.  All 
+data associated with the deleted creature or item is lost from the disk 
+file.  This information may, in some cases, still exist in memory.  
+  If you accidentally delete an object or creature from your database you
+may be able to recover it partially buy using *monster [index] to load a
+monster from memory and then use *save to resave back to the deleted idex. 
+
+example:
+:*clear o 10
+Object #10 deleted.
+:*clear c 10
+Creature #10 deleted.

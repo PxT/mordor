@@ -3,7 +3,7 @@
  *
  *  DM functions
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1994, 1997 Brooke Paul 
  *
  */
 
@@ -31,7 +31,7 @@ creature        *ply_ptr;
 cmd             *cmnd;
 {
     room    *rom_ptr;
-    int     rom, fd, i;
+    int     fd, i;
     char    *desc, *pattern, *replace, *tmp;
     char    domain =0;
     int     len1, len2, len3, len4;
@@ -109,7 +109,7 @@ creature        *ply_ptr;
 cmd             *cmnd;
 {
     room    *rom_ptr;
-    int     rom, fd, i;
+    int     fd, i;
     char    *desc, *flag, *pattern, *tmp;
     char    domain =0, dcase = 0;
     int     len1, len2;
@@ -240,8 +240,8 @@ char    *desc;
 char    *pattern;
 int *val;
 {
-    int i, j, len, len2;
-    char    c, match = 0, found= 0;
+    int		i, len, len2;
+    char    match = 0, found= 0;
  
     if(!desc || !pattern)
         return (-1);
@@ -361,7 +361,6 @@ creature        *ply_ptr;
 cmd             *cmnd;
 {
     int     len,i=0;
-    char    *tmp;
     room    *rom_ptr;
 
     rom_ptr = ply_ptr->parent_rom;

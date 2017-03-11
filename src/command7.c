@@ -3,7 +3,7 @@
  *
  *	Additional user routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -27,10 +27,16 @@ cmd		*cmnd;
 {
 	room	*rom_ptr;
 	xtag	*xp;
-	ctag	*cp, *temp;
+	ctag	*cp;
 	char 	found = 0;
 	int	fd, n;
 	long	i, t;
+       int     scared = 1;
+       int     **scared_of = &Ply[ply_ptr->fd].extr->scared_of;
+       int     *scary;
+       int     found_non_scary = 0;
+       int     found_scary = 0;
+
 
 	rom_ptr = ply_ptr->parent_rom;
 	fd = ply_ptr->fd;
@@ -44,8 +50,10 @@ cmd		*cmnd;
 		return(0);
 	}
         t = Time%24L;
+	while(1) {
 	xp = rom_ptr->first_ext;
 	if(xp) do {
+		found=0;
 		if(F_ISSET(xp->ext, XCLOSD)) continue;
 		if((F_ISSET(xp->ext, XCLIMB) || F_ISSET(xp->ext, XDCLIM)) &&  
 (!F_ISSET(ply_ptr, PLEVIT))) continue; 
@@ -60,11 +68,11 @@ cmd		*cmnd;
 		if(F_ISSET(xp->ext, XNOSEE)) continue;
 	if(F_ISSET(xp->ext, XPLDGK)) 
 		if (!F_ISSET(ply_ptr, PPLDGK)) continue;
-		else if (BOOL(F_ISSET(xp->ext,XKNGDM)) !=  BOOL(F_ISSET(ply_ptr, PKNGDM))) 
-			continue;
+           else if (BOOL(F_ISSET(xp->ext,XKNGDM)) !=
+                    BOOL(F_ISSET(ply_ptr, PKNGDM))) continue;
 		if(F_ISSET(xp->ext, XNGHTO) && (t>6 && t < 20)) continue;
 		if(F_ISSET(xp->ext, XDAYON) && (t<6 || t > 20))  continue;
-		if(F_ISSET(xp->ext, XPLSEL) && !F_ISSET(xp->ext, XPLSEL+ply_ptr->class)) continue;		
+		if(F_ISSET(xp->ext, XPLSEL) &&!F_ISSET(xp->ext, XPLSEL+ply_ptr->class)) continue;
     if(F_ISSET(xp->ext,XPGUAR)){
         cp = rom_ptr->first_mon;
         while(cp) {
@@ -77,18 +85,64 @@ cmd		*cmnd;
         }
 	if(found)
 		continue;
-    }         
+    }
+
+           /* check to see if the destination room is scary */
+           if(scared && *scared_of) {
+             scary = *scared_of;
+             while(*scary) {
+               if(*scary == xp->ext->room) {
+                 print(fd, "Scared of going %s!\n", xp->ext->name);
+                 found = 1;
+                 found_scary = 1;
+                 break;
+               }
+               scary++;
+             }
+             if(found)
+               continue;
+           }
+           found_non_scary = 1;         
 		if(mrand(1,100) < (65 + bonus[ply_ptr->dexterity]*5)) 
 			break;
 	} while(xp = xp->next_tag);
-
+         if(xp) break; /* found an exit that is not scary, continue */
+         if(found_non_scary) break; /* failed to flee to all the non-scary */
+         if(scared && found_scary) {        /* try again not scared */
+           scared = 0;
+         }
+         else break;                   /* tried everything, give up */
+       }
 	 
-        if(xp && F_ISSET(xp->ext,52) && mrand(1,5) < 2 && !F_ISSET(ply_ptr, PFEARS))
+	if(xp && F_ISSET(xp->ext,52) && mrand(1,5) < 2 && !F_ISSET(ply_ptr, PFEARS))
 		xp = 0;
 	if(!xp) {
 		print(fd, "You failed to escape!\n");
 		return(0);
 	}
+
+       /* update the scary list */
+       scary = *scared_of;
+       {
+         int room = rom_ptr->rom_num;
+         if(scary) {
+           int size = 0;
+           while(*scary) {
+             size++;
+             if(*scary == room) break;
+             scary++;
+           }
+           if(!*scary) {
+             *scared_of =(int*)realloc(*scared_of, (size+2)*sizeof(int));
+             (*scared_of)[size] = room;
+             (*scared_of)[size+1] = 0;
+           }
+         } else {
+           *scared_of = (int*)malloc(sizeof(int)*2);
+           (*scared_of)[0] = room;
+           (*scared_of)[1] = 0;
+         }
+       }
 
 	if(ply_ptr->ready[WIELD-1] &&
 	   !F_ISSET(ply_ptr->ready[WIELD-1], OCURSE)) {
@@ -178,7 +232,7 @@ cmd		*cmnd;
 			print(fd, "Nothing to buy.\n");
 			return(0);
 		}
-
+		add_permobj_rom(dep_ptr);
 		print(fd, "You may buy:\n");
 		op = dep_ptr->first_obj;
 		while(op) {
@@ -305,15 +359,16 @@ cmd		*cmnd;
 		return(0);
 	}
 	luck (ply_ptr);	
-	gold = obj_ptr->value / 3;
-	gold = ((Ply[fd].extr->luck*gold)/100);
+	gold = obj_ptr->value / 4;
+/* Luck for sale of items */
+/*	gold = ((Ply[fd].extr->luck*gold)/100); */
 	gold = MIN( gold, 10000);
 	
 	if((obj_ptr->type <= MISSILE || obj_ptr->type == ARMOR) &&
 	   obj_ptr->shotscur <= obj_ptr->shotsmax/8)
 		poorquality = 1;
 
-	if((obj_ptr->type == WAND || obj_ptr->type == KEY) && obj_ptr->shotscur < 1)
+	if((obj_ptr->type == WAND || obj_ptr->type > MISC || obj_ptr->type == KEY) && obj_ptr->shotscur < 1)
 		poorquality = 1;
 
 	if(gold < 20 || poorquality) {
@@ -321,8 +376,8 @@ cmd		*cmnd;
 		return(0);
 	}
 
-	if(obj_ptr->type == SCROLL || obj_ptr->type == POTION) {
-		print(fd, "The shopkeep won't buy potions and scrolls.\n");
+	if(obj_ptr->type == SCROLL || obj_ptr->type == POTION || obj_ptr->type==FOOD || obj_ptr->type==DRINK) {
+		print(fd, "The shopkeep won't buy that from you.\n");
 		return(0);
 	}
 
@@ -542,7 +597,15 @@ cmd		*cmnd;
 		if(ply_ptr->ready[WIELD-1]->shotscur < 1) {
 			print(fd, "Your %s is broken.\n", 
 			      ply_ptr->ready[WIELD-1]->name);
-			add_obj_crt(ply_ptr->ready[WIELD-1], ply_ptr);
+			if(F_ISSET(ply_ptr->ready[WIELD-1], OTMPEN)) {
+                			ply_ptr->ready[WIELD-1]->pdice=0;
+                			F_CLR(ply_ptr->ready[WIELD-1], OTMPEN);
+                			F_CLR(ply_ptr->ready[WIELD-1], ORENCH);
+                			F_CLR(ply_ptr->ready[WIELD-1], OENCHA);
+                			if(F_ISSET(ply_ptr, PDMAGI))
+                   				print(ply_ptr->fd, "The enchantment fades on your %s.\n", ply_ptr->ready[WIELD-1]);
+            		 }
+			 add_obj_crt(ply_ptr->ready[WIELD-1], ply_ptr);
 			ply_ptr->ready[WIELD-1] = 0;
 			broadcast_rom(fd, ply_ptr->rom_num, 
 				      "%s backstab failed.", 
@@ -627,7 +690,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	room	*rom_ptr;
-	long	goldneeded, expneeded, lv;
+	long	goldneeded, expneeded;
 	int	fd, i, fail = 0, bit[4];
 
 	fd = ply_ptr->fd;
@@ -687,4 +750,20 @@ cmd		*cmnd;
 
 	return(0);
 
+}
+/************************************************************************/
+/*                    courageous						*/
+
+/* Clears the scared list						*/
+
+void courageous(ply_ptr)
+creature       *ply_ptr;
+{
+  int **scared_of;
+  if(Ply[ply_ptr->fd].extr == NULL) return;
+  scared_of = &Ply[ply_ptr->fd].extr->scared_of;
+  if(*scared_of) {
+    free(*scared_of);
+    *scared_of = NULL;
+  }
 }

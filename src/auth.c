@@ -5,23 +5,31 @@
  *	host name of the user.  Also retrieves the user id if
  *	the host is running identd.
  *
- *	Copyright (C) 1994   Brett J. Vickers
+ *	Copyright (C) 1994   Brooke Paul & Brett Vickers
  *
  */
+
 #ifdef IRIX
 	#define _BSD_COMPAT
 #endif
+
+#ifdef WIN32
+	#include <winsock.h>
+	#include <fcntl.h>
+#else
+	#include <sys/ioctl.h>
+	#include <sys/socket.h>
+	#include <signal.h>
+	#include <sys/time.h>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
+	#include <netdb.h>
+#endif
+
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <netdb.h>
 #include <errno.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <sys/signal.h>
 #define MIGNORE
 #include "mstruct.h"
 #include "mextern.h"

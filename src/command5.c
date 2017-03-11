@@ -3,7 +3,7 @@
  *
  *  Additional user routines.
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -82,7 +82,7 @@ creature    *ply_ptr;
 creature    *crt_ptr;
 {
     long    i, t;
-    int fd, m, n, p, lev, addprof, d;
+    int		fd, m, n, p, addprof;
 
     fd = ply_ptr->fd;
 
@@ -113,9 +113,10 @@ creature    *crt_ptr;
         ply_ptr->lasttime[LT_ATTCK].interval = 2;
     else
         ply_ptr->lasttime[LT_ATTCK].interval = 3;
-	if(F_ISSET(ply_ptr, PBLIND)){
-		ply_ptr->lasttime[LT_ATTCK].interval = 7;
-    	}
+
+    if(F_ISSET(ply_ptr, PBLIND))
+	ply_ptr->lasttime[LT_ATTCK].interval = 7;
+    	
         if(crt_ptr->type == MONSTER) 
 	 {
           if(F_ISSET(crt_ptr, MUNKIL)) 	
@@ -165,10 +166,20 @@ creature    *crt_ptr;
             if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
                 (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
                 (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
-                    print(fd, "Sorry, you're lawful.\n");
-                    return (0);
-                }
+			
+				if(ISENGARD) {
+					if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM && (ply_ptr->class != THIEF || ply_ptr->class != ASSASSIN || ply_ptr->class != PALADIN || ply_ptr->class != FIGHTER)) {
+						print(fd, "Sorry, you're lawful.\n");
+				        return (0);
+			        }
+				}
+				else {
+					if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {      
+						print(fd, "Sorry, you're lawful.\n");
+			            return (0);
+					}
+				}
+
                 if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
                     print(fd, "Sorry, that player is lawful.\n");
                     return (0);
@@ -188,6 +199,14 @@ creature    *crt_ptr;
                 ply_ptr,
                 F_ISSET(ply_ptr, PMALES) ? "his":"her",
                 ply_ptr->ready[WIELD-1]->name);
+	    if(F_ISSET(ply_ptr->ready[WIELD-1], OTMPEN)) {
+		ply_ptr->ready[WIELD-1]->pdice=0;
+		F_CLR(ply_ptr->ready[WIELD-1], OTMPEN);
+		F_CLR(ply_ptr->ready[WIELD-1], ORENCH);
+                F_CLR(ply_ptr->ready[WIELD-1], OENCHA);
+                if(F_ISSET(ply_ptr, PDMAGI))
+                   print(ply_ptr->fd, "The enchantment fades on your %s.\n", ply_ptr->ready[WIELD-1]);
+	    }
             add_obj_crt(ply_ptr->ready[WIELD-1], ply_ptr);
             ply_ptr->ready[WIELD-1] = 0;
             return(0);
@@ -238,7 +257,9 @@ creature    *crt_ptr;
             broadcast_rom(fd, ply_ptr->rom_num,
                 "%M made a critical hit.", ply_ptr);
             n *= mrand(3,6);
-            if(ply_ptr->ready[WIELD-1] && (!F_ISSET(ply_ptr->ready[WIELD-1], ONSHAT)) && ((mrand(1,100) < 3) || (F_ISSET(ply_ptr->ready[WIELD-1],OALCRT)))) {
+            if(ply_ptr->ready[WIELD-1] && (!F_ISSET(ply_ptr->ready[WIELD-1], ONSHAT)) 
+&&((mrand(1,100) > (Ply[ply_ptr->fd].extr->luck+40) || mrand(1,100)<3) || 
+(F_ISSET(ply_ptr->ready[WIELD-1],OALCRT)))) {
                 print(fd, "Your %s shatters.\n",
                     ply_ptr->ready[WIELD-1]->name);
                 broadcast_rom(fd, ply_ptr->rom_num,
@@ -249,8 +270,7 @@ creature    *crt_ptr;
                 ply_ptr->ready[WIELD-1] = 0;
             }
         }
-        else if(mrand(1,100) <= (5-p) && ply_ptr->ready[WIELD-1] &&
-            !F_ISSET(ply_ptr->ready[WIELD-1], OCURSE)) {
+        else if(ply_ptr->type == PLAYER && (mrand(1,100) <= (5-p) || mrand(1,100) > Ply[ply_ptr->fd].extr->luck+ply_ptr->level*2)&& ply_ptr->ready[WIELD-1] && !F_ISSET(ply_ptr->ready[WIELD-1], OCURSE)) {
             ANSI(fd, GREEN);
             print(fd, "You FUMBLED your weapon.\n");
             ANSI(fd, WHITE);
@@ -336,15 +356,16 @@ cmd     *cmnd;
                 print(fd, "You're blind!\n");
                 ANSI(fd, WHITE);
                 return(0);
-        }
+	}
 
-#ifdef LASTCOMMAND
-    print(fd, "%-23s  %-20s     %-20s\n", "Player", "Title", "Last command");
-#else
-    ANSI (fd, BOLD);
-    ANSI (fd, BLUE);
-    print(fd, "%-23s  %-20s     %-20s\n", "Player", "Title", "Race");
-#endif
+	if(LASTCOMMAND)
+		print(fd, "%-23s  %-20s     %-20s\n", "Player", "Title", "Last command");
+	else {
+	    ANSI (fd, BOLD);
+	    ANSI (fd, BLUE);
+		print(fd, "%-23s  %-20s     %-20s\n", "Player", "Title", "Race");
+	}
+
     print(fd, "-----------------------------------------------------------------\n");
     ANSI(fd, NORMAL);
     ANSI(fd, WHITE);
@@ -359,29 +380,32 @@ cmd     *cmnd;
         if(F_ISSET(Ply[i].ply, PINVIS) && !F_ISSET(ply_ptr, PDINVI) &&
            ply_ptr->class < CARETAKER)
             continue;
-	ANSI(fd, WHITE);
+		ANSI(fd, WHITE);
         print(fd, "%-20s%s  ", Ply[i].ply->name, 
               (F_ISSET(Ply[i].ply, PDMINV) ||
               F_ISSET(Ply[i].ply, PINVIS)) ? "(*)":"   ");
-       	 ANSI(fd, GREEN);
-	 print(fd, "%-20s     ", title_ply(Ply[i].ply));
-	 ANSI(fd, WHITE);
-#ifdef LASTCOMMAND
-        strncpy(str, Ply[i].extr->lastcommand, 14);
-        for(j=0; j<15; j++)
-            if(str[j] == ' ') {
-                str[j] = 0;
-                break;
-            }
-        if(!str[0])
-            print(fd, "Logged in\n");
-        else
-            print(fd, "%s\n", str);
-#else
-	ANSI(fd, CYAN);
-        print(fd, "%-14s\n", race_str[Ply[i].ply->race]);
-	ANSI(fd, WHITE);
-#endif
+		ANSI(fd, GREEN);
+		print(fd, "%-20s     ", title_ply(Ply[i].ply));
+		ANSI(fd, WHITE);
+
+		if(LASTCOMMAND) {
+		    strncpy(str, Ply[i].extr->lastcommand, 14);
+			for(j=0; j<15; j++)
+				if(str[j] == ' ') {
+					str[j] = 0;
+	                break;
+		        }
+			if(!str[0])
+				print(fd, "Logged in\n");
+	        else
+		        print(fd, "%s\n", str);
+		}
+		else {
+			ANSI(fd, CYAN);
+	        print(fd, "%-14s\n", race_str[Ply[i].ply->race]);
+			ANSI(fd, WHITE);
+		}
+
     }
     print(fd, "\n");
 
@@ -461,6 +485,8 @@ cmd     *cmnd;
     chance = MIN(chance, 90);
     if(ply_ptr->class == RANGER)
         chance += ply_ptr->level*8;
+    if(ply_ptr->class == DRUID)
+	chance += ply_ptr->level*6;
     if(F_ISSET(ply_ptr, PBLIND))
 	chance = MIN(chance, 20);
     if(ply_ptr->class >= CARETAKER)
@@ -477,7 +503,7 @@ cmd     *cmnd;
     F_CLR(ply_ptr, PHIDDN);
 
     ply_ptr->lasttime[LT_SERCH].ltime = t;
-    if(ply_ptr->class == RANGER)
+    if(ply_ptr->class == RANGER || ply_ptr->class == DRUID)
         ply_ptr->lasttime[LT_SERCH].interval = 3;
     else
         ply_ptr->lasttime[LT_SERCH].interval = 7;
@@ -568,33 +594,30 @@ int param;
 char    *str;
 {
     char    file[80];
-#ifdef SUICIDE
     long t;
     char str2[50];
-#endif
 
     switch(param) {
         case 1:
-	    ANSI(fd, BOLD);
-	    ANSI(fd, BLINK);
-	    ANSI(fd, RED);
+			ANSI(fd, BOLD);
+			ANSI(fd, BLINK);
+			ANSI(fd, RED);
             print(fd, "This will completely erase your player.\n");
             print(fd, "Are you sure (Y/N)\n");
-	    ANSI(fd, NORMAL);
-	    ANSI(fd, WHITE);
+		    ANSI(fd, NORMAL);
+		    ANSI(fd, WHITE);
             RETURN(fd, suicide, 2);
         case 2:
             if(low(str[0]) == 'y') {
                 broadcast("### %s committed suicide! We'll miss %s dearly.", Ply[fd].ply->name, F_ISSET(Ply[fd].ply, PMALES) ? "him":"her");
-                sprintf(file, "%s/%s", PLAYERPATH, 
-                    Ply[fd].ply->name);
-#ifdef SUICIDE
-	t = time(0);
-        strcpy(str2, (char *)ctime(&t));
-        str[strlen(str2)-1] = 0;
-	logn("SUICIDE","%s (%s@%s):%s\n", Ply[fd].ply->name, Ply[fd].io->userid, Ply[fd].io->address, str2); 
-#endif
-		disconnect(fd);
+                sprintf(file, "%s/%s", PLAYERPATH, Ply[fd].ply->name);
+				if(SUICIDE) {
+					t = time(0);
+			        strcpy(str2, (char *)ctime(&t));
+					str[strlen(str2)-1] = 0;
+					logn("SUICIDE","%s-%d (%s@%s):%s\n", Ply[fd].ply->name, Ply[fd].ply->level, Ply[fd].io->userid, Ply[fd].io->address, str2);
+				}
+				disconnect(fd);
                 unlink(file);
                 return;
             }
@@ -641,7 +664,7 @@ cmd     *cmnd;
         if(ply_ptr->class == THIEF || ply_ptr->class == ASSASSIN)
             chance = MIN(90, 5 + 6*ply_ptr->level + 
                 3*bonus[ply_ptr->dexterity]);
-        else if(ply_ptr->class == RANGER)
+        else if(ply_ptr->class == RANGER || ply_ptr->class == DRUID)
             chance = 5 + 10*ply_ptr->level +
                 3*bonus[ply_ptr->dexterity];
         else
@@ -683,7 +706,7 @@ cmd     *cmnd;
     if(ply_ptr->class == THIEF || ply_ptr->class == ASSASSIN)
         chance = MIN(90, 10 + 5*ply_ptr->level + 
             5*bonus[ply_ptr->dexterity]);
-    else if(ply_ptr->class == RANGER)
+    else if(ply_ptr->class == RANGER || ply_ptr->class == DRUID)
         chance = 5 + 9*ply_ptr->level +
             3*bonus[ply_ptr->dexterity];
     else
@@ -694,8 +717,10 @@ cmd     *cmnd;
     broadcast_rom(fd, ply_ptr->rom_num, "%M attempts to hide %1i.", 
               ply_ptr, obj_ptr);
 
-    if(mrand(1,100) <= chance)
+    if(mrand(1,100) <= chance) {
         F_SET(obj_ptr, OHIDDN);
+	print(fd, "You hide %1i.\n", obj_ptr);
+    }
     else
         F_CLR(obj_ptr, OHIDDN);
 
@@ -721,6 +746,7 @@ cmd			*cmnd;
 	fd = ply_ptr->fd;
 
 		print(fd,"Flags currently set:\n");
+		if(F_ISSET(ply_ptr, PIGCLA)) strcat(str, "No Class Messages\n");
 		if(F_ISSET(ply_ptr, PNOBRD)) strcat(str, "NoBroad\n");
 		if(F_ISSET(ply_ptr, PNOLDS)) strcat(str, "No Long Room Description\n");
 		if(F_ISSET(ply_ptr, PNOSDS)) strcat(str, "No Short Room Description\n");
@@ -770,7 +796,11 @@ cmd     *cmnd;
     	return(0);
     }
 
-    if(!strcmp(cmnd->str[1], "nobroad")) {
+    if(!strcmp(cmnd->str[1], "classignore")) {
+	F_SET(ply_ptr, PIGCLA);
+	print(fd, "Class messages disabled.\n");
+    }
+    else if(!strcmp(cmnd->str[1], "nobroad")) {
         F_SET(ply_ptr, PNOBRD);
         print(fd, "Broadcast messages disabled.\n");
     }
@@ -865,7 +895,11 @@ cmd     *cmnd;
         return(0);
     }
 
-    if(!strcmp(cmnd->str[1], "nobroad")) {
+    if(!strcmp(cmnd->str[1], "classignore")) {
+	F_CLR(ply_ptr, PIGCLA);
+	print(fd, "Class Messages enabled.\n");
+    }
+    else if(!strcmp(cmnd->str[1], "nobroad")) {
         F_CLR(ply_ptr, PNOBRD);
         print(fd, "Broadcast messages enabled.\n");
     }
@@ -951,8 +985,6 @@ cmd     *cmnd;
 {
     long    i, t;
     int fd;
-    otag *op, *cop;
-    object *obj_ptr, *obj_ptr2, *cnt_ptr;
     fd = ply_ptr->fd;
 
     t = time(0);

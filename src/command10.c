@@ -2,7 +2,8 @@
  * COMMAND10.C:
  *
  *  Additional user routines.
- *
+ *	
+ *	(C) 1994-1997 Brooke Paul
  *
  */
 
@@ -22,20 +23,17 @@ creature    *ply_ptr;
 cmd     *cmnd;
 {
     room        *rom_ptr, *old_rom_ptr;
-    creature    *crt_ptr;
-    ctag        *cp, *temp;
+    ctag        *cp;
     exit_       *ext_ptr;
     long        i, t;
     int     fd, old_rom_num, fall, dmg, n;
-    int         chance;
+    int         chance, notclass=0;
 
     rom_ptr = ply_ptr->parent_rom;
     fd = ply_ptr->fd;
 
-    if(ply_ptr->class != ASSASSIN && ply_ptr->class != THIEF && ply_ptr->class != MONK && ply_ptr->class < CARETAKER) {
-                print(fd, "Only thieves & assassins may sneak.\n");
-                return(0);
-        }                  
+    if(ply_ptr->class != RANGER &&ply_ptr->class != ASSASSIN && ply_ptr->class != THIEF && ply_ptr->class != MONK && ply_ptr->class < CARETAKER) 
+                notclass=1;
 
     if(!F_ISSET(ply_ptr, PHIDDN)){
                 print(fd, "You need to hide first.\n");
@@ -170,7 +168,10 @@ cmd     *cmnd;
 	if(F_ISSET(ply_ptr, PBLIND))
 		chance = MIN(20, chance);
 
-    if(mrand(1,100) > chance) 
+	if(ply_ptr->class == RANGER)
+		chance +=5;
+
+    if(mrand(1,100) > chance || notclass) 
     {
         print(fd,"You failed to sneak.\n"); 
         F_CLR(ply_ptr, PHIDDN);
@@ -333,19 +334,24 @@ if(ply_ptr->following)
 }
 
      
-/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/************************************************************************/
 /*                              lower_prof                              */
-/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-void lower_prof(ply_ptr, exp)
+/************************************************************************/
 /* The lower_prof function adjusts a player's magical realm and weapon *
  * proficiency after a player loses (exp) amount of experience         */
 
+void lower_prof(ply_ptr, exp)
 creature   *ply_ptr;
 long        exp;
 {
     long    profloss, total;
     int     n, below=0;
              
+	for(n=0;n<5;n++) {
+		if(ply_ptr->proficiency[n]>-1)
+			continue;
+		ply_ptr->proficiency[n]=0;
+	}
         for(n=0,total=0L; n<5; n++)
             total += ply_ptr->proficiency[n];
         for(n=0; n<4; n++)
@@ -385,15 +391,15 @@ long        exp;
             ply_ptr->proficiency[total] = 1024L;
     return;
 }
-/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/************************************************************************/
 /*                              add_prof                                */
-/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-void add_prof(ply_ptr, exp)
+/************************************************************************/
 /* The add_prof function adjusts a player's magical realm and weapon     *
  * proficiency after the player gains an unassigned amount of experience *
  * such as from a quest item or pkilling.  The exp gain is divided       *
  * between the player's 5 weapon proficiency and 4 magic realms.      */
 
+void add_prof(ply_ptr, exp)
 creature   *ply_ptr;
 long        exp;
 {
@@ -426,7 +432,6 @@ int pledge(ply_ptr, cmnd)
 creature        *ply_ptr;
 cmd             *cmnd;
 {
-        object          *obj_ptr;
         creature        *crt_ptr;
         room            *rom_ptr;
         int             fd, amte, amtg;
@@ -460,12 +465,13 @@ cmd             *cmnd;
                 return(0);
         }
 
-#ifdef ISENGARD
-	if(!F_ISSET(ply_ptr, PCHAOS) && !(ply_ptr->class == FIGHTER || ply_ptr->class == ASSASSIN || ply_ptr->class == THIEF || ply_ptr->class == PALADIN)) {
+if(ISENGARD) {
+	if(!(ply_ptr->class == FIGHTER || ply_ptr->class == ASSASSIN || 
+ply_ptr->class == THIEF || ply_ptr->class == PALADIN)) {
 		print(fd, "You cannot join %m's organization.\n",crt_ptr);
             return(0);
         }
-#endif /* ISENGARD */
+} /* ISENGARD */
 
         if (!F_ISSET(crt_ptr,MPLDGK))
         {
@@ -510,7 +516,6 @@ int rescind(ply_ptr, cmnd)
 creature        *ply_ptr;
 cmd             *cmnd;
 {
-        object          *obj_ptr;
         creature        *crt_ptr;
         room            *rom_ptr;
         int             fd, amte, amtg;
@@ -677,7 +682,7 @@ cmd             *cmnd;
 {
         creature        *crt_ptr;
         room            *rom_ptr;
-		object		*obj_ptr, *obj_list[10];
+		object		*obj_ptr;
 		int			maxitem = 0,obj_num[10];
 		long		amt;
 		int 		fd, i, j, found = 0, match = 0;
@@ -918,7 +923,7 @@ cmd             *cmnd;
 			print(fd, "%M says, \"Thanks!, I really needed %i.\n",
  				crt_ptr,obj_ptr);
  			print(fd, "Sorry I don't have anything for you.\"\n");
-			broadcast_rom(fd, ply_ptr->rom_num,"%M gives %m %i.\n",
+			broadcast_rom(fd, ply_ptr->rom_num,"%M gives %m %i.",
 				ply_ptr,crt_ptr,obj_ptr);
 		}
 		else if(!(load_obj((obj_list[found-1][1]), &trd_ptr) < 0)){ 

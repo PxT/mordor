@@ -4,7 +4,7 @@
  *      This file contains the routines necessary to achieve action
  *      commands.
  *
- *      Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *      Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -653,7 +653,7 @@ cmd             *cmnd;
 			print(fd, "You flip a coin: %s.\n",
 				(num >50 ) ? "heads" : "tails");
 			broadcast_rom(fd, ply_ptr->rom_num,
-				"%M flips a coin.\n",ply_ptr);
+				"%M flips a coin.",ply_ptr);
 		}
 	}
 	return(0);

@@ -3,7 +3,7 @@
  *
  *	Additional spell-casting routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -42,7 +42,7 @@ int		how;
 		print(fd, "You don't know that spell.\n");
 		return(0);
 	}
-	if(ply_ptr->class != CLERIC && ply_ptr->class != PALADIN && spell_fail(ply_ptr, how)) {
+	if(ply_ptr->class != DRUID && ply_ptr->class != CLERIC && ply_ptr->class != PALADIN && spell_fail(ply_ptr, how)) {
                 if(how==CAST)
                         ply_ptr->mpcur -= 10;
                 return(0);

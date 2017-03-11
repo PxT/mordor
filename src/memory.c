@@ -36,9 +36,7 @@ cmd      *cmnd;
   long total_mem  = 0L;
   long bt_mem     = 0L; 
   ctag        *cp;
-  creature    *crt;
   otag        *op;
-  object      *obj;
   ttag        *tlk;
    
   for(i=0;i<RMAX;i++)

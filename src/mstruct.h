@@ -3,7 +3,7 @@
  *
  *	Main data structures and type definitions.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -76,7 +76,7 @@ typedef struct iobuf {			/* I/O buffers for players */
 	long		ltime;
 	char		intrpt;
 	char		commands;
-	int		lookup_pid;
+	int			lookup_pid;
 	char		address[40];
 	char		userid[9];
 } iobuf;
@@ -86,8 +86,9 @@ typedef struct extra {			/* Extra (non-saved) player fields */
 	char		lastcommand[80];
 	ctag		*first_charm;
 	etag		*first_ignore;
-	int		luck;
-	struct creature	*alias_crt;	
+	int			luck;
+	struct		creature	*alias_crt;
+	int			*scared_of;	
 } extra;
 
 typedef struct lockout {
@@ -97,19 +98,19 @@ typedef struct lockout {
 } lockout;
 
 typedef struct cmd {
-	int		num;
+	int			num;
 	char		fullstr[256];
 	char		str[COMMANDMAX][25];
 	long		val[COMMANDMAX];
 } cmd;
 
 typedef struct osp_t {
-	int	splno;
+	int		splno;
 	char	realm;
-	int	mp;
-	int	ndice;
-	int	sdice;
-	int	pdice;
+	int		mp;
+	int		ndice;
+	int		sdice;
+	int		pdice;
 	char	bonus_type;
 } osp_t;
 
@@ -117,7 +118,7 @@ typedef struct exit_ {
 	char		name[20];
 	short		room;
 	char		flags[4];
-	struct lasttime	ltime;		/* Timed open/close */
+	struct		lasttime	ltime;		/* Timed open/close */
 	char		key;		/* Key required */
 } exit_;
 
@@ -246,11 +247,3 @@ typedef struct osparse {		/* Sparse pointer array for objects */
 	object			*obj;
 	qtag			*q_obj;
 } osparse;
-
-
-
-
-
-
-
-

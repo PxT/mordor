@@ -17,9 +17,9 @@
 int room_vigor(ply_ptr, cmnd, how)
 creature    *ply_ptr;
 cmd         *cmnd;
+int			how;
 {          
-	char	*sp;
-    	int     c = 0, fd, i, heal;
+   	int     c = 0, fd, heal;
 	ctag	*cp;
 	ctag	*cp_tmp;
 
@@ -188,7 +188,7 @@ int     how;
 {
     creature    *crt_ptr;
     room        *rom_ptr;
-    int         fd, dur;
+    int         fd;
  
     fd = ply_ptr->fd;
     rom_ptr = ply_ptr->parent_rom;
@@ -707,78 +707,89 @@ switch(ply_ptr->class) {
                 }
                 else
                         return(0);
-
-        case CLERIC:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+65; 
+	case CLERIC:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+65; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
-
-        case FIGHTER:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+10; 
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
+	case FIGHTER:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+10; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
-
-        case MAGE:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+75; 
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
+	case MAGE:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+75; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
-
-        case MONK:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*6)+25; 
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
+	case MONK:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*6)+25; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
-
-        case PALADIN:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+50; 
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
+	case PALADIN:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+50; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
-
-        case RANGER:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*4)+56; 
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
+	case RANGER:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*4)+56; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
-
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
 	case THIEF:
-                chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*6)+22; 
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*6)+22; 
 		chance *= Ply[fd].extr->luck/50;
 		if(n>chance) {
-                        print(fd,"Your spell fails.\n");
-                        return(1);
-                }
-                else
-                        return(0);
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else
+			return(0);
+	case DRUID:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+65;
+		chance *= Ply[fd].extr->luck/50;
+		if(n>chance) {
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}
+		else    
+			return(0);
+	case ALCHEMIST:
+		chance = ((ply_ptr->level+bonus[ply_ptr->intelligence])*5)+70;
+		chance *= Ply[fd].extr->luck/50;
+		if(n>chance) {
+			print(fd,"Your spell fails.\n");
+			return(1);
+		}   
+		else
+			return(0);
 
-        default:
+	default:
 		return(0);
     }
 }

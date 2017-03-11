@@ -3,7 +3,7 @@
  *
  *	Command handling/parsing routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -29,9 +29,10 @@ char	*str;
 {
 	int		i, match=0;
 	extern int	Numplayers;
-	char		tempstr[20], str2[50];
-	long 		t, x;
+	char		tempstr[20], str2[50], path[80], forbid[20];
+	long 		t;
 	creature	*ply_ptr;
+	FILE		*fp;
 
 
 	switch(param) {
@@ -43,69 +44,92 @@ char	*str;
 		print(fd, "\nPlease enter name: ");
 		RETURN(fd, login, 1);
 	case 1:
-
+		/* Doneval: Here I check the name of the player. If it's the same
+		of one of the mail's boards, bad. 
+		Brooke, check the already made characters! *
+		for(i=0;i<=BOARDS;i++) {
+			if(!strcmp(boards[i], str)) {
+				print(fd, "\nThis is the name of a mail board.\n");
+				ask_for(fd, "Please enter name: ");
+			}
+		}
+		*/
 
 		if(!isalpha(str[0])) {
 			print(fd, "Please enter name: ");
 			RETURN(fd, login, 1);
 		}
 
-#ifdef PARANOID
-
-		
+if(PARANOID) {
 	/* Check for ident */
-        if((!strcmp(Ply[fd].io->userid, "no_port") || !strcmp(Ply[fd].io->userid, "unknown")) && (strcmp(Ply[fd].io->address, "moria.bio.uci.edu") || strcmp(Ply[fd].io->address, "128.200.21.101"))) {
-                        print(fd, "\n\nI am unable to get authorization from your server.\n");
-			print(fd, "Please try connecting from another host, or contact\n");
-			print(fd, "your system administrator to request RFC 931 auth/identd.\n\n");
-			print(fd, "If you have connected from this account in the past,\n");
-			print(fd, "try logging in more slowly.\n\n");
-			print(fd, "\n      Send any questions to:\n");
-			print(fd, "      imail@moria.bio.uci.edu\n\n");
-			output_buf();
-                        disconnect(fd);
-                        return;
-                }
-#endif
+	if((!strcmp(Ply[fd].io->userid, "no_port") || !strcmp(Ply[fd].io->userid, "unknown")) && (strcmp(Ply[fd].io->address, "moria.bio.uci.edu") || strcmp(Ply[fd].io->address, "128.200.21.101"))) {
+		print(fd, "\n\nI am unable to get authorization from your server.\n");
+		print(fd, "Please try connecting from another host, or contact\n");
+		print(fd, "your system administrator to request RFC 931 auth/identd.\n\n");
+		print(fd, "If you have connected from this account in the past,\n");
+		print(fd, "try logging in more slowly.\n\n");
+		output_buf();
+		disconnect(fd);
+		return;
+	}
+}
 
-		/* Check for double log */
+	/* Check for double log */
 	for(i=0; i<Tablesize; i++) {
-                if(!Ply[i].ply) continue;
-                if(Ply[i].ply->fd < 0) continue;
+		if(!Ply[i].ply) continue;
+		if(Ply[i].ply->fd < 0) continue;
 		if(strcmp(Ply[i].io->userid, "no_port") || strcmp(Ply[i].io->userid, "unknown")) continue;
-                if(!strcmp(Ply[i].io->userid, Ply[fd].io->userid)) {
-                        match += 1;
-                        if(match > 0){
-                                print(fd, "\n\nYour account is already in Isengard.\n");
-                                print(fd, "Please only play one character at a time.\n\n");
+		if(!strcmp(Ply[i].io->userid, Ply[fd].io->userid)) {
+			match += 1;
+			if(match > 0){
+				print(fd, "\n\n%s\n", account_exists);
+				print(fd, "Please only play one character at a time.\n\n");
 				output_buf();
-                                disconnect(fd);
-                                return;
-                        }
-                }
-        }
-
-
-		if(strlen(str) < 3) {
-			print(fd, "Name must be at least 3 characters.\n\n");
-			print(fd, "Please enter name: ");
-			RETURN(fd, login, 1);
-		}
-		if(strlen(str) >= 20) {
-			print(fd, "Name must be less than 20 characters.\n\n");
-			print(fd, "Please enter name: ");
-			RETURN(fd, login, 1);
-		}
-
-		for(i=0; i<strlen(str); i++)
-			if(!isalpha(str[i])) {
-				print(fd, "Name must be alphabetic.\n\n");
-				print(fd, "Please enter name: ");
-				RETURN(fd, login, 1);
+				disconnect(fd);
+				return;
 			}
+		}
+	}
+
+
+	if(strlen(str) < 3) {
+		print(fd, "Name must be at least 3 characters.\n\n");
+		print(fd, "Please enter name: ");
+		RETURN(fd, login, 1);
+	}
+	if(strlen(str) >= 20) {
+		print(fd, "Name must be less than 20 characters.\n\n");
+		print(fd, "Please enter name: ");
+		RETURN(fd, login, 1);
+	}
+
+	for(i=0; i<strlen(str); i++)
+		if(!isalpha(str[i])) {
+			print(fd, "Name must be alphabetic.\n\n");
+			print(fd, "Please enter name: ");
+			RETURN(fd, login, 1);
+		}
 
 		lowercize(str, 1);
 		str[25]=0;
+
+/* check to see the name is allowed */
+/*
+		sprintf(path, "%s/forbidden_name", PLAYERPATH);
+        fp=fopen(path, "r");
+        if(!fp)
+                merror("ERROR - forbidden name", NONFATAL);
+		else {
+			while(!feof(fp)) {
+                fscanf(fp, "%s", forbid);
+                if(!strcmp(forbid, str)) {
+                    print(fd, "That name is not allowed.\n");
+					print(fd, "\nPlease enter name: ");
+                    RETURN(fd, login, 1);
+                }
+			}
+        }
+*/
 		if(load_ply(str, &ply_ptr) < 0) {
 			strcpy(Ply[fd].extr->tempstr[0], str);
 			print(fd, "\n%s? Did I get that right? ", str);
@@ -115,13 +139,18 @@ char	*str;
 		else {
 			ply_ptr->fd = -1;
 			Ply[fd].ply = ply_ptr;
-#ifdef CHECKDOUBLE
-			if(checkdouble(ply_ptr->name)) {
-				scwrite(fd, "No simultaneous playing.\n\r", 26);
-				disconnect(fd);
-				return;
-			}
-#endif /* CHECKDOUBLE */
+
+			if(CHECKDOUBLE) {
+				if(checkdouble(ply_ptr->name)) {
+			#ifdef WIN32
+					scwrite(fd, "No simultaneous playing.\n\r", 26);
+			#else 
+					write(fd, "No simultaneous playing.\n\r", 26);
+			#endif /* WIN32 */
+					disconnect(fd);
+					return;
+				}
+			} /* CHECKDOUBLE */
 
 			print(fd, "%c%c%cPlease enter password: ", 255, 251, 1); 
 			RETURN(fd, login, 3);
@@ -140,7 +169,12 @@ char	*str;
 
 	case 3:
 		if(strcmp(str, Ply[fd].ply->password)) {
-			scwrite(fd, "\255\252\1\n\rIncorrect.\n\r", 17);
+			#ifdef WIN32
+			     	scwrite(fd, "\255\252\1\n\rIncorrect.\n\r", 17);
+			#else
+				write(fd, "\255\252\1\n\rIncorrect.\n\r", 17);
+			#endif /* WIN32 */
+
 			disconnect(fd);
 			return;
 		}
@@ -149,25 +183,30 @@ char	*str;
 			strcpy(tempstr, Ply[fd].ply->name);
 			for(i=0; i<Tablesize; i++)
 				if(Ply[i].ply && i != fd)
-					if(!strcmp(Ply[i].ply->name, 
-					   Ply[fd].ply->name))
+					if(!strcmp(Ply[i].ply->name,
+					  Ply[fd].ply->name))
 						disconnect(i);	
-			free_crt(Ply[fd].ply);
+				free_crt(Ply[fd].ply);
 
 /* It used to cause a crash if a player suicided at the same time */
 /* as creating a new charater, this fixes it.			  */
 
-		if(load_ply(tempstr, &Ply[fd].ply) < 0)
-		{
-			scwrite(fd, "Player nolonger exits!\n\r", 24);
-                        t = time(0);
-                        strcpy(str2, (char *)ctime(&t));
-                        str2[strlen(str2)-1] = 0;
-                        logn("sui_crash","%s: %s (%s) suicided.\n", 
-				str2, Ply[fd].ply->name, Ply[fd].io->address);         
-			disconnect(fd);
-			return;
-		}
+			if(load_ply(tempstr, &Ply[fd].ply) < 0)
+			{
+				#ifdef WIN32
+					scwrite(fd, "Player no longer exists!\n\r", 25);
+				#else 	
+					write(fd, "Player no longer exists!\n\r", 25);
+				#endif /* WIN32 */        
+			
+				t = time(0);
+				strcpy(str2, (char *)ctime(&t));
+				str2[strlen(str2)-1] = 0;
+				logn("sui_crash","%s: %s (%s) suicided.\n", 
+					str2, Ply[fd].ply->name, Ply[fd].io->address);
+				disconnect(fd);
+				return;
+			}
 			Ply[fd].ply->fd = fd;
 			init_ply(Ply[fd].ply);
 			RETURN(fd, command, 1);
@@ -186,63 +225,115 @@ int	fd;
 int	param;
 char	*str;
 {
-	int 	i, k, l, n, sum;
-	int	num[5];
+	int 	i, k, l, n, sum, num[5], dm_need_pass=0;
+	char	ph, ph_str[10];
 
 	switch(param) {
 	case 1:
-		print(fd,"\n\n");
+/*		print(fd,"\n\n"); */
 		Ply[fd].ply = (creature *)malloc(sizeof(creature));
 		if(!Ply[fd].ply)
 			merror("create_ply", FATAL);
 		zero(Ply[fd].ply, sizeof(creature));
 		Ply[fd].ply->fd = -1;
 		Ply[fd].ply->rom_num = 1;
-		print(fd, "Male or Female: ");
-		RETURN(fd, create_ply, 2);
-	case 2:
+
+
+	if((!strcmp(Ply[fd].extr->tempstr[0],dmname[0])) ||
+	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[1])) ||
+	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[2])) ||
+	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[3])) ||
+	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[4])) ||
+	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[5])) ||
+	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[6]))) {
+		print(fd, "\nA password is required to create that character.\n");
+	 	print(fd, "Please enter password: ");
+		output_buf();
+RETURN(fd, create_ply, 2);
+}
+else goto no_pass;
+case 2:
+		if(strcmp(dm_pass, str)) {
+		   disconnect(fd);
+		   return;
+		}
+case 3:
+no_pass:
+		if(ANSILINE) {
+			clrscr(fd);
+			ask_for(fd, "[M] Male or [F] Female: ");
+		}
+		else
+			print(fd, "[M] Male or [F] Female: ");
+		RETURN(fd, create_ply, 4);
+	case 4:
 		if(low(str[0]) != 'm' && low(str[0]) != 'f') {
-			print(fd, "Male or Female: ");
-			RETURN(fd, create_ply, 2);
+			if(ANSILINE)
+				ask_for(fd, "[M] Male or [F] Female: ");
+			else
+				print(fd, "[M] Male or [F] Female: ");
+			RETURN(fd, create_ply, 4);
 		}
 		if(low(str[0]) == 'm')
 			F_SET(Ply[fd].ply, PMALES);
-		print(fd, "\nAvailable classes:\n");
-		print(fd, "Assassin, Barbarian, Bard, Cleric, Fighter,\n");
-		print(fd, "Mage, Monk, Paladin, Ranger, Thief\n");
-		print(fd, "Choose one: ");
-		RETURN(fd, create_ply, 3);
-	case 3:
+		print(fd, "\nAvailable classes:");
+		print(fd, "\n		    /----- AVAILABLE CLASSES ------\\");
+		print(fd, "\n		    |                              |");
+		print(fd, "\n		    |  [A] Assassin  [B] Barbarian |");  
+		print(fd, "\n		    |  [C] Cleric    [D] Fighter   |");
+		print(fd, "\n		    |  [E] Bard      [F] Mage      |"); 
+		print(fd, "\n		    |  [G] Paladin   [H] Ranger    |");
+		print(fd, "\n		    |  [I] Thief     [J] Monk      |");
+		print(fd, "\n		    |  [K] Druid     [L] Alchemist |");
+		print(fd, "\n		    \\------------------------------/");
+		if(ANSILINE)
+			ask_for(fd, "Choose one: ");
+		else
+			print(fd, "\nChoose one: ");
+		RETURN(fd, create_ply, 5);
+	case 5:
 		switch(low(str[0])) {
 			case 'a': Ply[fd].ply->class = ASSASSIN; break;
-			case 'b': switch(low(str[3])) {
-				case 'b':Ply[fd].ply->class = BARBARIAN; break;
-				case 'd':Ply[fd].ply->class = BARD; break;
-				}
-				break;
+			case 'b': Ply[fd].ply->class = BARBARIAN; break;
 			case 'c': Ply[fd].ply->class = CLERIC; break;
-			case 'f': Ply[fd].ply->class = FIGHTER; break;
-			case 'm': switch(low(str[1])) {
-				case 'a':Ply[fd].ply->class = MAGE; break;
-				case 'o':Ply[fd].ply->class = MONK; break;
-				}
-				break;
-			case 'p': Ply[fd].ply->class = PALADIN; break;
-			case 'r': Ply[fd].ply->class = RANGER; break;
-			case 't': Ply[fd].ply->class = THIEF; break;
-			default: print(fd, "Choose one: "); 
-				 RETURN(fd, create_ply, 3);
+			case 'd': Ply[fd].ply->class = FIGHTER; break;
+			case 'e': Ply[fd].ply->class = BARD; break;
+			case 'f': Ply[fd].ply->class = MAGE; break;
+			case 'g': Ply[fd].ply->class = PALADIN; break;
+			case 'h': Ply[fd].ply->class = RANGER; break;
+			case 'i': Ply[fd].ply->class = THIEF; break;
+			case 'j': Ply[fd].ply->class = MONK; break;
+			case 'k': Ply[fd].ply->class = DRUID; break;
+			case 'l': Ply[fd].ply->class = ALCHEMIST; break;
+			default: {
+				if(ANSILINE)
+					ask_for(fd, "Choose one: ");
+				else
+					print(fd, "\nChoose one: ");
+				RETURN(fd, create_ply, 5);
+			}
 		}
 		if(!Ply[fd].ply->class) {
 			print(fd, "Invalid selection: %s", str);
-			print(fd, "\nChoose one: ");
-			RETURN(fd, create_ply, 3);
+			if(ANSILINE)
+				ask_for(fd, "Choose one: ");
+			else
+				print(fd, "\nChoose one: ");
+			RETURN(fd, create_ply, 5);
 		}
 
-		print(fd, "\nYou have 54 points to distribute among your 5 stats. Please enter your 5\nnumbers in the following order: Strength, Dexterity, Constitution,\nIntelligence, Piety.  No stat may be smaller than 3 or larger than 18.\nUse the following format: ## ## ## ## ##\n");
-		print(fd, ": ");
-		RETURN(fd, create_ply, 4);
-	case 4:
+		print(fd, "\n		 ----- CHARACTER STATS -----");
+		print(fd, "\nYou have 54 points to distribute among your 5 stats. Please enter your 5");
+		print(fd, "\nnumbers in the following order: Strength, Dexterity, Constitution,");
+		print(fd, "\nIntelligence, Piety.  No stat may be smaller than 3 or larger than 18.i");
+		print(fd, "\nUse the following format: ## ## ## ## ##\n\n");
+		
+		if(ANSILINE)
+			ask_for(fd, ": ");
+		else
+			print(fd, ": ");
+		RETURN(fd, create_ply, 6);
+	case 6:
 		n = strlen(str); l = 0; k = 0;
 		for(i=0; i<=n; i++) {
 			if(str[i]==' ' || str[i]==0) {
@@ -254,94 +345,113 @@ char	*str;
 		}
 		if(k<5) {
 			print(fd, "Please enter all 5 numbers.\n");
-			print(fd, ": ");
-			RETURN(fd, create_ply, 4);
+			if(ANSILINE)
+				ask_for(fd, ": ");
+			else
+				print(fd, "\n: ");
+			RETURN(fd, create_ply, 6);
 		}
 		sum = 0;
 		for(i=0; i<5; i++) {
 			if(num[i] < 3 || num[i] > 18) {
 				print(fd, "No stats < 3 or > 18 please.\n");
 				print(fd, ": ");
-				RETURN(fd, create_ply, 4);
+				RETURN(fd, create_ply, 6);
 			}
 			sum += num[i];
 		}
 		if(sum > 54) {
 			print(fd, "Stat total may not exceed 54.\n");
 			print(fd, ": ");
-			RETURN(fd, create_ply, 4);
+			RETURN(fd, create_ply, 6);
 		}
 		Ply[fd].ply->strength = num[0];
 		Ply[fd].ply->dexterity = num[1];
 		Ply[fd].ply->constitution = num[2];
 		Ply[fd].ply->intelligence = num[3];
 		Ply[fd].ply->piety = num[4];
-		print(fd, "\nChoose a weapons proficiency:\n");
-		print(fd, "Sharp, Thrusting, Blunt, Pole, Missile.\n");
-		print(fd, ": ");
-		RETURN(fd, create_ply, 5);
-	case 5:
+		print(fd, "\n		      ----- WEAPON PROFICIENCIES -----");
+		print(fd, "\nChoose a weapons proficiency:");
+		print(fd, "\n[A] Sharp  [B] Thrusting  [C] Blunt");
+		print(fd, "\n[D] Pole   [E] Missile\n\n");
+		if(ANSILINE)
+			ask_for(fd, ": ");
+		else
+			print(fd, ": ");
+		RETURN(fd, create_ply, 7);
+	case 7:
 		switch(low(str[0])) {
-			case 's': Ply[fd].ply->proficiency[0]=1024; break;
-			case 't': Ply[fd].ply->proficiency[1]=1024; break;
-			case 'b': Ply[fd].ply->proficiency[2]=1024; break;
-			case 'p': Ply[fd].ply->proficiency[3]=1024; break;
-			case 'm': Ply[fd].ply->proficiency[4]=1024; break;
-			default: print(fd, "Try again.\n: ");
-				 RETURN(fd, create_ply, 5);
+			case 'a': Ply[fd].ply->proficiency[0]=1024; break;
+			case 'b': Ply[fd].ply->proficiency[1]=1024; break;
+			case 'c': Ply[fd].ply->proficiency[2]=1024; break;
+			case 'd': Ply[fd].ply->proficiency[3]=1024; break;
+			case 'e': Ply[fd].ply->proficiency[4]=1024; break;
+			default: print(fd, "        <-- Try again.");
+				if(ANSILINE)
+					ask_for(fd, ": ");
+				else
+					print(fd, "\n: ");
+				RETURN(fd, create_ply, 7);
 		}
+		print(fd, "\n			  ----- ALIGNMENT -----");
 		print(fd, "\nLawful players cannot attack or steal from other players, nor can they\nbe attacked or stolen from by other players.");
-		print(fd, "\nChaotic players may attack or steal from other chaotic players, and they can\nbe attacked or stolen from by other chaotic players.\n");
-		print(fd, "\nChoose an alignment, Chaotic or Lawful: ");
-		RETURN(fd, create_ply, 6);
-	case 6:
+		print(fd, "\nChaotic players may attack or steal from other chaotic players, and they can\nbe attacked or stolen from by other chaotic players.\n\n");
+		if(ANSILINE)
+			ask_for(fd, "Choose an alignment, [C] Chaotic or [L] Lawful: "); 
+		else
+			print(fd, "\nChoose an alignment, [C] Chaotic or [L] Lawful: ");
+		RETURN(fd, create_ply, 8);
+	case 8:
 		if(low(str[0]) == 'c')
 			F_SET(Ply[fd].ply, PCHAOS);
 		else if(low(str[0]) == 'l')
 			F_CLR(Ply[fd].ply, PCHAOS);
 		else {
-			print(fd, "Chaotic or Lawful: ");
-			RETURN(fd, create_ply, 6);
+			if(ANSILINE)
+				ask_for(fd, "[C] Chaotic or [L] Lawful: ");
+			else
+				print(fd, "\n[C] Chaotic or [L] Lawful: ");
+			RETURN(fd, create_ply, 8);
 		}
 		print(fd, "\nAvailable races:");
-		print(fd, "\nDwarf, Dark-elf, Elf, Gnome, Goblin, Half-elf,");
-		print(fd, "\nHalf-giant, Half-orc, Hobbit, Human, Ogre, Orc, Troll");
-		print(fd, "\nChoose one: ");
-		RETURN(fd, create_ply, 7);
-	case 7:
+		print(fd, "\n      /----------------- ELF RACES ----------------\\");
+		print(fd, "\n      |  [A] Elf    [B] Dark-Elf    [C] Half-Elf   |");
+		print(fd, "\n      |----------------- ORC RACES ----------------|");
+		print(fd, "\n      |  [D] Orc    [E] Half-Orc    [F] Goblin     |");
+		print(fd, "\n      |----------------- BIG RACES ----------------|");
+		print(fd, "\n      |  [G] Troll  [H] Ogre        [I] Half-Giant |");
+		print(fd, "\n      |-------------- LITTLE RACES ----------------|");
+		print(fd, "\n      |  [J] Dwarf  [K] Hobbit      [L] Gnome      |");
+		print(fd, "\n      |------------ HUMANOID RACES ----------------|");
+		print(fd, "\n      |  [M] Human                                 |");
+		print(fd, "\n      \\-------------------------------------------/\n\n");
+		if(ANSILINE)
+			ask_for(fd, "Choose one: ");
+		else
+			print(fd, "\nChoose one: ");
+		RETURN(fd, create_ply, 9);
+	case 9:
 		switch(low(str[0])) {
-		case 'd': switch(low(str[1])) {
- 			case 'a': Ply[fd].ply->race = DARKELF; break;
-			case 'w': Ply[fd].ply->race = DWARF; break;
-			}
-			break;
-		case 'e': Ply[fd].ply->race = ELF; break;
-		case 'g': switch(low(str[1])) { 
-			case 'n': Ply[fd].ply->race = GNOME; break;
-			case 'o': Ply[fd].ply->race = GOBLIN; break;
-			}
-			break;
-		case 'o': switch(low(str[1])) {
-			case 'g': Ply[fd].ply->race = OGRE; break;
-			case 'r': Ply[fd].ply->race = ORC; break;
-			}
-			break;
-		case 't': Ply[fd].ply->race = TROLL; break;
-		case 'h': switch(low(str[1])) {
-			case 'a': switch(low(str[5])) {
-				case 'e': Ply[fd].ply->race = HALFELF; break;
-				case 'g': Ply[fd].ply->race = HALFGIANT; break;
-				case 'o': Ply[fd].ply->race = HALFORC; break;
-				}
-				break;
-			case 'o': Ply[fd].ply->race = HOBBIT; break;
-			case 'u': Ply[fd].ply->race = HUMAN; break;
-			}
-			break;
+ 		case 'a': Ply[fd].ply->race = ELF; break;
+ 		case 'b': Ply[fd].ply->race = DARKELF; break;
+		case 'c': Ply[fd].ply->race = HALFELF; break;
+		case 'd': Ply[fd].ply->race = ORC; break;
+		case 'e': Ply[fd].ply->race = HALFORC; break;
+		case 'f': Ply[fd].ply->race = GOBLIN; break;
+		case 'g': Ply[fd].ply->race = TROLL; break;
+		case 'h': Ply[fd].ply->race = OGRE; break;
+		case 'i': Ply[fd].ply->race = HALFGIANT; break;
+		case 'j': Ply[fd].ply->race = DWARF; break;
+		case 'k': Ply[fd].ply->race = HOBBIT; break;
+		case 'l': Ply[fd].ply->race = GNOME; break;
+		case 'm': Ply[fd].ply->race = HUMAN; break;
 		}
 		if(!Ply[fd].ply->race) {
-			print(fd, "\nChoose one: ");
-			RETURN(fd, create_ply, 7);
+			if(ANSILINE)
+				ask_for(fd, "Choose one: ");
+			else
+				print(fd, "\nChoose one: ");
+			RETURN(fd, create_ply, 9);
 		}
 
 		switch(Ply[fd].ply->race) {
@@ -404,15 +514,15 @@ char	*str;
 		}
 
 		print(fd, "\nChoose a password (up to 14 chars): ");
-		RETURN(fd, create_ply, 8);
-	case 8:
+		RETURN(fd, create_ply, 10);
+	case 10:
 		if(strlen(str) > 14) {
 			print(fd, "Too long.\nChoose a password: ");
-			RETURN(fd, create_ply, 8);
+			RETURN(fd, create_ply, 10);
 		}
 		if(strlen(str) < 3) {
 			print(fd, "Too short.\nChoose a password: ");
-			RETURN(fd, create_ply, 8);
+			RETURN(fd, create_ply, 10);
 		}
 		strncpy(Ply[fd].ply->password, str, 14);
 		strcpy(Ply[fd].ply->name, Ply[fd].extr->tempstr[0]);
@@ -445,15 +555,13 @@ char	*str;
 	int	n;
 	unsigned char ch;
 
-#ifdef RECORD_ALL
-/*
-this logn command will print out all the commands entered by players.
-It should be used in extreme cases when trying to isolate a players
-input which may be causing a crash.
-*/
-
-logn("all_cmd","\n%s-%d (%d): %s\n",Ply[fd].ply->name,fd,Ply[fd].ply->rom_num,str);  
-#endif /* RECORD_ALL */ 
+	/*
+	this logn command will print out all the commands entered by players.
+	It should be used in extreme cases when trying to isolate a players
+	input which may be causing a crash.
+	*/
+	if(RECORD_ALL)
+		logn("all_cmd","\n%s-%d (%d): %s\n",Ply[fd].ply->name,fd,Ply[fd].ply->rom_num,str);  
 
 	switch(param) {
 	case 1:
@@ -484,18 +592,29 @@ logn("all_cmd","\n%s-%d (%d): %s\n",Ply[fd].ply->name,fd,Ply[fd].ply->rom_num,st
 			n = PROMPT;
 
 		if(n == DISCONNECT) {
-			scwrite(fd, "Goodbye!\n\r\n\r", 11);
+			#ifdef WIN32
+				scwrite(fd, "Goodbye!\n\r\n\r", 11);
+			#else
+				write(fd, "Goodbye!\n\r\n\r", 11);
+			#endif
+
 			disconnect(fd);
 			return;
 		}
 		else if(n == PROMPT) {
-			if(F_ISSET(Ply[fd].ply, PPROMP))
-				sprintf(str, "(%d H %d M): ", 
-					Ply[fd].ply->hpcur, Ply[fd].ply->mpcur);
-			else
-				strcpy(str, ": ");
-			scwrite(fd, str, strlen(str));
-		}
+				ANSI(fd, MAGENTA);
+				if(F_ISSET(Ply[fd].ply, PPROMP))
+					sprintf(str, "(%d H %d M): ",
+						Ply[fd].ply->hpcur, Ply[fd].ply->mpcur);
+				else
+					strcpy(str, ": ");
+				#ifdef WIN32
+					scwrite(fd, str, strlen(str));
+				#else 
+					write(fd, str, strlen(str));
+				#endif /* WIN32 */
+				ANSI(fd, WHITE);
+			}
 
 		if(n != DOPROMPT) {
 			RETURN(fd, command, 1);
@@ -584,7 +703,7 @@ int process_cmd(fd, cmnd)
 int	fd;
 cmd	*cmnd;
 {
-	int	match=0, cmdno=0, c=0, n;
+	int	match=0, cmdno=0, c=0;
 
 	do {
 		if(!strcmp(cmnd->str[0], cmdlist[c].cmdstr)) {
@@ -601,8 +720,7 @@ cmd	*cmnd;
 	} while(cmdlist[c].cmdno);
 
 	if(match == 0) {
-		print(fd, "The command \"%s\" does not exist.\n",
-		      cmnd->str[0]);
+		print(fd, "The command \"%s\" does not exist.\n", cmnd->str[0]);
 		RETURN(fd, command, 1);
 	}
 
@@ -615,10 +733,8 @@ cmd	*cmnd;
 		return(special_cmd(Ply[fd].ply, 0-cmdlist[cmdno].cmdno, cmnd));
 	
 	return((*cmdlist[cmdno].cmdfn)(Ply[fd].ply, cmnd));
-
 }
 
-#ifdef CHECKDOUBLE
 
 int checkdouble(name)
 char *name;
@@ -646,5 +762,3 @@ char *name;
 	fclose(fp);
 	return(rtn);
 }
-
-#endif /* CHECKDOUBLE */

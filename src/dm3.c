@@ -3,7 +3,7 @@
  *
  *	DM functions
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -33,7 +33,7 @@ cmd		*cmnd;
 
 	if(cmnd->num < 2) {
 		print(fd, "Set what?\n");
-		return;
+		return(0);
 	}
 
 	switch(low(cmnd->str[1][0])) {
@@ -128,7 +128,8 @@ cmd		*cmnd;
 {
 	room		*rom_ptr;
 	creature	*crt_ptr;
-	int		num, fd;
+	int		num, fd, objnum;
+	object		*obj_ptr;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
@@ -161,17 +162,25 @@ cmd		*cmnd;
 
 	switch(low(cmnd->str[3][0])) {
 	case 'a':
-		if (!strcmp(cmnd->str[3], "ar") && 
+		if (!strcmp(cmnd->str[3], "ac") && 
 			crt_ptr->type == MONSTER){
 			crt_ptr->armor = cmnd->val[3];
+			sprintf(crt_ptr->password, "%d", 0);
+			print(fd, "Armor Class set.\n");
 			return(PROMPT);
+
 		}
 		crt_ptr->alignment = cmnd->val[3];
 		print(fd, "Alignment set.\n");
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(PROMPT);
 	case 'c':
 		if(!strcmp(cmnd->str[3], "con")) {
 			crt_ptr->constitution = cmnd->val[3];
+			print(fd, "Constitution set.\n");
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 
@@ -180,41 +189,50 @@ cmd		*cmnd;
 				
 		crt_ptr->class = cmnd->val[3];
 		if (crt_ptr->type == PLAYER && cmnd->val[3] == DM)
-        if(strcmp(crt_ptr->name, DMNAME) &&
-           strcmp(crt_ptr->name, DMNAME2) && strcmp(crt_ptr->name, DMNAME3) &&
-           strcmp(crt_ptr->name, DMNAME4) && strcmp(crt_ptr->name, DMNAME5) &&
-           strcmp(crt_ptr->name, DMNAME6) && strcmp(crt_ptr->name, DMNAME7))
+        if(strcmp(crt_ptr->name, dmname[0]) &&
+           strcmp(crt_ptr->name, dmname[1]) && strcmp(crt_ptr->name, dmname[2]) &&
+           strcmp(crt_ptr->name, dmname[3]) && strcmp(crt_ptr->name, dmname[4]) &&
+           strcmp(crt_ptr->name, dmname[5]) && strcmp(crt_ptr->name, dmname[6]))
                 crt_ptr->class = CARETAKER;      
 		print(fd, "Class set.\n");
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(PROMPT);
 	case 'd':
 		if(!strcmp(cmnd->str[3], "dex")) {
 			crt_ptr->dexterity = cmnd->val[3];
 			print(fd, "Dexterity set.\n");
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		} 
 		else if (!strcmp(cmnd->str[3], "dn") && 
 			crt_ptr->type == MONSTER){
 			crt_ptr->ndice = cmnd->val[3];
 			print(fd, "Number of dice set.\n");
+			sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		else if (!strcmp(cmnd->str[3], "ds") && 
 			crt_ptr->type == MONSTER){
 			crt_ptr->sdice = cmnd->val[3];
 			print(fd, "Sides of dice set.\n");
+			sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		else if (!strcmp(cmnd->str[3], "dp") && 
 			crt_ptr->type == MONSTER){
 			crt_ptr->pdice = cmnd->val[3];
 			print(fd, "Plus on dice set.\n");
+			sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		break;
 	case 'e':
 		crt_ptr->experience = cmnd->val[3];
 		print(fd, "%M has %ld experience.\n", crt_ptr, cmnd->val[3]);
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(0);
 	case 'f':
 		num = cmnd->val[3];
@@ -227,10 +245,14 @@ cmd		*cmnd;
 			F_SET(crt_ptr, num-1);
 			print(fd, "%M's flag #%d on.\n", crt_ptr, num);
 		}
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(0);
 	case 'g':
 		crt_ptr->gold = cmnd->val[3];
 		print(fd, "%M has %ld gold.\n", crt_ptr, cmnd->val[3]);
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(0);
 	case 'h':
 		if(cmnd->str[3][1] == 'm'){
@@ -241,17 +263,47 @@ cmd		*cmnd;
 			crt_ptr->hpcur = cmnd->val[3];
 			print(fd, "Hits set.\n");
 		}
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(PROMPT);
 	case 'i':
 		if(!strcmp(cmnd->str[3], "int")) {
 			crt_ptr->intelligence = cmnd->val[3];
 			print(fd, "Intellegence set.\n");
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
-		break;
+		if(!strcmp(cmnd->str[3], "inv")) {
+			if(cmnd->val[3] > 10 || cmnd->val[3] < 1) {
+				print(fd, "Carry slot number invalid.\n");
+				print(fd, "Must be from 1 to 10.\n");
+				return(PROMPT);
+			}
+			if(!strcmp(cmnd->str[4], "0")) {
+				crt_ptr->carry[cmnd->val[3]-1]=0;
+				print(fd, "Carry slot %d cleared.\n", cmnd->val[3]);
+				if(crt_ptr->type==MONSTER)
+					sprintf(crt_ptr->password, "%d", 0);
+				return(PROMPT);
+			} 
+			obj_ptr=find_obj(ply_ptr, ply_ptr->first_obj,cmnd->str[4],1);
+			if(!obj_ptr) {
+				print(fd, "You are not carrying that.\n");
+				return(PROMPT);
+			}
+			objnum=find_obj_num(obj_ptr);
+			crt_ptr->carry[cmnd->val[3]-1]=objnum;
+			print(fd, "Carry slot %d set to object number %d.\n", cmnd->val[3], objnum);
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
+			return(PROMPT);
+		}
 	case 'l':
 		crt_ptr->level = cmnd->val[3];
 		print(fd, "Level set.\n");
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(PROMPT);
 	case 'm':
 		if(cmnd->str[3][1] == 'm'){
@@ -262,11 +314,15 @@ cmd		*cmnd;
 			crt_ptr->mpcur = cmnd->val[3];
 			print(fd, "Magic pts set.\n");
 		}
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(PROMPT);
 	case 'p':
 		if(!strcmp(cmnd->str[3], "pie")) {
 			crt_ptr->piety = cmnd->val[3];
 			print(fd, "Piety set.\n");
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		num = atoi(&cmnd->str[3][1]);
@@ -274,11 +330,15 @@ cmd		*cmnd;
 		crt_ptr->proficiency[num] = cmnd->val[3];
 		print(fd, "%M given %d shots in prof#%d.\n", crt_ptr, 
 		      cmnd->val[3], num);
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(0);
 	case 'r':
 		if(!cmnd->str[3][1]) {
 			crt_ptr->race = cmnd->val[3];
 			print(fd, "Race set.\n");
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		num = atoi(&cmnd->str[3][1]);
@@ -286,11 +346,15 @@ cmd		*cmnd;
 		crt_ptr->realm[num] = cmnd->val[3];
 		print(fd, "%M given %d shots in realm#%d.\n", crt_ptr,
 			cmnd->val[3], num);
+		if(crt_ptr->type==MONSTER)
+			sprintf(crt_ptr->password, "%d", 0);
 		return(0);
 	case 's':
 		if(!strcmp(cmnd->str[3], "str")) {
 			crt_ptr->strength = cmnd->val[3];
 			print(fd, "Strength set.\n");
+			if(crt_ptr->type==MONSTER)
+				sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		break;
@@ -299,6 +363,7 @@ cmd		*cmnd;
 			crt_ptr->type == MONSTER){
 			crt_ptr->thaco = cmnd->val[3];
 			print(fd, "THAC0 set.\n");
+			sprintf(crt_ptr->password, "%d", 0);
 			return(PROMPT);
 		}
 		break;
@@ -315,7 +380,7 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	room	*rom_ptr, *rom_ptr2;
-	int	num, fd;
+	int		fd;
 
 	fd = ply_ptr->fd;
 
@@ -323,6 +388,11 @@ cmd		*cmnd;
 		dm_set_xflg(ply_ptr, cmnd);
 		return(0);
 	}
+	if (low(cmnd->str[1][1]) == 'k'){
+                dm_set_xkey(ply_ptr, cmnd);
+                return(0);
+        }
+
 	if(cmnd->num < 3) {
 		print(fd, "Syntax: *set [#] x <name> <#> [. or name]\n");
 		return(0);
@@ -490,7 +560,11 @@ cmd		*cmnd;
 			obj_ptr->shotsmax = num;
 			print(fd, "Max shots set.\n");
 		}
-		else {
+		else if(flags[1] == 'p'){
+			obj_ptr->special = num;
+			print(fd, "Object special set.\n");
+		}
+		else{
 			obj_ptr->shotscur = num;
 			print(fd, "Current shots set.\n");
 		}
@@ -511,7 +585,10 @@ cmd		*cmnd;
                	case MONEY:obj_ptr->type = MONEY; print(fd, "Object is money.\n");return(PROMPT);               
 		case KEY:obj_ptr->type = KEY; print(fd, "Object is a key.\n");return(PROMPT);
 		case LIGHTSOURCE:obj_ptr->type = LIGHTSOURCE; print(fd, "Object is a lightsource.\n");return(PROMPT);
-		case MISC:obj_ptr->type = MISC; print(fd, "Object is a misc item.\n");
+		case MISC:obj_ptr->type = MISC; print(fd, "Object is a misc item.\n");return(PROMPT);
+		case HERB:obj_ptr->type = HERB; print(fd, "Object is an herb.\n"); return(PROMPT);
+		case FOOD:obj_ptr->type = FOOD; print(fd, "Object is food.\n");return(PROMPT);
+		case DRINK:obj_ptr->type = DRINK; print(fd, "Object is a drink.\n");return(PROMPT);
 		}
 
 		break;
@@ -583,6 +660,53 @@ cmd     *cmnd;
 
         return(0);   
 }
+
+/***********************************************************************
+*
+*
+*/
+int dm_set_xkey(ply_ptr, cmnd)
+creature	*ply_ptr;
+cmd		*cmnd;
+{
+    int     fd;
+    char    found=0;
+    room	*rom_ptr;
+    xtag	*xp;
+
+    rom_ptr = ply_ptr->parent_rom;
+    fd = ply_ptr->fd;
+
+    if(cmnd->num < 3) {
+        print(fd, "Syntax: *set xk <exit> <key#>\n");
+        return(0);
+    }
+
+        xp = rom_ptr->first_ext;
+        while(xp) {
+                if(!strcmp(xp->ext->name, cmnd->str[2]) &&
+                        !F_ISSET(xp->ext,XNOSEE)){
+                        found = 1;
+                        break;
+                }   
+                xp = xp->next_tag;
+        }
+
+        if(!found) {
+                print(fd, "Exit not found.\n");
+                return(0);
+        }
+
+	if(cmnd->val[2]>128 || cmnd->val[2]<1) {
+		print(fd, "Key number is out of range.\n");
+		return(0);
+	}
+
+	xp->ext->key=cmnd->val[2];
+	print(fd, "Exit %s key set to %d.\n", xp->ext->name, xp->ext->key);
+	return(0);
+}
+
 /***********************************************************************/
 /***********************************************************************/
 
@@ -712,7 +836,12 @@ cmd *cmnd;
 		return(0);
 	}
 
+#ifndef WIN32
 	view_file(ply_ptr->fd, 1, fn);
+#else
+	view_log(ply_ptr->fd);
+	F_CLR(ply_ptr, PREADI);
+#endif
 	return(DOPROMPT);
 }
 
@@ -797,7 +926,7 @@ cmd		*cmnd;
 		sprintf(fdstr, "%d", ply_ptr->fd);
 		execl(path, "fing", fdstr, addr, name, 0);
 		exit(0);
-/* no idea why this is in here causes spawning frps should be exit */
+		/* no idea why this is in here causes spawning mordors should be exit */
 		/*return(PROMPT); */
 	}
 	else {
@@ -808,6 +937,7 @@ cmd		*cmnd;
 	}
 
 #endif
+return(0);
 }
 
 /************************************************************************/
@@ -837,11 +967,11 @@ cmd		*cmnd;
 		return(0);
 	}
 
-#ifdef IRIX
+	#ifdef IRIX
         if(!fork())  {
-#else
+	#else
         if(!vfork())  {
-#endif
+	#endif
 		sprintf(path, "%s/list", BINPATH);
 		sprintf(fdstr, "-s%d", ply_ptr->fd);
 
@@ -852,8 +982,8 @@ cmd		*cmnd;
 			cmnd->str[3], cmnd->str[4], 0);
 		exit(0);
 	}
-	else return(0);
 #endif
+return(0);
 }
 
 /************************************************************************/
@@ -881,4 +1011,38 @@ cmd		*cmnd;
 
 	print(fd, "      Players: %d  Queued: %d\n\n", Numplayers, Numwaiting);
 
+}
+
+/************************************************************************/
+/*                              view_log                               */
+/************************************************************************/
+
+int view_log(fd)
+int             fd;
+{
+	FILE    *fn;
+	char    filename[80], str[80];
+	int             cntr;
+	creature	ply_ptr;
+
+	cntr = 0;
+	sprintf(filename, "%s/log", LOGPATH);
+	fn = fopen(filename, "rt");
+	if(!fn) return(0);
+		fgets(str, 80, fn);
+		while(!feof(fn)) {
+			print(fd, str);
+            cntr++;
+            fgets(str, 80, fn);
+            if(cntr>19){
+				cntr=0;
+                /*  Hit enter or Q to quit prompt
+				F_SET(Ply[fd].ply, PREADI);
+				print(fd, "[Hit Return, Q to Quit]: ");
+				output_buf();
+				Ply[fd].io->intrpt &= ~1;
+                /*  Hit enter or Q to quit prompt  */
+		}
+	}
+	fclose(fn);
 }

@@ -1,0 +1,12 @@
+Help on DM command:
+
+        *gamestat [r]
+
+  This will display the current status of all configurable settings.
+
+example:
+:*gamestat
+bunch of settings
+
+:*gamestat r
+INI reloaded.

@@ -1,13 +1,7 @@
-
-Help on command:
-
-	USE
-
-Syntax:
-
+Help on:
 	USE <item> <target>
 
-	This command allows you to use different items.  If no target is 
-given, it is assumed that you want to use it yourself.
+This command allows you to use different items.  If no target is given,
+it is assumed that you want to use it yourself.
 
 

@@ -3,7 +3,7 @@
  *
  *	Additional user routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -43,7 +43,7 @@ cmd		*cmnd;
 	/* Check for modem escape code */
         for(j=0; j<len && j < 256; j++) {
                 if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
-                        index = -1;
+                        index=-1;
                         break;
                 }
         }
@@ -57,7 +57,13 @@ cmd		*cmnd;
 		return(0);
 	}
 	F_CLR(ply_ptr, PHIDDN);
-	print(fd, "Ok.\n");
+	if(F_ISSET(ply_ptr, PLECHO)){
+		ANSI(fd,CYAN);
+		print(fd,"You yell, \"%s!\"\n", &cmnd->fullstr[index]);
+		ANSI(fd,NORMAL);
+	}
+	else
+		print(fd, "Ok.\n");
 
 	broadcast_rom(fd, rom_ptr->rom_num, "%M yells, \"%s!\"", ply_ptr,
 		      &cmnd->fullstr[index]);
@@ -213,11 +219,33 @@ if(F_ISSET(ext_ptr, XPLDGK))
 	s = LT(ply_ptr, LT_SPELL);
 	t = time(0);
 
+/*
 	if(t < i || t < s) {
 		p = MAX(i, s);
 		please_wait(fd, p-t);
 		return(0);
 	}
+*/
+
+        if(ply_ptr->lasttime[LT_MOVED].ltime == t) {
+                if(++ply_ptr->lasttime[LT_MOVED].misc > 3) {
+                        please_wait(fd, 1);
+                        return(0);
+                }
+        }
+        else if(ply_ptr->lasttime[LT_ATTCK].ltime+3 > t) {
+                please_wait(fd, 3-t+ply_ptr->lasttime[LT_ATTCK].ltime);
+                return(0);
+        }
+        else if(ply_ptr->lasttime[LT_SPELL].ltime+3 > t) {
+                please_wait(fd, 3-t+ply_ptr->lasttime[LT_SPELL].ltime);
+                return(0);
+        }
+        else {
+                ply_ptr->lasttime[LT_MOVED].ltime = t;
+                ply_ptr->lasttime[LT_MOVED].misc = 1;
+        }
+
 
 	F_CLR(ply_ptr, PHIDDN);
 
@@ -632,7 +660,6 @@ cmd		*cmnd;
 		print(fd, "Pick what?\n");
 		return(0);
 	}
-
 	ext_ptr = find_ext(ply_ptr, rom_ptr->first_ext,
 			   cmnd->str[1], cmnd->val[1]);
 

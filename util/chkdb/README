@@ -1,0 +1,64 @@
+Mordor Database Utility and Utility Library v1.0 
+	(c) 1996 Brooke Paul
+---------------------------------------------------------
+
+  This package contains a Database checking and fixing utility for use
+with Mordor MUD databases.  It reads each room in turn and checks for
+improperly permed creatures and objects.  If any are found then they are
+permed properly in the room.  If a unique creature or object is found it
+is given a slot in the database of and permed properly into its parent
+room. 
+  The utils.c and utils.h files are general utilities for accessing 
+and saving to Mordor MUD database files.  This utility package can be 
+used to write custom applications for the analysis and modification of the 
+database.
+  We believe this utility package to be bug free, but recommend that you 
+BACKUP YOUR DATABASE BEFORE USING THESE UTILITIES.  You have been warned.
+
+  To compile:
+
+	1.  Examine the options at the top of ckdb.c
+	2.  Be sure your header files are in ../../src.
+	3.  Be sure that the utils header and source are in ../lib.
+	4.  Compile chkdb:
+		make
+		or
+		cc -g utils.c ckdb.c -o chkdb
+
+  This will give you a program named chkdb.  A binary of this program is 
+provided for Linux.  It was compiled on 2.0.29 ELF.  You will need about 
+8M free memory to run this on a medium sized database (~5K rooms).
+
+Explanation of messages:
+------------------------
+  All important messages are prefaced by '###'.  The following are the 
+various messages and their meaning:
+
+### Unique object in inventory not saved.
+  This means that an object which is not in the database has been found 
+in the inventory of a creature.  These types of objects are not saved to 
+the database.
+
+### Only first 10 objects in inventory saved.
+  More than 10 objects were found in the inventory of a creature.  Only 
+the first 10 will be saved.
+
+### Creature x updated for room y.
+  The creature numbered x has been updated to the database and saved as 
+perm in room y.
+
+### Room x is already full of perm creatures.
+  A room was found that contains more than 10 perm creatures.  A maximum of 
+10 permed creatures per room is allowed, and any excess is not saved.
+
+### Object x updated for room y.
+  The object numbered x has been updated to the database and saved as
+oerm in room y.
+
+### Room x is already full of perm objects.
+  A room was found that contains more than 10 perm objects.  A maximum of
+10 objects permed per room is allowed, and any excess is not saved.
+
+### Interval fixed on x in room y.
+  An object or monster x was found in room y without a proper lasttime 
+interval for reupdate.

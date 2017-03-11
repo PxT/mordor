@@ -1,10 +1,8 @@
-
 Help on: 
-
 	*BROAD [msg]
 
-	This command will broadcast [msg] to the whole game without the 
-normal name descriptor.
+This command will broadcast [msg] to the whole game without the normal
+name descriptor.
 
 example:
 :*broad The Mountain trolls are coming.

@@ -1,10 +1,8 @@
-
 Help on:
-
 	*GROUP [crt]
 
-	This function will tell who is currently in the group of the 
-specified character.
+This function will tell who is currently in the group of the specified
+character.
 
 example:
 :*group gonzo

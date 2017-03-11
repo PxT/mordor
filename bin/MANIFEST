@@ -1,14 +1,16 @@
 
 The following is the directory structure and files that you should 
-have to run Mordor (NOTE:  Win95/NT users need to use the 
-/home/mordor/Isengard path instead).
+have to run Mordor 
 
 /home/mordor/bin:
-	frp -- the driver for Linux
-	auth -- authorizes the port for frp connections
-	editor -- the database offline editor
-	MORDOR.ZIP -- the driver for Win95/NT.
-
+	mordor -- the driver for Linux (compiled under 2.0.29).
+	auth -- authorizes the port for mordor connections using RFC1413.
+	editor -- the database offline editor.
+	makecf -- Interactive program for the creation of config files.
+	NT/95 -- the binaries for Win95/NT.
+	Several utilities are included here as well.  Please see docs/
+		for more inforation on them.
+	
 /home/mordor/rooms:
 	Feel free to erase ours and begin your own world. If you wish you
 can just add to the city of Ocenacrest as well.  Note:  You MUST have rooms
@@ -43,5 +45,6 @@ for use by the auth program.
 
 /home/mordor/util:
 	This is source code for several useful utility programs.  You will
-need the editor at least. 
+need the editor at least.  Many of these utilities come precompiled.
+Check in /home/mordor/bin for the binary.
 

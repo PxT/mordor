@@ -1,0 +1,8 @@
+  The Mordor Database Editor can be used to edit or 
+create players, creatures objects, and rooms for the Mordor MUD server.
+It is menu driven and easy to use.
+  If you are using MS-Windows you will need to install the ansi.sys
+driver to use the editor.  This is usually done with a line similar
+to the one below added to your autoexec.bat:
+
+device=C:/windows/command/ansi.sys

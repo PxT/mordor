@@ -1,0 +1,23 @@
+Muddle --  A MUD client for Mordor (and other) MUDs.
+
+Here is some quick documentation:
+
+Copy sample.muddle to a file called .muddle in your root directory.
+Edit as appropriate.
+
+At the muddle> prompt, hit ? for a list of commands and functions.
+
+Once in the game, any of these commands can be achieved by typing
+the command with a # in front of it.   So typing #l will list all
+open connections.
+
+Once you're connected, you can send commands to any connection you
+have open at the time by typing #, the connection number, and the
+command.  For example: #2 kill dog
+
+To make another connection the active connection (i.e. the one that
+displays to your screen), type a # followed by the connection number
+and hit return.  Example: #3
+
+To do a macro listed in your .muddle file, just type the key word.
+

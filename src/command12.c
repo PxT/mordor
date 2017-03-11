@@ -1,8 +1,7 @@
 /*
  * 	COMMAND12.C:
  *
- *	(C) Brett Vickers 1992, 1994
- *	(C) Brooke Paul 1995
+ *	(C) Brooke Paul 1995-1997
  */
 
 #include "mstruct.h"
@@ -18,7 +17,6 @@ int bard_song(ply_ptr, cmnd)
 creature    *ply_ptr;
 cmd         *cmnd;
 {          
-	char	*sp;
     	int     c = 0, fd, i, t, heal;
 	ctag	*cp;
 	ctag	*cp_tmp;
@@ -87,7 +85,7 @@ cmd     *cmnd;
 {
     room        *rom_ptr;
     creature    *crt_ptr;
-    int     fd, n, dur, chance;
+    int			fd, dur, chance;
 
     	fd = ply_ptr->fd;
 	

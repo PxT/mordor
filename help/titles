@@ -4,8 +4,6 @@ ASSASSIN:   Minor Assassin - Rutterkin - Killer - Cutthroat - Murderer
 	        Executioner - Expert Assassin - Master Assassin
 BARBARIAN:  Grunt - Tribesman - Savage - Brutalizer - Dragon-Slayer
 	        Barbarian Chief - Destroyer - Master Barbarian
-BARD:	    Jongleur - Lyrist - Sonneteer - Skald - Minstrel 
-		Muse - Bard - Master Bard
 CLERIC:     Acolyte - Healer - Adept - Priest - Cardinal - Lama
 	        Patriarch - High Priest
 FIGHTER:    Veteran - Warrior - Punisher - Pugilist - Myrmidon
@@ -18,4 +16,15 @@ RANGER:     Searcher - Scout - Tracker - Underhillsman - Royal Guide
 	        Pathfinder - Ranger Knight - Ranger Lord
 THIEF:      Rogue - Footpad - Dervish - Burglar - Sharper - Magsman
 	        High Thief - Master Thief
-
+BARD:	    Jongleur - Lyrist - Sonneteer - Skald - Minstrel
+		Muse - Bard - Master Bard
+MONK:       Novice - Initiate - Brother - Disciple - Immaculate
+                Master - Superior Master - Grand Master
+DRUID:      Aspirant - Ovate - Initiate - Master Initiate - Druid
+                Master Druid - Archdruid - Great Druid
+ALCHEMIST:  Scholar - Sage - Artificer - Runemaster - Alchemist
+                Mechanician - Archeus - Master Archeus
+CARETAKER:  Builder - Creator - Slave - Daemon - Addict - Hero
+                Dungeonmaster - Caretaker
+DUNGEONMASTER:  Builder - Creator - Programmer - Dungeon Lord - Immortal
+                Divine Entity - Addict - Dungeonmaster

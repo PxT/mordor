@@ -1,11 +1,8 @@
-
-Help on command:
-
+Help on:
 	*DUST <name>
 
-	This command utterly destroys the named character.  They are 
-kicked off of the game, and their player file is deleted.  Only DMs may 
-use this command.
+This command utterly destroys the named character.  They are kicked off of
+the game, and their player file is deleted.  Only DMs may use this command.
 
 example:
 :*dust ninja

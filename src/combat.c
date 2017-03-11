@@ -17,7 +17,6 @@ creature *crt_ptr;
    creature *att_ptr;
    room     *rom_ptr;
    etag     *ep;
-   ctag     *cp;
    char     *enemy;
    int      n = 0,rtn = 0,p = 0,fd,t = 0;
    
@@ -48,6 +47,7 @@ creature *crt_ptr;
      return 0;
    }
    
+if(att_ptr != crt_ptr) {
    if(is_charm_crt(crt_ptr->name, att_ptr)&& F_ISSET(crt_ptr, MCHARM))
       p = 1;
    crt_ptr->NUMHITS++;
@@ -220,6 +220,7 @@ creature *crt_ptr;
        }
      }
    }
+ }
   return 0;
 }
 

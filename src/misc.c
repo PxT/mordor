@@ -4,7 +4,7 @@
  *	Miscellaneous string, file and data structure manipulation
  *	routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -18,8 +18,12 @@
 #include "mstruct.h"
 #include "mextern.h"
 #include <stdio.h>
-#include <sys/time.h>
 #include <sys/types.h>
+#ifndef WIN32
+	#include <sys/time.h>
+#else
+	#include <time.h>
+#endif
 #include <ctype.h>
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
@@ -132,6 +136,11 @@ int		num, flag;
 {
 	char	ch;
 	char	*str;
+	char    pform[80];                                    
+	char    sform[80];                                    
+	char    pfile[80];                                    
+	int     found;                                        
+	FILE    *plural;     
 
 	str = xstr[xnum];  xnum = (xnum + 1)%5;
 
@@ -202,6 +211,43 @@ int		num, flag;
 				str[strlen(str)] = 's';
 		}
 	}
+        if(F_ISSET(crt, MIREGP) && num > 1)
+        {
+                found = 0;
+                            
+                strcpy(pfile, MONPATH);
+                strcat(pfile,"/plurals");
+
+                 
+                plural = fopen(pfile, "r");
+                if(plural != NULL)
+                {
+                    while (!found && !(feof (plural)))
+                    {
+                        fflush(plural);
+                       /* get singular form */
+                        fgets(sform, sizeof(sform), plural);    
+                        sform[strlen(sform)-1] = 0;
+                        fflush(plural);
+                       /* get plural form */
+                        fgets(pform, sizeof(pform), plural);    
+                        pform[strlen(pform)-1] = 0;
+
+                        if(strcmp(crt->name, sform) == 0)
+                        {   
+                            strcpy(str, "");
+                            if(num < 21)
+                            if(num < 21)
+                                sprintf(str, "%s ", number[num]);
+                            else
+                                sprintf(str, "%d ", num);
+                                strcat(str, pform);
+                            found = 1; 
+                         }
+                     }
+                     fclose(plural);
+                }
+        }
 
 	if(flag & CAP)
 		str[0] = up(str[0]);
@@ -228,6 +274,11 @@ int	num, flag;
 	char 	ch;
 	char	str2[10];
 	char	*str;
+	char    pform[80];
+	char    sform[80];
+	char    pfile[80];
+	int     found;
+	FILE    *plural;
 
 	str = xstr[xnum];  xnum = (xnum + 1)%5;
 
@@ -278,6 +329,42 @@ int	num, flag;
 				str[strlen(str)] = 's';
 		}
 	}
+       if(F_ISSET(obj, OIREGP) && num > 1)
+        {
+                found = 0;
+                            
+                strcpy(pfile, OBJPATH);
+                strcat(pfile,"/plurals");
+
+ 
+                plural = fopen(pfile, "r");
+                if(plural != NULL)
+                {
+                    while (!found && !(feof (plural)))
+                    {
+                        fflush(plural);
+                        /* get singular form */
+                        fgets(sform, sizeof(sform), plural);
+                        sform[strlen(sform)-1] = 0;
+                        fflush(plural);
+                        /* get plural form */
+                        fgets(pform, sizeof(pform), plural);
+                        pform[strlen(pform)-1] = 0;
+                                
+                        if(strcmp(obj->name, sform) == 0)
+                        {
+                            strcpy(str, "");
+                            if(num < 21)
+                                sprintf(str, "%s ", number[num]);
+                            else
+                                sprintf(str, "%d ", num);
+                                strcat(str, pform);
+                            found = 1;
+                         }
+                     }
+                     fclose(plural);
+                }
+        }
 
 	if(flag & CAP)
 		str[0] = up(str[0]);
@@ -307,7 +394,7 @@ void delimit(str)
 char	*str;
 {
 	int 	i, j, l, len, lastspace;
-	char 	str2[2048];
+	char 	str2[4096];
 
 	str2[0] = 0;
 	j = (str) ? strlen(str) : 0;
@@ -713,7 +800,11 @@ int     i1, i2, i3, i4, i5, i6, i7, i8, i9, i10;
         close(fd);
 }
 /*====================================================================*/
+#ifdef FREEBSD
+int is_num(str)
+#else
 int isnumber(str)
+#endif
 char    *str;
 /* checks if the given str contains all digits */
 
@@ -725,5 +816,4 @@ char    *str;
          return (0);
    return (1);
 }
-/*====================================================================*/
 

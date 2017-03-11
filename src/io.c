@@ -3,7 +3,7 @@
  *
  *	Socket input/output/establishment functions.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -17,26 +17,23 @@
 #include <sys/types.h>
 
 #ifndef WIN32
-
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/signal.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
+	#include <sys/ioctl.h>
+	#include <sys/socket.h>
+	#include <sys/signal.h>
+	#include <sys/wait.h>
+	#include <sys/time.h>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
+	#include <netdb.h>
 #else
-
-#include <winsock.h>
-
+	#include <winsock.h>
 #endif
 
 #include <errno.h>
 #include <string.h>
 #include "mstruct.h"
 #include "mextern.h"
+#include "version.h"
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
 #endif
@@ -69,19 +66,14 @@ extern int			Port;
 
  C file handles are not always the same as system handles.
  Since read() and write() take C file handles, I had to change this
- for the socket io stuff.  Thank god, it's isolated to this file.
+ for the WIN32 socket io stuff.  Thank god, it's isolated to this file.
 
 */
+#ifdef WIN32
 int scwrite(int fh, const void *lpvBuffer, unsigned int nLen)
 {
-#ifdef WIN32
 	DWORD dwRet; 
 	WriteFile((HANDLE)fh, lpvBuffer, nLen, &dwRet, NULL); 
-
-	/* Brooke: you could handle spy here and never have to worry
-	   about forgetting to put this code in again.
-	   You only spy socket writes and probably want to
-	   spy on all socket writes. */
 
 	if(Spy[fh] > -1) 
 		{
@@ -90,26 +82,9 @@ int scwrite(int fh, const void *lpvBuffer, unsigned int nLen)
 	
 	return(dwRet);
 
-#else
-
-	int	nRet; 
-	nRet = write(fh, lpvBuffer, nLen); 
-
-	/*  Brooke: you could handle spy here and never have to worry
-	    about forgetting to put this code in again.
-	    You only spy socket writes and probably want to
-	    spy on all socket writes. */
-
-	if(Spy[fh] > -1) 
-		{
-		write(fh, lpvBuffer, nLen);
-		}
-	
-	return(nRet);
-#endif
 }
 
-#ifdef WIN32
+
 int scread(int fh, void *lpvBuffer, unsigned int nLen)
 {
 
@@ -135,22 +110,27 @@ int	debug;
 	struct linger		ling;
 	int 			n, i, flags;
 	extern char		report;
-
+#ifdef WINNT
+	int			optval = SO_SYNCHRONOUS_NONALERT;
+#endif /* WINNT */
 
 #ifdef WIN32
-	// gotta initialize the winsock stuff
+	/* gotta initialize the winsock stuff */
 	WORD wVersionRequested; 
 	WSADATA wsaData; 
 	int err; 
 	wVersionRequested = MAKEWORD(1, 1); 
  
 	err = WSAStartup(wVersionRequested, &wsaData); 
- 
 	if (err != 0) 
 		/* Tell the user that we couldn't find a useable */ 
 		/* winsock.dll.     */ 
 		return; 
-#endif
+#ifdef WINNT
+ 	err = setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE, (char*)&optval,sizeof(optval));
+#endif /* WINNT */
+
+#endif /* WIN32 */
 
 	if(debug) {
 		FD_SET(0, &Sockets);
@@ -161,6 +141,8 @@ int	debug;
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGTERM, SIG_IGN);
 	signal(SIGCHLD, child_died);
+	signal(SIGHUP, quick_shutdown);
+
 	Tablesize = getdtablesize();
 	if (Tablesize > PMAX){
 		Tablesize = PMAX;
@@ -207,9 +189,6 @@ int	debug;
 	ioctl(Waitsock, FIONBIO, &i);
 #endif /* IRIX */
 }
-
-
-
 
 
 /**********************************************************************/
@@ -351,7 +330,12 @@ void accept_connect()
 	else if(Numplayers >= MAXPLAYERS &&
 		((unsigned)(ntohl(saddr))>>24) != 127) {
 		if(Numwaiting > MAXPLAYERS) {
-			scwrite(fd, "Queue full.\n\r", 13);
+			#ifdef WIN32
+				scwrite(fd, "Queue full.\n\r", 13);
+			#else
+				write(fd, "Queue full.\n\r", 13);
+			#endif /* WIN32 */
+
 			disconnect(fd);
 			return;
 		}
@@ -372,18 +356,28 @@ void init_connect(fd)
 int	fd;
 {
 	int		i;
-#ifdef ISENGARD
-	print(fd, "\nThe Land of Isengard v2.2");
-#endif /* ISENGARD */
-	print(fd, "\n  Mordor v3.00");
-	print(fd, "\nProgrammed by:");
-	print(fd, "\n  Brett J. Vickers & Brooke Paul");
- 	print(fd, "\nContributions by: ");
-	print(fd, "\n  Steve Smith & Charles Marchant\n"); 
-#ifdef WIN32
-	print(fd, "\nMS-Windows port by John Freeman\n");
-#endif /* WIN32 */
 
+
+	/* Put your MUD name here */
+	print(fd,"\n%s", title);
+
+/********************************************************************/
+/*  As part of the copyright agreement this section must be left    */
+/* intact.  Please give credit where credit is due, and feel free to */
+/* add your name once you begin adding to the Mordor codebase.      */
+	print(fd, "\n  Mordor v%s", VERSION);
+	print(fd, "\nProgrammed by:");
+	print(fd, "\n  Brooke Paul & Brett Vickers");
+					/* brooke@nazgul.com */
+	print(fd, "\nContributions by:");
+	print(fd, "\n  Paul Telford");
+					/* pdtelford@pobox.com */
+#ifdef WIN32
+	print(fd, "\nWIN32 by:\n  John Freeman & Eric Krichbaum"); 
+					/* ekrich@iolinc.net */
+#endif /* WIN32 */
+/*							            */
+/********************************************************************/
 	Ply[fd].io->intrpt |= 2;
 	Numplayers++;
 
@@ -420,7 +414,6 @@ int 	fd;
 	int	i;
 
 	for(i=0; i<Numlockedout; i++) {
-
 		if(!addr_equal(Lockout[i].address, Ply[fd].io->address))
 			continue;
 
@@ -430,9 +423,14 @@ int 	fd;
 			return 2;
 		}
 		else {
+			#ifdef WIN32
 			scwrite(fd, "\n\rYour site is locked out.\n\r", 28);
-			scwrite(fd, "\n\rSend questions to imail@moria.bio.uci.edu.\n\r", 46);
-			return 1;
+			#else	
+			write(fd, "\n\rYour site is locked out.\n\r", 28);
+			#endif /* WIN32 */
+
+			print(fd, "\n\rSend questions to %s.\n\r", questions_to_email);
+			return(1);
 		}
 	}
 
@@ -487,9 +485,10 @@ int	fd;
 	n = read(fd, buf, 127);
 #endif
 
-	if(n<=0)
+	if(n<=0) {
 		Ply[fd].io->commands = -1;	/* Connection dropped */
-
+		disconnect(fd);
+	}
 	else {
 		ihead = Ply[fd].io->ihead;
 		lastchar = 0;
@@ -563,12 +562,32 @@ void output_buf()
 				if(Ply[i].ply)
 					if(Ply[i].ply->fd > -1 && 
 					   F_ISSET(Ply[i].ply, PNOCMP)) {
+					#ifdef WIN32	
 						n = scwrite(i, "\n\r", 2);
+					#else
+						n = write(i, "\n\r", 2);
+						if(Spy[i] > -1)
+							write(Spy[i], "\n\r", 2);
+					#endif /* WIN32 */
+
 					}
+				#ifdef WIN32
 				n = scwrite(i, &Ply[i].io->output[otail], 
-				 ohead>otail ? ohead-otail:OBUFSIZE-otail);
+					ohead>otail ? ohead-otail:OBUFSIZE-otail);
+				#else
+				n = write(i, &Ply[i].io->output[otail],
+					ohead>otail ? ohead-otail:OBUFSIZE-otail);
+				if(Spy[i] > -1)
+					write(Spy[i],&Ply[i].io->output[otail],ohead>otail ? ohead-otail:OBUFSIZE-otail);        
+				#endif /* WIN32 */
 				if(otail > ohead) {
+				#ifdef WIN32	
 					n+= scwrite(i, Ply[i].io->output, ohead);
+				#else
+					n+= write(i, Ply[i].io->output, ohead);
+					if(Spy[i] > -1)
+						write(Spy[i], Ply[i].io->output, ohead);
+				#endif /* WIN32 */
 				}
 
 				/* if(n < buflen(ohead, otail, OBUFSIZE))
@@ -578,14 +597,35 @@ void output_buf()
 				Ply[i].io->otail = otail;
 				if(Ply[i].ply) {
 					pstr = ply_prompt(Ply[i].ply);
+					#ifdef WIN32
 					n = scwrite(i, pstr, strlen(pstr));
+					#else
+					n = write(i, pstr, strlen(pstr));
+					if(Spy[i] > -1)
+						write(Spy[i],pstr,strlen(pstr));
+					#endif /* WIN32 */
 				}
 			}
 			if(buflen(ohead, otail, OBUFSIZE) > (OBUFSIZE*3)/4) {
+				#ifdef WIN32
 				n = scwrite(i, &Ply[i].io->output[otail], 
 				 ohead>otail ? ohead-otail:OBUFSIZE-otail);
+				#else	
+				n = write(i, &Ply[i].io->output[otail],
+					ohead>otail ? ohead-otail:OBUFSIZE-otail);
+				if(Spy[i] > -1)
+					write(Spy[i], &Ply[i].io->output[otail],
+						ohead>otail ? ohead-otail:OBUFSIZE-otail);
+				#endif /* WIN32 */
+
 				if(otail > ohead) {
+					#ifdef WIN32
 					n+= scwrite(i, Ply[i].io->output, ohead);
+					#else
+					n+= write(i, Ply[i].io->output, ohead);
+					if(Spy[i] > -1)  
+						write(Spy[i], Ply[i].io->output, ohead);
+					#endif /* WIN32 */
 				}
 
 				/* if(n < buflen(ohead, otail, OBUFSIZE))
@@ -611,7 +651,7 @@ int 	fd;
 char 	*fmt;
 int	i1, i2, i3, i4, i5, i6;
 {
-	char 	msg[2048];
+	char 	msg[4096];
 	char	*fmt2;
 	int	i = 0, j = 0, k, n, otail, ohead;
 	int	num, loc, ind = -1, len, flags = 0;
@@ -675,15 +715,13 @@ int	i1, i2, i3, i4, i5, i6;
 				arg[ind] = (int)crt_str(arg[ind], num, flags);
 				continue;
 			case 'M':
-				arg[ind] = (int)crt_str(arg[ind], num, 
-							flags|CAP);
+				arg[ind] = (int)crt_str(arg[ind], num, flags|CAP);
 				continue;
 			case 'i':
 				arg[ind] = (int)obj_str(arg[ind], num, flags);
 				continue;
 			case 'I':
-				arg[ind] = (int)obj_str(arg[ind], num,
-							flags|CAP);
+				arg[ind] = (int)obj_str(arg[ind], num, flags|CAP);
 				continue;
 			}
 		}
@@ -759,8 +797,13 @@ void handle_commands()
 			Ply[i].io->itail = itail;
 			Ply[i].io->commands--;
 			if(Spy[i] > -1) {
+				#ifdef WIN32
 				scwrite(Spy[i], buf, strlen(buf));
 				scwrite(Spy[i], "\n\r", 2);
+				#else
+				write(Spy[i], buf, strlen(buf));
+				write(Spy[i], "\n\r", 2);
+				#endif /* WIN32 */
 			}
 			(*Ply[i].io->fn) (i, Ply[i].io->fnparam, buf);
 		}
@@ -914,9 +957,9 @@ int	i1, i2, i3, i4, i5, i6;
 	for(i=0; i<Tablesize; i++) {
 		if(FD_ISSET(i, &Sockets) && Ply[i].ply)
 			if(Ply[i].ply->fd > -1 && Ply[i].ply->class >= CARETAKER && !F_ISSET(Ply[i].ply, PNOBRD)){
-				ANSI(i,YELLOW);
-				print(i, fmt2, i1, i2, i3, i4, i5, i6); 
-				ANSI(i,WHITE);
+				ANSI(i, YELLOW);
+				print(i, fmt2, i1, i2, i3, i4, i5, i6);
+				ANSI(i, WHITE);
 			}
 	}
 }
@@ -1015,33 +1058,32 @@ struct in_addr in;
 	static char domain[81];
 	static int first = 1;
 	int net, lna;
-
-#ifdef GETHOSTBYNAME
-	if (first) {
-		first = 0;
-		if (gethostname(domain, 80) == 0 &&
-		    (cp = index(domain, '.')))
-			(void) strcpy(domain, cp + 1);
-		else
-			domain[0] = 0;
-	}
-	cp = 0;
-	if (in.s_addr != INADDR_ANY) {
-		net = inet_netof(in);
-		lna = inet_lnaof(in);
-
-		if (lna == INADDR_ANY) {
-			np = getnetbyaddr(net, AF_INET);
-			if (np)
-				cp = np->n_name;
+#ifndef WIN32
+	if(GETHOSTBYNAME) {
+		if (first) {
+			first = 0;
+			if (gethostname(domain, 80) == 0 && (cp = index(domain, '.')))
+				(void) strcpy(domain, cp + 1);
+			else
+				domain[0] = 0;
 		}
-		if (cp == 0) {
-			hp = gethostbyaddr((char *)&in, sizeof (in), AF_INET);
-			if (hp) {
-				if ((cp = index(hp->h_name, '.')) &&
-				    !strcmp(cp + 1, domain))
-					*cp = 0;
-				cp = hp->h_name;
+		cp = 0;
+		if (in.s_addr != INADDR_ANY) {
+			net = inet_netof(in);
+			lna = inet_lnaof(in);
+
+			if (lna == INADDR_ANY) {
+				np = getnetbyaddr(net, AF_INET);
+				if (np)
+					cp = np->n_name;
+			}
+			if (cp == 0) {
+				hp = gethostbyaddr((char *)&in, sizeof (in), AF_INET);
+				if (hp) {
+					if ((cp = index(hp->h_name, '.')) && !strcmp(cp + 1, domain))
+						*cp = 0;
+					(const)cp = hp->h_name;
+				}
 			}
 		}
 	}
@@ -1108,10 +1150,17 @@ int	i;
 /* write is being used here to check to see if the given
   file desc. is still valid.  Theorically, only one write is
   needed, but for some reason 2 writes are needed */
-
- scwrite(wq->fd," ",1);
+ #ifdef WIN32
+   scwrite(wq->fd," ",1);
+ #else
+   write(wq->fd," ",1);
+ #endif /* WIN32 */
         if(i == 1) {
-                if (scwrite(wq->fd,"\n",1) == -1){
+		#ifdef WIN32
+		if (scwrite(wq->fd,"\n",1) == -1){
+		#else
+		if (write(wq->fd,"\n",1) == -1){
+		#endif /* WIN32 */
                 fd = -1;
 		}
                 else
@@ -1159,7 +1208,17 @@ void child_died()
 #ifndef WIN32
 	signal(SIGCHLD, child_died);
 #endif
-
+}
+/***********************************************************************
+	
+*	This causes the game to shutdown in one minute.  It is used
+*  by signal to force a  shutdown in response to a HUP signal 
+*  (i.e. kill -HUP pid) from the system.
+*/
+void quick_shutdown()
+{
+        Shutdown.ltime = time(0);   
+        Shutdown.interval = 60;
 }
 
 /************************************************************************/
@@ -1220,4 +1279,71 @@ void reap_children()
 	/* Try this wait if wait3 doesnt work */
 	/*wait4(-1, &status, WNOHANG, (struct rusage *)0); */
 #endif
+}
+
+/**********************************************************************/
+/*				broadcast_class									      */
+/**********************************************************************/
+
+/* This function broadcasts a message to all the same class on at the */
+/* time.								*/
+
+void broadcast_class(ply_ptr, fmt, i1, i2, i3, i4, i5, i6)
+creature *ply_ptr;
+char 	*fmt;
+int	i1, i2, i3, i4, i5, i6;
+{
+	char	fmt2[1024];
+	int	i;
+
+	strcpy(fmt2, "(");
+	strcat(fmt2, class_str[ply_ptr->class]);
+	strcat(fmt2, ") ");	
+	strcat(fmt2, fmt);
+	strcat(fmt2, "\n");
+	for(i=0; i<Tablesize; i++) {
+		if(FD_ISSET(i, &Sockets) && Ply[i].ply)
+			if(!F_ISSET(Ply[i].ply,PIGCLA) && Ply[i].ply->fd > -1 && Ply[i].ply->class == ply_ptr->class && !F_ISSET(Ply[i].ply, PNOBRD)){
+					ANSI(i,YELLOW);
+					print(i, fmt2, i1, i2, i3, i4, i5, i6); 
+					ANSI(i,WHITE);
+			}
+	}
+}
+
+/* Doneval: Here a little function to "ask" somthing with ANSI codes. */
+void ask_for(fd, fmt, i1, i2, i3, i4, i5, i6)
+int     fd;
+char    *fmt;
+int     i1, i2, i3, i4 ,i5 ,i6;
+{
+        char    str[80];
+
+	print(fd, "\n");
+        gotoxy(fd, 24, 1);
+
+        print(fd, fmt, i1, i2, i3, i4, i5, i6);
+		sprintf(str, "%c[24;%dH", 27, strlen(fmt));
+        write(fd, str, strlen(str));
+/*
+        if(F_ISSET(Ply[fd].ply, PANSIC)) 
+			sprintf(str, "%c[24;%dH", 27, strlen(fmt));
+        print(fd, str);
+*/
+}
+
+/**********************************************************************/
+/*                      disconnect_all_ply                            */
+/**********************************************************************/
+
+/* This function disconnects all players.                             */
+/* Doneval: Perhaps this function is not necessary. */
+void disconnect_all_ply()
+{
+        int i;
+
+        for(i=0; i<Tablesize; i++) {
+                if(Ply[i].ply && Ply[i].io && Ply[i].ply->name[0])
+                        disconnect(Ply[i].ply->fd);
+        }
 }

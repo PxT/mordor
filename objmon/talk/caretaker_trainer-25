@@ -1,0 +1,73 @@
+help
+First try the [*dmhelp] command.  This will provide you with a group of topics for which you can get help.  All of the caretaker COMMANDS begin with the * character.  To see a list of commands that you can use type [*dmhelp star]. More information can be gotten on these COMMANDS with 'help <command>'.
+commands
+After you have found a command that you want to LEARN about, You can type 'help <command>' for information.  Let's begin with the *teleport command. Type [help *teleport] now.
+com
+After you have found a command that you want to LEARN about, You can type 'help <command>' for information.  Let's begin with the *teleport command. Type [help *teleport] now.
+command
+After you have found a command that you want to LEARN about, You can type 'help <command>' for information.  Let's begin with the *teleport command. Type [help *teleport] now.
+learn
+Some commands (like *set and *oname) change the parameters of things in the game.  This requires you to know the parameter, or FLAG, and what it does.  Again, *dmhelp will guide you. Try [*dmhelp oflags] to see a list of OBJECT flags.
+flag
+A flag is a binary switch that changes the behavior of something.  You can change the state of a flag with the [*set] command.  Try [*set c care f 2].  This will make me hidden, though you can still talk to me.  If you set the flag again, I will no longer be hidden.  You can use the *dmhelp command to see what flags currently exist. Try [*dmhelp mflags] to see the list of MONSTER flags. 
+flags
+A flag is a binary switch that changes the behavior of something.  You can change the state of a flag with the [*set] command.  Try [*set c care f 2].  This will make me hidden, though you can still talk to me.  If you set the flag again, I will no longer be hidden.  You can use the *dmhelp command to see what flags currently exist. Try [*dmhelp mflags] to see the list of monster flags.
+player
+Dealing with players is one of your most important DUTIES.  You can see a list of player flags using [*dmhelp pflags].  You should NEVER change anything on a player except flag #29 -- Law/Chaos, and then only if they want to become lawful. 
+players
+Dealing with players is one of your most important DUTIES.  You can see a list of player flags using [*dmhelp pflags].  You should NEVER change anything on a player except flag #29 -- Law/Chaos, and then only if they want to become lawful.
+monster
+There are many commands that relate to monsters.  Use [*mon] to bring a monster to the ROOM you are in. You can create a custom monster with the [*cname] command.  More information about this command can be gotten with [help *cname].  A list of monster flags can be seen with [*dmhelp mflags]. 
+monsters
+There are many commands that relate to monsters.  Use [*mon] to bring a monster to the ROOM you are in.  You can create a custom monster with the [*cname] command.  More information about this command can be gotten with [help *cname].  A list of monster flags can be seen with [*dmhelp mflags].  You can also use [*set c] to alter the characteristics of monsters.  You should NEVER set flag #1 on a monster.   
+never
+Never do the following: 1. Change a PLAYERS flags.  2. Set FLAG #1 on a MONSTER or OBJECT. 3. Give out information about a quest to a PLAYER.  4. Help a player PKILL or use your caretaker to PKILL. 5. Change ROOM flags.  Doing these things may result in severe PENALTIES. 
+duties
+Your job as a caretaker is to assist the DMs in the administration of the game.  This involves, but is not limited to the following: 1. Create custom OBJECTS for players. 2. Find BUGS and fix or report them.  3. Help NEWBIES learn about Isengard. 4. Assist in the creation of new areas.
+duty
+Your job as a caretaker is to assist the DMs in the administration of the game.  This involves, but is not limited to the following: 1. Create custom OBJECTS for players. 2. Find BUGS and fix or report them.  3. Help NEWBIES learn about Isengard. 4. Assist in the creation of new areas.
+object
+Custom objects can be made using the [*oname] command, and the FLAGS can be set with the [*set o] command.  A list of object flags can be seen with the [*dmhelp oflags] command.  Remember to NEVER set flag #1 on an object.
+objects
+Custom objects can be made using the [*oname] command, and the FLAGS can be set with the [*set o] command.  A list of object flags can be seen with the [*dmhelp oflags] command.  Remember to NEVER set flag #1 on an object.
+penalties ACTION frown
+Penalties for breaking the caretaker policies may range from a stern explanation of why you shouldn't do what you did to deletion of your caretaker slot.
+penalty ACTION frown
+Penalties for breaking the caretaker policies may range from a stern explanation of why you shouldn't do what you did to deletion of your caretaker slot.
+newbies ACTION smile
+Newbies are players that are relatively new to Isengard or even mudding in general.  It is important that you help these players learn how to play, as they provide a great deal of new and exciting input into the game.  Our goal is to make every newbie into a veteran Isengard player.
+newbie ACTION smile
+Newbies are players that are relatively new to Isengard or even mudding in general.  It is important that you help these players learn how to play, as they provide a great deal of new and exciting input into the game.  Our goal is to make every newbie into a veteran Isengard player.
+rooms
+Rooms can be altered by using the commands [*app], [*name], [*delete], and [*set r].  You should never alter a room's FLAGS unless you are the person that created it, or you have been given permission.  Altering the long and short of a room is allowed for the purpose of spelling correction.  If you would like to have a room to work on, talk to a DM.  They can create one for you.
+room
+Rooms can be altered by using the commands [*app], [*name], [*delete], and [*set r].  You should never alter a room's FLAGS unless you are the person that created it, or you have been given permission.  Altering the long and short of a room is allowed for the purpose of spelling correction.  If you would like to have some rooms to work on, talk to a DM.
+pkill ACTION grin
+This is killing players, and while fun you should NEVER use your caretaker to pkill.  It is hardly fair. 
+dm ACTION bow
+The current active DMs are: Alice, Bahamut, Boromir, Samwise, and Tesseract.
+dms ACTION bow
+The current active DMs are: Alice, Bahamut, Boromir, Samwise, and Tesseract.
+exits
+Exits behave like other things in Mordor, and the [*set x] command can be used to create an exit.  [*set xf] allows you to set exit FLAGS.
+exit
+Exits behave like other things in Mordor, and the [*set x] command can be used to create an exit.  [*set xf] allows you to set exit FLAGS.
+intro
+There are 5 things you can effect: ROOMS, PLAYERS, MONSTERS, OBJECTS, and EXITS.  You can also get the current STATUS each of these with the [*status] command.
+bugs
+If you find something that you think is a bug, let a DM know about it.  Take notes on the room/creature/object/exit/player that is involved.  If you are sure that it is a bug and you can fix it, do so.  Be careful that you are sure it is a bug.  Some people's bugs are other people's features.  Please let a DM know about it, even if you have fixed it.
+bug
+If you find something that you think is a bug, let a DM know about it.  Take notes on the room/creature/object/exit/player that is involved.  If you are sure that it is a bug and you can fix it, do so.  Be careful that you are sure it is a bug.  Some people's bugs are other people's features.  Please let a DM know about it, even if you have fixed it.
+tesseract
+You can reach him at brooke@moria.bio.uci.edu
+bahamut
+You can reach him at mcoogan@darwin.bio.uci.edu
+boromir
+You can reach him at rmcphers@darwin.bio.uci.edu
+alice
+You can each him at tbrummel@darwin.bio.uci.edu
+samwise
+You can reach him at roy@moria.bio.uci.edu
+status
+The *sta command will give you the current status of any OBJECT, MONSTER, or PLAYER.  Try [help *sta] for more information.
+

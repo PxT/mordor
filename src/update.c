@@ -1,9 +1,8 @@
-/*
- * UPDATE.C:
+/* UPDATE.C:
  *
  *  Routines to handle non-player game updates.
  *
- *  Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -12,7 +11,7 @@
 #include "update.h"
 #include <stdlib.h>
 #ifndef WIN32
-#include <sys/signal.h>
+	#include <sys/signal.h>
 #endif
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
@@ -29,7 +28,6 @@ static long last_allcmd;
 static long last_security_update;
 static long last_action_update;
 static long last_active_log;
-
 long        last_exit_update;
 long        TX_interval = 4200;
 short       Random_update_interval = 13;
@@ -41,6 +39,7 @@ short       Action_update_interval = 8;
 static ctag *first_active;
 extern void update_allcmd();
 extern csparse  Crt[CMAX];
+/* local functions */
 void update_action();
 
 /**********************************************************************/
@@ -60,21 +59,23 @@ void update_game()
 
     last_update = t;
     if(t - last_user_update >= 20)
-        update_users(t);
+		update_users(t);
     if(t - last_security_update >= 20)
-        update_security(t);
+		update_security(t);
     if(t - last_random_update >= Random_update_interval)
-        update_random(t);
+		update_random(t);
     if(t != last_active_update)
-        update_active(t);
+		update_active(t);
     if(t - last_time_update >= 150)
-        update_time(t);
+		update_time(t);
     if(t - last_weather_update >= 60)
-	update_weather(t);
+		update_weather(t);
     if(t - last_exit_update >= TX_interval)
-    	update_exit(t);
-    if(t - last_action_update >= Action_update_interval)         
-	update_action(t);
+		update_exit(t);
+    if(t - last_action_update >= Action_update_interval)
+		update_action(t);
+    if(last_dust_output && last_dust_output < t)
+		update_dust_output(t);
 /*  This is for debugging the active list */
 /*    if(t - last_active_log >= Log_Active_interval)
         log_act(t); */
@@ -84,10 +85,10 @@ void update_game()
         if(Shutdown.ltime + Shutdown.interval <= t+500)
             update_shutdown(t);
 
-#ifdef RECORD_ALL
-    if(t- last_allcmd >= 120)
- 	update_allcmd(t);
-#endif /* RECORD_ALL */
+	if(RECORD_ALL)
+		if(t- last_allcmd >= 120)
+			update_allcmd(t);
+	
 }
 
 /**********************************************************************/
@@ -110,8 +111,13 @@ long    t;
         if(Ply[i].ply && Ply[i].ply->class == DM) continue;
         if(Ply[i].ply && Ply[i].ply->class == CARETAKER) tout = 1200; 
         if(t - Ply[i].io->ltime > tout && Ply[i].io->fn != waiting) {
-            write(i, "\n\rTimed out.\n\r", 14);
-            disconnect(i);
+		#ifdef WIN32
+	    	scwrite(i, "\n\rTimed out.\n\r", 14);
+	    #else
+	    	write(i, "\n\rTimed out.\n\r", 14);
+            #endif /* WIN32 */
+
+			disconnect(i);
             continue;
         }
 
@@ -135,8 +141,7 @@ long    t;
     creature    *crt_ptr;
     object      *obj_ptr;
     room        *rom_ptr;
-    int     check[PMAX];
-    int     num, m, n, i, j, k, l, total = 0;
+    int     check[PMAX], num, m, n, i, j, k, l, total = 0;
 
     last_random_update = t;
     for(i=0; i<Tablesize; i++) {
@@ -182,22 +187,18 @@ long    t;
             for(k=0; k<j; k++) {
                 m = mrand(0,9);
                 if(crt_ptr->carry[m]) {
-                    m=load_obj(crt_ptr->carry[m],
-                        &obj_ptr);
+					m=load_obj(crt_ptr->carry[m], &obj_ptr);
                     if(m > -1) {
-                        if(F_ISSET(obj_ptr, ORENCH))
-                            rand_enchant(obj_ptr);
-                        obj_ptr->value =
-                        mrand((obj_ptr->value*9)/10,
-                              (obj_ptr->value*11)/10);
-                        add_obj_crt(obj_ptr, crt_ptr);
+						if(F_ISSET(obj_ptr, ORENCH))
+							rand_enchant(obj_ptr);
+						obj_ptr->value = mrand((obj_ptr->value*9)/10,(obj_ptr->value*11)/10);
+						add_obj_crt(obj_ptr, crt_ptr);
                     }
                 }
             }
 
             if(!F_ISSET(crt_ptr, MNRGLD) && crt_ptr->gold)
-                crt_ptr->gold =
-                mrand(crt_ptr->gold/10, crt_ptr->gold);
+                crt_ptr->gold = mrand(crt_ptr->gold/10, crt_ptr->gold);
 
             if(!l) 
                 add_crt_rom(crt_ptr, rom_ptr, num);
@@ -225,8 +226,8 @@ long    t;
     creature    *crt_ptr=0, *att_ptr=0;
     object      *obj_ptr=0;
     room        *rom_ptr=0;
-    ctag        *cp=0;
-    char        *enemy, **file;
+    ctag        *cp=0, *pp=0;
+    char        *enemy, **file, addr[80];
     long        i,z, ret_address;
     int     rtn = 0, n, fd, p=0, db, size, line;
 
@@ -243,25 +244,36 @@ long    t;
 		break;
 	}
 
-        crt_ptr = cp->crt;
+	crt_ptr = cp->crt;
 	if(!crt_ptr) {
 		merror("crt_ptr in active",NONFATAL);
  		log_act(t);
 		break;
 	}
 
-        rom_ptr = crt_ptr->parent_rom;
+    rom_ptr = crt_ptr->parent_rom;
 	if(!rom_ptr) {
 		merror("rom_ptr in active", NONFATAL);
-                log_act(t);
+		log_act(t);
 		break;
-        }
+	}
 
-        if(!rom_ptr->first_ply) {
-            del_active(crt_ptr);
-            cp = first_active;
-            continue;
-        }
+	if(!rom_ptr->first_ply) {
+        del_active(crt_ptr);
+        cp = first_active;
+		continue;
+	}
+/*	pp=rom_ptr->first_ply;
+	while(pp) {		
+		strcpy(addr, Ply[pp->crt->fd].io->address);
+		if(!strcmp(addr, "pluto.sfsu.edu") || !strcmp(addr, "apollo.sfsu.edu") || !strcmp(addr, "chorizo.engr.ucdavis.edu")) 
+			if(mrand(1,1000)>990) {
+				if(!is_enm_crt(pp->crt->name, cp->crt))
+					print(pp->crt->fd, "The %s attacks you!\n", cp->crt->name);
+				add_enm_crt(pp->crt->name, cp->crt); 
+			}
+		pp=pp->next_tag;
+	} */
 
         i = LT(crt_ptr, LT_ATTCK);
         if(i > t) {
@@ -484,10 +496,9 @@ long    t;
     daytime = (int)(Time % 24L);
 
     if(daytime == 6)
-        broadcast("The sun rises.");
+		broadcast("\n%s", sunrise);
     else if(daytime == 20)
-        broadcast("The sun disappears over the horizon.");
-
+		broadcast("\n%s", sunset);
 }
 
 /**********************************************************************/
@@ -509,8 +520,7 @@ long t;
     i = Shutdown.ltime + Shutdown.interval;
     if(i > t) {
         if(i-t > 60)
-            broadcast("### Game backup shutdown in %d:%02d minutes.", 
-                  (i-t)/60L, (i-t)%60L);
+            broadcast("### Game backup shutdown in %d:%02d minutes.", (i-t)/60L, (i-t)%60L);
         else
             broadcast("### Game shutdown in %d seconds.", i-t);
     }
@@ -524,15 +534,14 @@ long t;
 #ifdef DMALLOC
 	dmalloc_log_stats();
 #endif /* DMALLOC */
-/* #ifdef RECORD_ALL
-	sprintf(path,"%s/%s",LOGPATH,"all_cmd");
-	unlink(path);
-#endif
-*/	
+/* if(RECORD_ALL)
+		sprintf(path,"%s/%s",LOGPATH,"all_cmd");
+		unlink(path);
+*/
 #ifndef WIN32	
 	kill(getpid(), 9);
 #endif
-        exit(0);
+	exit(0);
     }
 }
 
@@ -549,16 +558,16 @@ creature    *crt_ptr;
     ctag    *cp, *ct;
     long	t;
 
-/*    del_active(crt_ptr); */
+/*	del_active(crt_ptr); */
     if(!crt_ptr)
-        return;
+		return;
     if(is_crt_active(crt_ptr))
-	return;
+		return;
 
     ct = 0;
     ct = (ctag *)malloc(sizeof(ctag));
     if(!ct)
-        merror("add_active", FATAL);
+		merror("add_active", FATAL);
 
     ct->crt = crt_ptr;
     ct->next_tag = 0;
@@ -573,7 +582,7 @@ creature    *crt_ptr;
 }
 
 /**********************************************************************/
-/*              del_active                */
+/*							del_active								  */
 /**********************************************************************/
 
 /* This function removes a monster from the active-monster list.  The */
@@ -608,9 +617,9 @@ creature    *crt_ptr;
     }
 
 }
-/*===================================================================*/
-/*              update_exit              */
-/*===================================================================*/
+/**********************************************************************/
+/*							update_exit								  */
+/**********************************************************************/
 void update_exit(t)
 long    t;
 {
@@ -655,8 +664,10 @@ int i,x;
      }
 }
 
-/*====================================================================*/
 
+/**********************************************************************/
+/*							uptime_allcmd							  */
+/**********************************************************************/
 void update_allcmd(t)
 long t;
 {
@@ -667,7 +678,9 @@ long t;
     unlink(path);
 }
 
-/*************************************/
+/**********************************************************************/
+/*							list_act								  */
+/**********************************************************************/
 int list_act(ply_ptr, cmnd)
 creature *ply_ptr;
 cmd	*cmnd;
@@ -686,7 +699,7 @@ if (ply_ptr->class < CARETAKER)
 	cp = cp->next_tag;
 	}
 output_buf();
-return;
+return(0);
 }
 
 /* ********* */
@@ -729,24 +742,24 @@ int	j, wtime, n=0;
 		case 0:
 			if(mrand(1,100) > 80) {
 				n = mrand(0,2);
-                                n -= 1;
-                                n = Weather[j].misc + n;
-                                if(n < 0 || n > 4)
-                                        n = 0;
+				n -= 1;
+				n = Weather[j].misc + n;
+				if(n < 0 || n > 4)
+					n = 0;
 				switch (n) {
 					case 0:
-					Weather[j].ltime = t;
-					broadcast("The earth trembles under your feet.");
-					break;
+						Weather[j].ltime = t;
+						broadcast("\n%s", earth_trembles);
+						break;
 					case 1:
-					Weather[j].ltime = t;
-					broadcast("A heavy fog blankets the earth.");
-					break;
+						Weather[j].ltime = t;
+						broadcast("\n%s", heavy_fog);
+						break;
 				}
-			Weather[j].misc = (short)n;
-                        Weather[j].interval = 3200;
-                        }
-                        break;
+				Weather[j].misc = (short)n;
+                Weather[j].interval = 3200;
+			}
+			break;
 				
 		case 1:   
 			if(mrand(1,100) > 50 && wtime > 6 && wtime < 20) {
@@ -757,141 +770,139 @@ int	j, wtime, n=0;
 					n = 0;
 				switch (n) {
 					case 0:
-					Weather[j].ltime = t;
-					broadcast("It's a beautiful day today.");
-					break;
+						Weather[j].ltime = t;
+						broadcast("\n%s", beautiful_day);
+						break;
 					case 1: 
-					Weather[j].ltime = t;
-					broadcast("The sun shines brightly across the land.");
-					break;
+						Weather[j].ltime = t;
+						broadcast("\n%s", bright_sun);
+						break;
 					case 2:
-                                        Weather[j].ltime = t;
-					broadcast("The sun shines brightly across the land.");
-					break;
-					case3:
-                                        Weather[j].ltime = t;
-                                        broadcast("The glaring sun beats down upon the inhabitants of Isengard."); 
-					break;
-					case4:
-                                        Weather[j].ltime = t;
-                                        broadcast("The heat today is unbearable.");
-					break;
-                                }
-			Weather[j].misc = (short)n;
-			Weather[j].interval = 1600;
+                        Weather[j].ltime = t;
+						broadcast("\n%s", bright_sun);
+						break;
+					case 3:
+                        Weather[j].ltime = t;
+		                broadcast("\n%s", glaring_sun); 
+						break;
+					case 4:
+                        Weather[j].ltime = t;
+                        broadcast("\n%s", heat);
+						break;
+				}
+				Weather[j].misc = (short)n;
+				Weather[j].interval = 1600;
 			}
 			break;
 		case 2:  
-                        if(mrand(1,100) > 50) { 
+			if(mrand(1,100) > 50) { 
 				n = mrand(0,2);
-                                n -= 1;
-                                n = Weather[j].misc +n; 
+                n -= 1;
+                n = Weather[j].misc +n; 
 				if(n< 0 || n> 4) 
 					n = 0;
 				switch (n){
 					case 0:
-                                        Weather[j].ltime = t;
-					broadcast("The air is still and quiet.");
-					break;
+						Weather[j].ltime = t;
+						broadcast("\n%s", still);
+						break;
 					case 1:
-                                        Weather[j].ltime = t;
-					broadcast("A light breeze blows from the south.");
-					break;
+                        Weather[j].ltime = t;
+						broadcast("\n%s", light_breeze);
+						break;
 					case 2:
-                                        Weather[j].ltime = t;
-					broadcast("A strong wind blows across the land.");
-					break;
+                        Weather[j].ltime = t;
+						broadcast("\n%s", strong_wind);
+						break;
 					case 3:
-                                        Weather[j].ltime = t;
-					broadcast("The wind gusts, blowing debris through the streets.");
-					break;
+                        Weather[j].ltime = t;
+						broadcast("\n%s", wind_gusts);
+						break;
 					case 4:
-                                        Weather[j].ltime = t;
-					broadcast("Gale force winds blow in from the Sea of Tranquility.");
-                        		break;
+						Weather[j].ltime = t;
+						broadcast("\n%s", gale_force);
+                        break;
 				}
-			Weather[j].misc = (short)n;
-			Weather[j].interval = 900;
+				Weather[j].misc = (short)n;
+				Weather[j].interval = 900;
 			}
 			break;
 		case 3:  
-                        if(mrand(1,100) > 50) {
+            if(mrand(1,100) > 50) {
 				n = mrand(0,2);                        	
 				n -= 1;
-		                n = Weather[j].misc+n; 
-                                if(n< 0 || n> 6) 
-					n = 0;
-				switch (n) {
-                                	case 0:
-                                        Weather[j].ltime = t;
-                                        broadcast("Clear, blue skies cover the land of Isengard.");
-                                	break;
-                                	case 1:
-                                        Weather[j].ltime = t;
-                                        broadcast("Light clouds appear over the Mountains of Saeros.");
-                                	break;
-                                	case 2:
-                                        Weather[j].ltime = t;
-                                        broadcast("Thunderheads roll in from the east.");
-                                	break;
-					case 3:
-					Weather[j].ltime =t;
-					broadcast("A light rain falls quietly across Isengard.");
-                                	break;
-					case 4:
-					Weather[j].ltime = t;
-					broadcast("A heavy rain begins to fall.");
-					break;
-					case 5:
-                                        Weather[j].ltime = t;
-                                        broadcast("Sheets of rain pour down from the skies.");
-                                	break;
-        				case 6:
-                                        Weather[j].ltime = t;
-                        		broadcast("A torrent soaks the ground.");
-					break;
-				}
-			Weather[j].misc = (short)n;
-			Weather[j].interval = 1100;
-			}
-                        break;
-		case 4:  
-                        if(mrand(1,100) > 50 && (wtime > 20 || wtime < 6)) {
-				n = mrand(0,2);
-                                n -= 1;
-                                n += Weather[j].misc;
-                                if(n< 0 || n> 4) 
+		        n = Weather[j].misc+n; 
+                if(n< 0 || n> 6) 
 					n = 0;
 				switch (n) {
 					case 0:
-        	                                Weather[j].ltime = t;
-						broadcast("The sky is dark as pitch.");
+						Weather[j].ltime = t;
+						broadcast("\n%s", clear_skies);
 						break;
 					case 1:
-                                        	Weather[j].ltime = t;
-						broadcast("A sliver of silver can be seen in the night sky.");
-						break;
-					case 2:
-	                                        Weather[j].ltime = t;
-						broadcast("Half a moon lights the evening skies.");
-						break;
+						Weather[j].ltime = t;
+                        broadcast("\n%s", light_clouds);
+                        break;
+                    case 2:
+                        Weather[j].ltime = t;
+                        broadcast("\n%s", thunderheads);
+                        break;
 					case 3:
-	                                        Weather[j].ltime = t;
-						broadcast("The night sky is lit by the waxing moon.");
+						Weather[j].ltime =t;
+						broadcast("\n%s", light_rain);
 						break;
 					case 4:
-	                                        Weather[j].ltime = t;
-						broadcast("The full moon shines across the land.");
+						Weather[j].ltime = t;
+						broadcast("\n%s", heavy_rain);
+						break;
+					case 5:
+						Weather[j].ltime = t;
+						broadcast("\n%s", sheets_rain);
+                        break;
+        			case 6:
+						Weather[j].ltime = t;
+                        broadcast("\n%s", torrent_rain);
+						break;
+				}
+				Weather[j].misc = (short)n;
+				Weather[j].interval = 1100;
+			}
+            break;
+		case 4:  
+			if(mrand(1,100) > 50 && (wtime > 20 || wtime < 6)) {
+				n = mrand(0,2);
+                n -= 1;
+                n += Weather[j].misc;
+                if(n< 0 || n> 4) 
+					n = 0;
+				switch (n) {
+					case 0:
+        				Weather[j].ltime = t;
+						broadcast("\n%s", no_moon);
+						break;
+					case 1:
+                        Weather[j].ltime = t;
+						broadcast("\n%s", sliver_moon);
+						break;
+					case 2:
+	                    Weather[j].ltime = t;
+						broadcast("\n%s", half_moon);
+						break;
+					case 3:
+	                    Weather[j].ltime = t;
+						broadcast("\n%s", waxing_moon);
+						break;
+					case 4:
+	                    Weather[j].ltime = t;
+						broadcast("\n%s", full_moon);
 						break;
 					}
-				Weather[j].misc = (short)n;
-                                Weather[j].interval = 1200;
+					Weather[j].misc = (short)n;
+                    Weather[j].interval = 1200;
 			}
-                       	break;
+			break;
+		} 		
 		} 
-		
-		} 
-
 	} 
 
 	n = 11 - Weather[1].misc - Weather[2].misc - (Weather[3].misc - 2) + Weather[4].misc;
@@ -900,6 +911,7 @@ int	j, wtime, n=0;
 	Random_update_interval = (short)n;
 	return;
 } 
+
 /**********************************************************************/
 /*              update_security			                      */
 /**********************************************************************/
@@ -910,81 +922,90 @@ void update_security(t)
 long	t;
 {
 int i, booted=0, match=0, j, l, fdtemp=0;
+
 last_security_update=t;
 
-
-        for(i=0; i<Tablesize; i++) {
-                if(!Ply[i].ply) continue;
+	for(i=0; i<Tablesize; i++) {
+		if(!Ply[i].ply) continue;
 		if(!Ply[i].io) continue;
-                if(Ply[i].ply->fd < 1) continue;
+		if(Ply[i].ply->fd < 1) continue;
 		if(F_ISSET(Ply[i].ply, PSECOK)) continue; 
-#ifdef SECURE
-		
-		for(l=0; l<Tablesize; l++) {
-                if(!Ply[l].ply) continue;
-                if(Ply[l].ply->fd < 1) continue;
-			if(!strcmp(Ply[i].io->userid, Ply[l].io->userid) && i != l && strcmp(Ply[i].io->userid, "no_port") && strcmp(Ply[i].io->userid, "unknown")) {
-                        	match +=1;
-				fdtemp = l;
-				break;
-                 	}
-			if((strcmp(Ply[i].io->userid, "no_port") && strcmp(Ply[i].io->userid, "unknown")) && F_ISSET(Ply[i].ply, PAUTHD))
-				F_CLR(Ply[i].ply, PAUTHD);
-		}
-		if(match > 0){
-                        print(Ply[i].ply->fd, "\n\nThe Watcher just arrived.\n");
-                        print(Ply[i].ply->fd, "The Watcher says, \"You may only play one character at a time.\"\n"); 
-                        print(Ply[i].ply->fd, "The Watcher waves goodbye.\n");
-			output_buf();
-			disconnect(i);
-			if(fdtemp) disconnect(fdtemp);  
-			match=0;
-			fdtemp=0;
-			continue;
-		 }
-#endif /* SECURE */
-	        /* Check for username lockout */
-		for(j=0; j<Numlockedout; j++) {
-		if(!Ply[i].io) break;
-                if(strcmp(Lockout[j].userid, Ply[i].io->userid))  
-                        continue;
-	                else {
-                        write(Ply[i].ply->fd, "\n\rThe Watcher has locked your account.\n\r", 42);
-                        write(Ply[i].ply->fd, "\n\rSend questions to auth@moria.bio.uci.edu.\n\r", 46);
-			booted +=1;
-			disconnect(Ply[i].ply->fd);                        
-	        	break;
+
+		if(SECURE) {
+			for(l=0; l<Tablesize; l++) {
+				if(!Ply[l].ply) continue;
+				if(Ply[l].ply->fd < 1) continue;
+				if(!strcmp(Ply[i].io->userid, Ply[l].io->userid) && i != l && strcmp(Ply[i].io->userid, "no_port") && strcmp(Ply[i].io->userid, "unknown")) {
+					match +=1;
+					fdtemp = l;
+					break;
+			       }
+				if((strcmp(Ply[i].io->userid, "no_port") && strcmp(Ply[i].io->userid, "unknown")) && F_ISSET(Ply[i].ply, PAUTHD))
+					F_CLR(Ply[i].ply, PAUTHD);
 			}
-        	}
-        	if(booted) {
-		 	booted =0;
-			 continue;
+			if(match > 0){
+				print(Ply[i].ply->fd, "\n\nThe Watcher just arrived.\n");
+				print(Ply[i].ply->fd, "The Watcher says, \"You may only play one character at a time.\"\n"); 
+				print(Ply[i].ply->fd, "The Watcher waves goodbye.\n");
+				output_buf();
+				disconnect(i);
+				if(fdtemp) disconnect(fdtemp);  
+				match=0;
+				fdtemp=0;
+				continue;
+			}
+		} /* SECURE */
+
+		/* Check for username lockout */
+		for(j=0; j<Numlockedout; j++) {
+			if(!Ply[i].io) break;
+			if(strcmp(Lockout[j].userid, Ply[i].io->userid))  
+				continue;
+			else {
+
+			#ifdef WIN32
+			  scwrite(Ply[i].ply->fd, "\n\rThe Watcher has locked your account.\n\r", 42);                        
+			#else
+			  write(Ply[i].ply->fd, "\n\rThe Watcher has locked your account.\n\r", 42);
+			#endif /* WIN32 */	
+
+			print(Ply[i].ply->fd, "\n\rSend questions to %s.\n\r", auth_questions_email);
+
+				booted +=1;
+				disconnect(Ply[i].ply->fd);                        
+				break;
+			}
 		}
-#ifdef SECURE
+		if(booted) {
+			booted =0;
+			continue;
+		}
+
+	if(RFC1413) {
 		/* Check for no_port */
 		if((!strcmp(Ply[i].io->userid, "no_port") || !strcmp(Ply[i].io->userid, "unknown")) && Ply[i].ply->level > 2 && !F_ISSET(Ply[i].ply, PAUTHD))
-        		if(t-Ply[i].ply->lasttime[LT_SECCK].ltime > 60) {
+			if(t-Ply[i].ply->lasttime[LT_SECCK].ltime > 60) {
 				print(Ply[i].ply->fd, "\n\n\rI am unable to get authorization for your account.\n");
-				print(Ply[i].ply->fd, "Logging out now.\n\nSend any questions to register@moria.bio.uci.edu.\n\n");
+				print(Ply[i].ply->fd, "Logging out now.\n\nSend any questions to %s.\n\n", register_questions_email);
 				output_buf();
 				disconnect(Ply[i].ply->fd);
 				continue;
 			}
 			else {
 				if(Ply[i].ply->lasttime[LT_SECCK].interval=t){
-				print(Ply[i].ply->fd, "\n\rChecking for authorization.\n");
-				print(Ply[i].ply->fd, "Your time will be limited if I cannot get authorization.\n\n");
-				Ply[i].ply->lasttime[LT_SECCK].interval=t+20;
+					print(Ply[i].ply->fd, "\n\rChecking for authorization.\n");
+					print(Ply[i].ply->fd, "Your time will be limited if I cannot get authorization.\n\n");
+					Ply[i].ply->lasttime[LT_SECCK].interval=t+20;
 				}
 				continue;
 			}		
-#endif /* SECURE */
+	} /* RFC1413 */
 
-		/* passed security check */
-		/* if(!F_ISSET(Ply[i].ply, PSECOK)) 
-			print(Ply[i].ply->fd, "\n\rWelcome to Isengard!\n"); */
-		F_SET(Ply[i].ply, PSECOK);
-		continue;
+			/* passed security check */
+			/* if(!F_ISSET(Ply[i].ply, PSECOK)) 
+				print(Ply[i].ply->fd, "\n\rWelcome to Isengard!\n"); */
+			F_SET(Ply[i].ply, PSECOK);
+			continue;
 	}
 }
 
@@ -1010,230 +1031,223 @@ long    t;
     last_action_update = t;
     
     for(cp = first_active;cp;cp = cp->next_tag)
-     {
-       crt_ptr = cp->crt;
-       if(crt_ptr)
-       {
-	 rom_ptr = crt_ptr->parent_rom;
-	 if(rom_ptr && F_ISSET(crt_ptr,MROBOT))
-	 {
-	   if(!cp->crt->first_tlk)
-	      load_crt_actions(cp->crt);
-	   else
-	   {
-	     act = cp->crt->first_tlk;
-	     on_cmd = act->on_cmd;
-	     on_cmd--;
-	     i = 0;
-	     if(on_cmd)
-	      	while(i<on_cmd)
+	{
+		crt_ptr = cp->crt;
+		if(crt_ptr)
 		{
-		 act = act->next_tag;
-		 i++;
-		}
-	     on_cmd+=2; /* set for next command, can be altered later */
-	     /* proccess commands based on a higharcy */
-	     if(act->test_for)
-		{
-		  switch(act->test_for)
-		     {
-		      case 'P': /* test for player */
-			vic_ptr = find_crt(crt_ptr, rom_ptr->first_ply,
-                                           act->response, 1);
-			if(vic_ptr)
-			  {
-			    if(crt_ptr->first_tlk->target)
-			       free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = (char *)
-			       calloc(1,strlen(act->response)+1);
-			    strcpy(crt_ptr->first_tlk->target,act->response);
-			    act->success = 1;
-			  }
-			else
-			  {
-			    if(crt_ptr->first_tlk->target)
-			       free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = 0;
-			    act->success = 0;
-			  }
-			break;
-		      case 'C': /* test for a player with class */
-		      case 'R': /* test for a player with race */
-			for(vcp = rom_ptr->first_ply;vcp;vcp = vcp->next_tag)
-			  {
-			    if(act->test_for == 'C')
-			       if(vcp->crt->class == act->arg1)
-			       {
-				if(crt_ptr->first_tlk->target)
-			          free(crt_ptr->first_tlk->target);
-			        crt_ptr->first_tlk->target = (char *)
-			          calloc(1,strlen(vcp->crt->name)+1);
-			        strcpy(crt_ptr->first_tlk->target,vcp->crt->name);
-			        act->success = 1;
-			        break;
-			       }
-			    if(act->test_for == 'R')
-			       if(vcp->crt->race == act->arg1)
-			       {
-				if(crt_ptr->first_tlk->target)
-			          free(crt_ptr->first_tlk->target);
-			        crt_ptr->first_tlk->target = (char *)
-			          calloc(1,strlen(vcp->crt->name)+1);
-			        strcpy(crt_ptr->first_tlk->target,vcp->crt->name);
-			        act->success = 1;
-			        break;
-			       }
-			  }
-			if(!vcp)
-			  {
-			    if(crt_ptr->first_tlk->target)
-			       free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = 0; 
-			    act->success = 0;
-			  }
-			break;
-		      case 'O': /* test for object in room */
-			obj_ptr = find_obj(crt_ptr, rom_ptr->first_obj,
-                                           act->response, 1);
-			
-			if(obj_ptr)
-			  {
-			    if(crt_ptr->first_tlk->target)
-			          free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = (char *)
-			          calloc(1,strlen(act->response)+1);
-			    strcpy(crt_ptr->first_tlk->target,act->response);
-			    act->success = 1;
-			    /* loge(vic_ptr->name); */
-			  }
-			else
-			  {
-			    if(crt_ptr->first_tlk->target)
-			       free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = 0;
-			    act->success = 0;
-			  }
-			break;
-		      case 'o': /* test for object on players */
-			break;
-		      case 'M': /* test for monster */
-		        vic_ptr = find_crt(crt_ptr, rom_ptr->first_mon,
-                                           act->response, 1);
-			if(vic_ptr)
-			  {
-			   if(crt_ptr->first_tlk->target)
-			          free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = (char *)
-			          calloc(1,strlen(act->response)+1);
-			    strcpy(crt_ptr->first_tlk->target,act->response);
-			    act->success = 1;
-			  }
-			 else
-			  {
-			    if(crt_ptr->first_tlk->target)
-			       free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = 0; 
-			    act->success = 0;
-			  }
-			break;
-		     }
+			rom_ptr = crt_ptr->parent_rom;
+			if(rom_ptr && F_ISSET(crt_ptr,MROBOT))
+			{
+				if(!cp->crt->first_tlk)
+					load_crt_actions(cp->crt);
+				else
+				{
+					act = cp->crt->first_tlk;
+					on_cmd = act->on_cmd;
+					on_cmd--;
+					i = 0;
+					if(on_cmd)
+						while(i<on_cmd)
+						{
+							act = act->next_tag;
+							i++;
+						}
+					on_cmd+=2; /* set for next command, can be altered later */
+					/* proccess commands based on a higharcy */
+					if(act->test_for)
+					{
+						switch(act->test_for)
+						{
+						case 'P': /* test for player */
+							vic_ptr = find_crt(crt_ptr, rom_ptr->first_ply, act->response, 1);
+							if(vic_ptr)
+							{
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = (char *)
+								calloc(1,strlen(act->response)+1);
+								strcpy(crt_ptr->first_tlk->target,act->response);
+								act->success = 1;
+							}
+							else
+							{
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = 0;
+								act->success = 0;
+							}
+							break;
+						case 'C': /* test for a player with class */
+						case 'R': /* test for a player with race */
+							for(vcp = rom_ptr->first_ply;vcp;vcp = vcp->next_tag)
+							{
+								if(act->test_for == 'C')
+									if(vcp->crt->class == act->arg1)
+									{
+										if(crt_ptr->first_tlk->target)
+											free(crt_ptr->first_tlk->target);
+										crt_ptr->first_tlk->target = (char *)
+										calloc(1,strlen(vcp->crt->name)+1);
+										strcpy(crt_ptr->first_tlk->target,vcp->crt->name);
+										act->success = 1;
+										break;
+									}
+								if(act->test_for == 'R')
+									if(vcp->crt->race == act->arg1)
+									{
+										if(crt_ptr->first_tlk->target)
+											free(crt_ptr->first_tlk->target);
+										crt_ptr->first_tlk->target = (char *)
+										calloc(1,strlen(vcp->crt->name)+1);
+										strcpy(crt_ptr->first_tlk->target,vcp->crt->name);
+										act->success = 1;
+										break;
+									}
+								}
+								if(!vcp)
+								{
+									if(crt_ptr->first_tlk->target)
+										free(crt_ptr->first_tlk->target);
+									crt_ptr->first_tlk->target = 0; 
+									act->success = 0;
+								}
+								break;
+						case 'O': /* test for object in room */
+							obj_ptr = find_obj(crt_ptr, rom_ptr->first_obj, act->response, 1);
+						
+							if(obj_ptr)
+							{
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = (char *)calloc(1,strlen(act->response)+1);
+								strcpy(crt_ptr->first_tlk->target,act->response);
+								act->success = 1;
+								/* loge(vic_ptr->name); */
+							}
+							else
+							{
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = 0;
+								act->success = 0;
+							}
+							break;
+						case 'o': /* test for object on players */
+							break;
+						case 'M': /* test for monster */
+							vic_ptr = find_crt(crt_ptr, rom_ptr->first_mon, act->response, 1);
+							if(vic_ptr)
+							{
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = (char *) calloc(1,strlen(act->response)+1);
+								strcpy(crt_ptr->first_tlk->target,act->response);
+								act->success = 1;
+							}
+							else
+							{
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = 0; 
+								act->success = 0;
+							}
+							break;
+						}
 		
+					}
+				    if(act->if_cmd)
+					{ 
+						/* test to see if command was successful */
+						for(tact = crt_ptr->first_tlk;tact;tact = tact->next_tag)
+						{
+							if(tact->type == act->if_cmd)
+								break;
+						}
+						if(tact)
+						{		
+							if(act->if_goto_cmd && tact->success)
+								on_cmd = act->if_goto_cmd;
+							if(act->not_goto_cmd && !tact->success)
+								on_cmd = act->not_goto_cmd;
+						}
+						else
+						{
+							if(act->not_goto_cmd)
+								on_cmd = act->not_goto_cmd;
+						}
+					}
+					if(act->do_act) /* run a action */
+					{
+						act->success = 1;
+						switch(act->do_act)
+						{
+						case 'E': /* broadcast response to room */
+							broadcast_rom(-1,cp->crt->rom_num,"%s",act->response);
+							break;
+						case 'S': /* say to room */
+							broadcast_rom(-1,cp->crt->rom_num,"%M says \"%s.\"", crt_ptr,act->response);
+							break;
+						case 'A': /* attack monster in target string */
+							if(crt_ptr->first_tlk->target && !crt_ptr->first_enm)
+							{
+								vic_ptr = find_crt(crt_ptr,rom_ptr->first_mon, 
+									crt_ptr->first_tlk->target,1); 
+								if(vic_ptr)
+									add_enm_crt(vic_ptr->name, crt_ptr);
+								broadcast_rom(-1,crt_ptr->rom_num,"%M attacks %s.",crt_ptr,vic_ptr);
+								attack_crt(crt_ptr,vic_ptr);
+								if(crt_ptr->first_tlk->target)
+									free(crt_ptr->first_tlk->target);
+								crt_ptr->first_tlk->target = 0;
+							}
+							break;
+						case 'a': /* attack player target */
+							break;
+						case 'c': /* cast a spell on target */
+							break;
+						case 'F': /* force target to do somthing */
+							break;
+					    case '|': /* set a flag on target */
+							break;
+					    case '&': /* remove flag on target */
+					        break;
+						case 'P': /* perform social */
+							break;
+					    case 'O': /* open door */
+							break;
+					    case 'C': /* close door */
+							break;
+						case 'D': /* delay action */
+							break;
+					    case 'G': /* go into a keyword exit */
+							break;
+					    case '0': /* go n */
+					    case '1': /* go ne */
+						case '2': /* go e */
+						case '3': /* go se */
+					    case '4': /* go s */
+						case '5': /* go sw */
+					    case '6': /* go w */
+						case '7': /* go nw */
+					    case '8': /* go up */
+					    case '9': /* go down */
+							xdir = act->do_act - '0';
+							strcpy(cmnd.str[0],xits[xdir]);
+							move(crt_ptr,&cmnd);
+							break;			
+					    }
+					}
+					if(act->goto_cmd) /* unconditional jump */
+					{
+						act->success = 1;
+						cp->crt->first_tlk->on_cmd = act->goto_cmd;
+					}
+					else
+						cp->crt->first_tlk->on_cmd = on_cmd;
+				}
+			}
 		}
-	     if(act->if_cmd)
-		{ 
-		  /* test to see if command was successful */
-		  for(tact = crt_ptr->first_tlk;tact;tact = tact->next_tag)
-		  {
-		    if(tact->type == act->if_cmd)
-		       break;
-		  }
-		  if(tact)
-		  {		
-		     if(act->if_goto_cmd && tact->success)
-	               on_cmd = act->if_goto_cmd;
-		     if(act->not_goto_cmd && !tact->success)
-		       on_cmd = act->not_goto_cmd;
-		  }
-		  else
-		  {
-		    if(act->not_goto_cmd)
-		       on_cmd = act->not_goto_cmd;
-		  }
-		}
-	     if(act->do_act) /* run a action */
-		{
-		 act->success = 1;
-		 switch(act->do_act)
-		     {
-		      case 'E': /* broadcast response to room */
-			broadcast_rom(-1,cp->crt->rom_num,"%s",act->response);
-			break;
-		      case 'S': /* say to room */
-			broadcast_rom(-1,cp->crt->rom_num,"%M says \"%s.\"",
-				      crt_ptr,act->response);
-			break;
-		      case 'A': /* attack monster in target string */
-			if(crt_ptr->first_tlk->target && !crt_ptr->first_enm)
-			  {
-			    vic_ptr = find_crt(crt_ptr,rom_ptr->first_mon,
-					       crt_ptr->first_tlk->target,1); 
-			    if(vic_ptr)
-			      add_enm_crt(vic_ptr->name, crt_ptr);
-			      broadcast_rom(-1,crt_ptr->rom_num,"%M attacks %s.",crt_ptr,vic_ptr);
-			      attack_crt(crt_ptr,vic_ptr);
-			    if(crt_ptr->first_tlk->target)
-			       free(crt_ptr->first_tlk->target);
-			    crt_ptr->first_tlk->target = 0;
-			  }
-			break;
-		      case 'a': /* attack player target */
-			break;
-		      case 'c': /* cast a spell on target */
-			break;
-		      case 'F': /* force target to do somthing */
-			break;
-		      case '|': /* set a flag on target */
-			break;
-		      case '&': /* remove flag on target */
-		        break;
-		      case 'P': /* perform social */
-			break;
-		      case 'O': /* open door */
-			break;
-		      case 'C': /* close door */
-			break;
-		      case 'D': /* delay action */
-			break;
-		      case 'G': /* go into a keyword exit */
-			break;
-		      case '0': /* go n */
-		      case '1': /* go ne */
-		      case '2': /* go e */
-		      case '3': /* go se */
-		      case '4': /* go s */
-		      case '5': /* go sw */
-		      case '6': /* go w */
-		      case '7': /* go nw */
-		      case '8': /* go up */
-		      case '9': /* go down */
-			xdir = act->do_act - '0';
-			strcpy(cmnd.str[0],xits[xdir]);
-			move(crt_ptr,&cmnd);
-			break;
-			
-		     }
-		}
-	     if(act->goto_cmd) /* unconditional jump */
-		{
-		 act->success = 1;
-		 cp->crt->first_tlk->on_cmd = act->goto_cmd;
-		}
-	     else
-	      	cp->crt->first_tlk->on_cmd = on_cmd;
-	   }
-	 }
-       }
-     }  
+    }  
 }
 
 /*********************************************************************/
@@ -1260,3 +1274,36 @@ creature    *crt_ptr;
 	}
 	return(n);
 }		
+
+void update_dust_output(t)
+long t;
+{
+        last_dust_output=0;
+        broadcast("Ominous thunder rumbles in the distance.");
+}
+
+void crash(sig)
+int     sig;
+{
+	char path[80];
+
+	broadcast("### Quick shutdown now!");
+	output_buf();
+	loge("--- !CRASH! Game closed ---\n");
+	/* resave_all_rom(1); */
+	save_all_ply();
+
+#ifdef DMALLOC 
+        dmalloc_log_stats();
+#endif /* DMALLOC */
+        
+	if(RECORD_ALL) {
+        sprintf(path,"%s/%s",LOGPATH,"all_cmd");
+        unlink(path);
+	}
+        
+#ifndef WIN32
+        kill(getpid(), 9);
+#endif
+        exit(0);
+}

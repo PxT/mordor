@@ -3,7 +3,7 @@
  *
  *	Additional file routines, including memory management.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -44,9 +44,9 @@ int load_rom(index, rom_ptr)
 int	index;
 room	**rom_ptr;
 {
-	int	fd;
+	int	fd, strct;
 	qtag	*qt;
-	char	file[256], filebak[256];
+	char	file[256], filebak[256], rmfrstprt[4];
 
 	if(index >= RMAX || index < 0)
 		return(-1);
@@ -62,7 +62,22 @@ room	**rom_ptr;
 	/* too big, and return a pointer to the newly loaded room     */
 
 	else {
-		sprintf(file, "%s/r%05d", ROOMPATH, index);
+		if(HASHROOMS) {
+			sprintf(rmfrstprt,"10/r");
+			if(index<10000) sprintf(rmfrstprt,"09/r");
+			if(index<9000) sprintf(rmfrstprt,"08/r");
+			if(index<8000) sprintf(rmfrstprt,"07/r");
+			if(index<7000) sprintf(rmfrstprt,"06/r");
+			if(index<6000) sprintf(rmfrstprt,"05/r");
+			if(index<5000) sprintf(rmfrstprt,"04/r");
+			if(index<4000) sprintf(rmfrstprt,"03/r");
+			if(index<3000) sprintf(rmfrstprt,"02/r");
+			if(index<2000) sprintf(rmfrstprt,"01/r");
+			if(index<1000) sprintf(rmfrstprt,"00/r");
+			sprintf(file, "%s/r%s%05d", ROOMPATH, rmfrstprt, index);
+		}
+		else
+			sprintf(file, "%s/r%05d", ROOMPATH, index);
 		fd = open(file, O_RDONLY | O_BINARY, 0);
 		if(fd < 0)
 			return(-1);
@@ -92,7 +107,23 @@ room	**rom_ptr;
 				put_queue(&qt, &Romhead, &Romtail, &Rsize);
 				continue;
 			}
-			sprintf(file, "%s/r%05d", ROOMPATH, qt->index);
+			if(HASHROOMS) {
+				sprintf(rmfrstprt,"10/r");
+				if(index<10000) sprintf(rmfrstprt,"09/r");
+				if(index<9000) sprintf(rmfrstprt,"08/r");
+				if(index<8000) sprintf(rmfrstprt,"07/r");
+				if(index<7000) sprintf(rmfrstprt,"06/r");
+				if(index<6000) sprintf(rmfrstprt,"05/r");
+				if(index<5000) sprintf(rmfrstprt,"04/r");
+				if(index<4000) sprintf(rmfrstprt,"03/r");
+				if(index<3000) sprintf(rmfrstprt,"02/r");
+				if(index<2000) sprintf(rmfrstprt,"01/r");
+				if(index<1000) sprintf(rmfrstprt,"00/r");
+				sprintf(file, "%s/r%s%05d", ROOMPATH, rmfrstprt, index);
+			}
+			else
+				sprintf(file, "%s/r%05d", ROOMPATH, qt->index);
+
 			sprintf(filebak, "%s~", file);
 			rename(file, filebak);
 			fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
@@ -139,13 +170,28 @@ int	num;
 	room	*rom_ptr;
 	ctag	*cp;
 	otag	*op;
-	char	file[80];
-	int	fd;
+	char	file[80], rmfrstprt[4];
+	int		fd, index, strct;
 
 	if(!Rom[num].rom)
 		return(0);
-
-	sprintf(file, "%s/r%05d", ROOMPATH, num);
+	if(HASHROOMS) {
+		index=num;
+		sprintf(rmfrstprt,"10/r");
+		if(index<10000) sprintf(rmfrstprt,"09/r");
+		if(index<9000) sprintf(rmfrstprt,"08/r");
+		if(index<8000) sprintf(rmfrstprt,"07/r");
+		if(index<7000) sprintf(rmfrstprt,"06/r");
+		if(index<6000) sprintf(rmfrstprt,"05/r");
+		if(index<5000) sprintf(rmfrstprt,"04/r");
+		if(index<4000) sprintf(rmfrstprt,"03/r");
+		if(index<3000) sprintf(rmfrstprt,"02/r");
+		if(index<2000) sprintf(rmfrstprt,"01/r");
+		if(index<1000) sprintf(rmfrstprt,"00/r");
+		sprintf(file, "%s/r%s%05d", ROOMPATH, rmfrstprt, index);
+	}
+	else
+		sprintf(file, "%s/r%05d", ROOMPATH, num);
 	fd = open(file, O_RDONLY | O_BINARY, 0);
 	if(fd < 0)
 		return(-1);
@@ -207,13 +253,28 @@ int	num;
 int resave_rom(num)
 int	num;
 {
-	char	file[256], filebak[256];
-	int	fd;
+	char	file[256], filebak[256], rmfrstprt[4];
+	int		fd, index, strct;
 
 	if(!Rom[num].rom)
 		return(0);
-
-	sprintf(file, "%s/r%05d", ROOMPATH, num);
+	if(HASHROOMS) {
+		index=num;
+		sprintf(rmfrstprt,"10/r");
+		if(index<10000) sprintf(rmfrstprt,"09/r");
+		if(index<9000) sprintf(rmfrstprt,"08/r");
+		if(index<8000) sprintf(rmfrstprt,"07/r");
+		if(index<7000) sprintf(rmfrstprt,"06/r");
+		if(index<6000) sprintf(rmfrstprt,"05/r");
+		if(index<5000) sprintf(rmfrstprt,"04/r");
+		if(index<4000) sprintf(rmfrstprt,"03/r");
+		if(index<3000) sprintf(rmfrstprt,"02/r");
+		if(index<2000) sprintf(rmfrstprt,"01/r");
+		if(index<1000) sprintf(rmfrstprt,"00/r");
+		sprintf(file, "%s/r%s%05d", ROOMPATH, rmfrstprt, index);
+	}
+	else
+		sprintf(file, "%s/r%05d", ROOMPATH, num);
 	sprintf(filebak, "%s~", file);
 	rename(file, filebak);
 	fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
@@ -244,8 +305,8 @@ void resave_all_rom(permonly)
 int	permonly;
 {
 	qtag 	*qt;
-	char	file[80];
-	int	fd;
+	char	file[80], rmfrstprt[4];
+	int		fd, index, strct;
 
 	qt = Romhead;
 	while(qt) {
@@ -253,8 +314,23 @@ int	permonly;
 			qt = qt->next;
 			continue;
 		}
-
-		sprintf(file, "%s/r%05d", ROOMPATH, qt->index);
+		if(HASHROOMS) {
+			index=qt->index;	
+			sprintf(rmfrstprt,"10/r");
+			if(index<10000) sprintf(rmfrstprt,"09/r");
+			if(index<9000) sprintf(rmfrstprt,"08/r");
+			if(index<8000) sprintf(rmfrstprt,"07/r");
+			if(index<7000) sprintf(rmfrstprt,"06/r");
+			if(index<6000) sprintf(rmfrstprt,"05/r");
+			if(index<5000) sprintf(rmfrstprt,"04/r");
+			if(index<4000) sprintf(rmfrstprt,"03/r");
+			if(index<3000) sprintf(rmfrstprt,"02/r");
+			if(index<2000) sprintf(rmfrstprt,"01/r");
+			if(index<1000) sprintf(rmfrstprt,"00/r");
+			sprintf(file, "%s/r%s%05d", ROOMPATH, rmfrstprt, index);
+		}
+		else
+			sprintf(file, "%s/r%05d", ROOMPATH, qt->index);
 		fd = open(file, O_RDWR | O_CREAT | O_BINARY, ACC);
 		if(fd < 1)
 			return;
@@ -426,6 +502,7 @@ creature	**mon_ptr;
 		}
 	}
 
+	sprintf((*mon_ptr)->password, "%d", index);
 	(*mon_ptr)->lasttime[LT_HEALS].ltime = time(0);
 	(*mon_ptr)->lasttime[LT_HEALS].interval = 60L;
 	(*mon_ptr)->first_enm= 0;

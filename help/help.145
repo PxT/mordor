@@ -1,13 +1,13 @@
+Help on:
+	*CHARM <player>
 
-Help on command:
-
-	*ENEMY <creature>
-
-	Outputs the current enemy list for a given creature.
+Displays who the given player has charmed.
 
 example:
-:*enemy nobleman
-Enemy list for nobleman:
-None.
+:*charm gonzo
+Charm list for Gonzo:
+Blast.
+nobleman.
+
 
 

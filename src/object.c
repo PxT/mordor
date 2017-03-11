@@ -3,7 +3,7 @@
  *
  *	Routines that deal with objects and items.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -159,6 +159,7 @@ otag		*first_otag;
 {
 	otag	*op;
 	int	m, n=0, flags=0;
+	char 	*str2;
 
 	if(F_ISSET(ply_ptr, PDINVI))
 		flags |= INV;
@@ -167,7 +168,7 @@ otag		*first_otag;
 
 	str[0] = 0;
 	op = first_otag;
-	while(op && strlen(str) < 2048) {
+	while(op && strlen(str) < 2000) {
 		if((F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->obj, OINVIS)) &&
 		   !F_ISSET(op->obj, OHIDDN) && !F_ISSET(op->obj, OSCENE)) {
 			m=1;
@@ -187,9 +188,12 @@ otag		*first_otag;
 				else
 					break;
 			}
-			strcat(str, obj_str(op->obj, m, flags));
-			strcat(str, ", ");
-			n++;
+			str2=obj_str(op->obj, m, flags);
+			if(strlen(str2)+strlen(str) < 2000){
+				strcat(str, str2);
+				strcat(str, ", ");
+				n++;
+			}
 		}
 		op = op->next_tag;
 	}
@@ -259,3 +263,33 @@ object	*obj_ptr;
 
 	obj_ptr->pdice = MAX(obj_ptr->pdice, obj_ptr->adjustment);
 }
+
+/***********************************************************************
+*       This function finds the object number of the given object
+*       from the database
+*/
+
+int find_obj_num(obj_ptr) 
+object  *obj_ptr;
+{
+        int i;
+        object  *obj_src;
+
+        for (i=0;i<OMAX;i++) {
+                if(load_obj_from_file(i, &obj_src) < 0)
+                        continue;
+                if(!strcmp(obj_ptr->name, obj_src->name) && obj_ptr->ndice == obj_src->ndice) {
+    			    free(obj_src);		
+	                    break;
+                }
+		free(obj_src);
+	}
+	
+
+        if(i<OMAX)
+                return(i);
+        else
+                return(0);
+
+}
+

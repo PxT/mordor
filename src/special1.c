@@ -3,7 +3,7 @@
  *
  *	User routines dealing with special routines.
  *
- *	Copyright (C) 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 

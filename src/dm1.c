@@ -3,12 +3,13 @@
  *
  *	DM functions
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
 #include "mstruct.h"
 #include "mextern.h"
+#include <ctype.h>
 #ifdef DMALLOC
   #include "/usr/local/include/dmalloc.h"
 #endif
@@ -26,7 +27,6 @@ creature	*ply_ptr;
 cmd		*cmnd;
 {
 	creature	*crt_ptr;
-	ctag		*cp;
 	creature	*crt_ptr2;
 	room		*rom_ptr;
 
@@ -38,23 +38,15 @@ cmd		*cmnd;
 			print(ply_ptr->fd, "Error (%d)\n", cmnd->val[0]);
 			return(0);
 		}
-/* OLD DM-FOLLOW CODE */
-/*
-	cp = ply_ptr->first_fol;
-        while(cp) {
-                if(F_ISSET(cp->crt, MDMFOL) && cp->crt->parent_rom == ply_ptr->parent_rom) {
-                del_crt_rom(cp->crt, ply_ptr->parent_rom);
-		broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.\n", cp->crt);
-                add_crt_rom(cp->crt, rom_ptr, 1);
-                add_active(cp->crt); 
-                }
-                cp = cp->next_tag;
-        }*/
 	    if(F_ISSET(ply_ptr, PALIAS)) {
-		del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
-		broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);
-		add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
+			del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);
+			add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
 	    }
+	    if(!F_ISSET(ply_ptr, PDMINV)) {
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", ply_ptr->name);
+		}
+
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 		add_ply_rom(ply_ptr, rom_ptr);
 	}
@@ -67,22 +59,14 @@ cmd		*cmnd;
 			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
 			return(0);
 		}
-/* OLD DM-FOLLOW CODE */
-/*
-	cp = ply_ptr->first_fol;
-        while(cp) {
-                if(F_ISSET(cp->crt, MDMFOL) && cp->crt->parent_rom == ply_ptr->parent_rom) {
-                del_crt_rom(cp->crt, ply_ptr->parent_rom);
-		broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.\n", cp->crt);
-	        add_crt_rom(cp->crt, crt_ptr->parent_rom, 1);
-                }
-                cp = cp->next_tag;
-        } */
 	    if(F_ISSET(ply_ptr, PALIAS)) {
-                del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
-                broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);                
-		add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, crt_ptr->parent_rom, 1);
-            }
+			del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);                
+			add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, crt_ptr->parent_rom, 1);
+        }
+	    if(!F_ISSET(ply_ptr, PDMINV)) {
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", ply_ptr->name);
+		}
 
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
 		add_ply_rom(ply_ptr, crt_ptr->parent_rom);
@@ -105,6 +89,9 @@ cmd		*cmnd;
 			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
 			return(0);
 		}
+		if(!F_ISSET(ply_ptr, PDMINV)) {
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.",ply_ptr->name);
+		}
 		del_ply_rom(crt_ptr, crt_ptr->parent_rom);
 		add_ply_rom(crt_ptr, crt_ptr2->parent_rom);
 	}	
@@ -123,7 +110,6 @@ int dm_send(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
-	char	str[450];
 	int	i, fd, found = 0;
 
 	if(ply_ptr->class < CARETAKER)
@@ -144,7 +130,7 @@ cmd		*cmnd;
 	}
 
 	print(fd, "Ok.\n");
-	broadcast_wiz("+++ %s sent, \"%s\".", ply_ptr->name, 
+	broadcast_wiz("=> %s sent, \"%s\".", ply_ptr->name, 
 		      &cmnd->fullstr[i+1]);
 
 	return(0);
@@ -212,6 +198,7 @@ cmd		*cmnd;
 			free_obj(op->obj);
 			free(op);
 		}
+
 		op = otemp;
 	}
 
@@ -231,9 +218,9 @@ int dm_users(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
-	char	str[15], idstr[50];
+	char	idstr[50];
 	long	t;
-	int	fd, i, j, userid = 0, fulluser = 0;
+	int		fd, i, userid = 0, fulluser = 0;
 
 	if(ply_ptr->class < CARETAKER)
 		return(PROMPT);
@@ -288,7 +275,11 @@ cmd		*cmnd;
 			print(fd, "%-15.15s ", userid ? Ply[i].io->userid : 
 				Ply[i].io->address);
 			ANSI(fd, GREEN);
-			print(fd, "%-15.15s ", Ply[i].extr->lastcommand);
+			if(Ply[i].ply->class < DM || ply_ptr->class==DM) 
+                                print(fd, "%-15.15s ", Ply[i].extr->lastcommand);
+                        else
+                                print(fd, "%-15.15s ", "l");
+
 		}
 		ANSI(fd, WHITE);
 		print(fd, "%02ld:%02ld\n", (t-Ply[i].io->ltime)/60L, 
@@ -352,7 +343,7 @@ int dm_flushsave(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
-	if(ply_ptr->class < DM || !(!strcmp(ply_ptr->name, DMNAME2)))
+	if(ply_ptr->class < DM || !(!strcmp(ply_ptr->name, dmname[1])))
 		return(PROMPT);
 
 	if(cmnd->num < 2) {
@@ -467,10 +458,19 @@ cmd		*cmnd;
 	if(ply_ptr->class < CARETAKER)
 		return(PROMPT);
 
+	if(!strcmp(cmnd->str[1], "c") && (cmnd->num > 1)) {
+		dm_save_crt(ply_ptr, cmnd);
+		return(0);
+	}
+	if(!strcmp(cmnd->str[1], "o") && (cmnd->num > 1)) {
+		dm_save_obj(ply_ptr, cmnd);
+		return(0);
+	}
+
 	if(resave_rom(ply_ptr->rom_num) < 0)
 		print(ply_ptr->fd, "Resave failed.\n");
 	else
-		print(ply_ptr->fd, "Ok.\n");
+		print(ply_ptr->fd, "Room saved.\n");
 
 	return(0);
 }
@@ -516,8 +516,8 @@ cmd		*cmnd;
 	creature	*crt_ptr;
 	object		*obj_ptr;
 	room		*rom_ptr;
-	int		item, num;
-	int		total, l,j, m, k, n;
+	int			num;
+	int			total, l,j, m, k;
 	long 		t;
 
 	if(ply_ptr->class < CARETAKER)
@@ -535,6 +535,7 @@ cmd		*cmnd;
 	if (cmnd->num  ==  2)
 	   if (cmnd->str[1][0] == 'n')
 		total = cmnd->val[1];
+	   
 	else if (cmnd->str[1][0] == 'g'){
 		total = mrand(1, count_ply(rom_ptr));
 		if(cmnd->val[1] == 1){
@@ -560,6 +561,20 @@ cmd		*cmnd;
             else
                 crt_ptr->lasttime[LT_ATTCK].interval = 2;
 
+	    if(cmnd->str[1][0]=='p') {
+			print(ply_ptr->fd, "Loading prototype creature.\n");
+			for(k=0; k<10; k++)
+				if(crt_ptr->carry[k]) {
+					m=load_obj(crt_ptr->carry[k], &obj_ptr);
+                        		if(m > -1) {
+                        		if(F_ISSET(obj_ptr, ORENCH))
+                            			rand_enchant(obj_ptr);
+                        			obj_ptr->value = mrand((obj_ptr->value*9)/10, (obj_ptr->value*11)/10);
+                        			add_obj_crt(obj_ptr, crt_ptr);
+					}
+				}
+	    }		
+	    else {			
             j = mrand(1,100);
             if(j<90) j=1;
             else if(j<96) j=2;
@@ -578,7 +593,8 @@ cmd		*cmnd;
                         add_obj_crt(obj_ptr, crt_ptr);
                     }
                 }
-            }
+              }
+	    }
 
             if(!F_ISSET(crt_ptr, MNRGLD) && crt_ptr->gold)
                 crt_ptr->gold =
@@ -609,23 +625,125 @@ int dm_perm(ply_ptr, cmnd)
 creature	*ply_ptr;
 cmd		*cmnd;
 {
-	object	*obj_ptr;
+	creature	*crt_ptr;
+	object		*obj_ptr;
+	int		i=0, x=0, n=0, fd;
 
 	if(ply_ptr->class < DM) 
 		return(PROMPT);
 
-	obj_ptr = find_obj(ply_ptr, 
-			   ply_ptr->parent_rom->first_obj, 
-			   cmnd->str[1], cmnd->val[1]);
+	fd=ply_ptr->fd;
 
-	if(!obj_ptr)
-		print(ply_ptr->fd, "Failed.\n");
-	else {
-		F_SET(obj_ptr, OPERM2);
-		F_SET(obj_ptr, OTEMPP);
-		print(ply_ptr->fd, "Done.\n");
+	if(cmnd->num < 2) {
+		print(fd, "Syntax: *perm [o|c|t] [name|d|exit] [timeout|slot]\n");
+		return(0);
 	}
+
+	switch(low(cmnd->str[1][0])) {
+	case 'o':
+	
+	if(!strcmp(cmnd->str[2], "d") && strlen(cmnd->str[2])<2) {
+		if(cmnd->val[2]>10 || cmnd->val[2]<1){
+			print(fd, "Slot to delete out of range.\n");
+			return(0);
+		}
+		ply_ptr->parent_rom->perm_obj[cmnd->val[2]-1].misc=0;
+		ply_ptr->parent_rom->perm_obj[cmnd->val[2]-1].interval=0;
+		print(fd, "Perm object slot #%d cleared in room %d.\n", cmnd->val[2], ply_ptr->parent_rom->rom_num);
+		return(0);
+	}
+
+
+	obj_ptr = find_obj(ply_ptr,ply_ptr->parent_rom->first_obj,cmnd->str[2], 1);
+
+	if(!obj_ptr) {
+		print(ply_ptr->fd, "Object not found.\n");
+		return(0);
+	}
+
+	n=find_obj_num(obj_ptr);
+	if(!n) {
+		print(fd, "Object is not in database. Not permed.\n");
+		return(0);
+	}
+
+	if(cmnd->val[2]<2)
+		cmnd->val[2]= 7200;
+	
+	while(ply_ptr->parent_rom->perm_obj[x].misc)
+		x++;
+	if(x>9) {
+		print(fd, "Room is already full.\n");
+		return(0);
+	}
+
+	ply_ptr->parent_rom->perm_obj[x].misc=n;
+	ply_ptr->parent_rom->perm_obj[x].interval=(long)cmnd->val[2];
+	
+	print(fd, "%s permed with timeout of %d.\n", obj_ptr, cmnd->val[2]);
+
 	return(0);
+	/* perm creature */
+	case 'c':
+
+	if(!strcmp(cmnd->str[2], "d") && strlen(cmnd->str[2])<2) {
+                if(cmnd->val[2]>10 || cmnd->val[2]<1){
+                        print(fd, "Slot to delete out of range.\n");
+                        return(0);
+                }
+		
+                ply_ptr->parent_rom->perm_mon[cmnd->val[2]-1].misc=0;
+		ply_ptr->parent_rom->perm_mon[cmnd->val[2]-1].interval=0;
+                print(fd, "Perm monster slot #%d cleared.\n", cmnd->val[2]);
+                return(0);
+        }
+
+	crt_ptr = find_crt(ply_ptr,ply_ptr->parent_rom->first_mon,cmnd->str[2], 1);
+         
+        if(!crt_ptr) {
+                print(ply_ptr->fd, "Creature not found.\n");
+                return(0);
+        }        
+        
+		/* n=find_crt_num(crt_ptr); */
+		n=atoi(crt_ptr->password);
+        if(!n) {  
+                print(fd, "Creature is not in database. Not permed.\n");
+                return(0);
+	 }
+        
+        if(cmnd->val[2]<2)
+                cmnd->val[2]= 7200;
+                 
+        while(ply_ptr->parent_rom->perm_mon[x].misc)
+                x++;
+        if(x>9) { 
+                print(fd, "Room is already full.\n");
+                return(0);
+	}
+        
+        ply_ptr->parent_rom->perm_mon[x].misc=n;
+        ply_ptr->parent_rom->perm_mon[x].interval=(long)cmnd->val[2];
+                 
+        print(fd, "%s permed with timeout of %d.\n", crt_ptr, cmnd->val[2]);
+                
+        return(0);
+	/* perm tracks */
+	case 't':
+		if(!strcmp(cmnd->str[2], "d")||cmnd->num < 3) {
+ 			F_CLR(ply_ptr->parent_rom, RPTRAK);               
+                        print(fd, "Perm tracks deleted.\n");
+                        return(0);
+		}
+		strcpy(ply_ptr->parent_rom->track,cmnd->str[2]); 
+		F_SET(ply_ptr->parent_rom, RPTRAK);
+		print(fd, "Perm tracks added leading %s.\n", cmnd->str[2]);
+		return(0);
+	
+	default:
+        print(fd, "Syntax: *perm [o|c|t] [name|d|exit] [timeout|slot]\n");
+		return(0);
+	}
 }
 
 /**********************************************************************/
@@ -757,6 +875,3 @@ cmd		*cmnd;
 	return(PROMPT);
 
 }
-
-
-

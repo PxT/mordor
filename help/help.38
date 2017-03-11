@@ -1,5 +1,6 @@
 Help on:
 	CAST <spell> [on] [<player/monster/object> [#]]
+        C <spell> [on] [<player/monster/object> [#]]
 
 The cast command allows you to cast spells which you may have learned
 by STUDYing scrolls.  The INFO command will tell you which spells you

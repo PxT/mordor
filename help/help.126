@@ -1,9 +1,7 @@
-
 Help on:
-
 	*INFO
 
-	This function lists various system statistics.
+This function lists various system statistics.
 
 example:
 :*info

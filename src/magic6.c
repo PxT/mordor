@@ -3,7 +3,7 @@
  *
  *	Additional spell-casting routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -221,7 +221,7 @@ cmd		*cmnd;
 int		how;
 {
 	creature	*crt_ptr;
-	room		*rom_ptr, *new_rom;
+	room		*rom_ptr;
 	int		fd, i;
 
 	fd = ply_ptr->fd;
@@ -259,9 +259,10 @@ int		how;
 			print(fd, "You feel relieved of burdens.\n");
 
 		for(i=0; i<MAXWEAR; i++)
-			if(ply_ptr->ready[i])
+			if(ply_ptr->ready[i]) {
+				F_CLR(ply_ptr->ready[i], OCURSW);
 				F_CLR(ply_ptr->ready[i], OCURSE);
-
+			}
 		return(1);
 	}
 
@@ -295,8 +296,11 @@ int		how;
 				       ply_ptr, crt_ptr);
 
 			for(i=0; i<MAXWEAR; i++)
-				if(crt_ptr->ready[i])
+				if(crt_ptr->ready[i]) {
+					F_CLR(crt_ptr->ready[i], OCURSW);
 					F_CLR(crt_ptr->ready[i], OCURSE);
+			}
+
 
 			return(1);
 		}

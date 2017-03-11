@@ -3,7 +3,7 @@
  *
  *	Additional spell-casting routines.
  *
- *	Copyright (C) 1991, 1992, 1993 Brett J. Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
  *
  */
 
@@ -135,7 +135,7 @@ cmd		*cmnd;
 int		how;
 {
 	creature	*crt_ptr;
-	room		*rom_ptr, *new_rom;
+	room		*rom_ptr;
 	int		fd, n;
 
 	fd = ply_ptr->fd;
@@ -232,7 +232,7 @@ int		how;
 {
 	creature	*crt_ptr;
 	room		*rom_ptr;
-	int		fd, heal;
+	int			fd;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
@@ -348,7 +348,7 @@ int		how;
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 
-	if(ply_ptr->class != RANGER && ply_ptr->class < CARETAKER &&
+	if(ply_ptr->class != DRUID && ply_ptr->class != RANGER && ply_ptr->class < CARETAKER &&
 	   how==CAST) {
 		print(fd, "Only rangers may cast that spell.\n");
 		return(0);
@@ -446,7 +446,7 @@ cmd		*cmnd;
 int		how;
 {
 	creature	*crt_ptr;
-	room		*rom_ptr, *new_rom;
+	room		*rom_ptr;
 	int		fd;
 
 	fd = ply_ptr->fd;
@@ -544,7 +544,7 @@ cmd		*cmnd;
 int		how;
 {
 	creature	*crt_ptr;
-	room		*rom_ptr, *new_rom;
+	room		*rom_ptr;
 	int		fd;
 
 	fd = ply_ptr->fd;

@@ -1,6 +1,6 @@
 Help on:
-
-	*SEND
+        *SEND <text>
+        *S <text>
 
 	This function alllows for DM communication.  It is similar to the 
 normal broadcast command, but has no daily limits and is only seen by 
