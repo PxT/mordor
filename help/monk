@@ -1,0 +1,21 @@
+MONK
+
+	The monk is the master of self-discipline.  By calling upon inner
+strength, the monk can do grave damage to foes.  A monk must spend his time
+in self-contemplation, growing stronger all the time.  He can call upon his
+constitution to heal himself by meditating.  The path of the monk is a hard
+one, but those few warriors who chose it will be rewarded with powers beyond
+most mortal men.  Due to the nature of the monk, they are not benefitted by
+armor, but receive better armor class bonuses from high dexterity than other
+classes.  Their hands must be free so they can use their special fighting
+skills.  There are special weapons for monks, but they are indeed rare.
+Because of their spiritual ties, they can cast healing spells better than
+average.
+
+Skills:
+Meditate, touch.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	DEX PTY INT STR CON DEX CON PTY INT CON

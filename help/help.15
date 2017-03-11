@@ -1,7 +1,6 @@
 Help on:
 	HEALTH
 	SCORE
-        SC
 
 Health shows you a brief status report on your character.  It lists
 your name, title, hit points, magic points, gold and experience.  It

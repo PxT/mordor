@@ -1,9 +1,11 @@
+
 Help on:
+
 	*STATUS [obj/crt/rm]
 
-This function will give the vital stats for the specified object, room,
-monster, or player.  If nothing is specified, then stats are given for
-the parent room.
+	This function will give the vital stats for the specified object, 
+room, monster, or player.  If nothing is specified, then stats are given 
+for the parent room.
 
 example:
 :*status ruby

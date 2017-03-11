@@ -1,0 +1,13 @@
+	The cleric is the most powerful of the classes in the arts of healing.
+In addition to the ability to heal, the cleric can turn the undead. Clerics
+can also achieve magical powers bested only by mages alchemists, and in some
+cases can cast spells that even a mage cannot achieve.  They can also teach
+some basic spells, as well as pray to gain addition piety for a short time.
+
+Skills:
+Pray, teach, turn.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	INT DEX CON STR PTY INT PTY DEX CON PTY

@@ -1,12 +1,7 @@
-Mordor MUD driver v4.0 -- 
-Copyright (C) 1994, 1995, 1996, 1997 by Brooke Paul
+Mordor MUD driver v6.66a -- 
+Copyright (C) 1993-2002 by Brooke Paul
 
-	The author of this work allows its usage as long as its use is
-free of charge, the credits remain unaltered, and this COPYRIGHT file is
-included. If you plan on using this work for commercial purposes you must
-first obtain a license for that purpose from the author.  If any portion
-of this work is used, this copyright must be followed and included in any
-subsequent or derivative works.  This includes any routines or utility
-programs.
-	Questions concerning the copyright and use license may be 
-directed to brooke@nazgul.com.
+This work is licensed under the General Public License.  A copy may
+be found in this directory in the file named 'GPL'
+
+Questions concerning the copyright and license may be directed to brooke@nazgul.com

@@ -1,0 +1,16 @@
+MS-Windows notes
+=================
+
+  All the binaries in bin/ are for the Linux platform.  No binaries are 
+provided for any Microsoft platform.  Mordor will run on M$, but you will 
+need to compile it.  This can be done using cygwin32 or another M$ C 
+complier.
+
+
+Playing with the Mordor Source Code
+===================================
+If you wish to play with the source yourself, a project file for
+Microsoft's Visual C++ (Win32/NT) is also included. You can find it in
+~/src.
+
+        Have fun!

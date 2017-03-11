@@ -1,7 +1,10 @@
-Help on:
+
+Help on command:
+
 	*DELETE [-PESLA] <string>
 
-This command allows you to get delete text in a room description.
+
+	This command allows you to get delete text in a room description.
 
 Example:
 :*del -A

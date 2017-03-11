@@ -1,7 +1,9 @@
-Help on:
+
+Help on command:
+
 	*ACTIVE
 
-This displays the current active monster list.
+	This displays the current active monster list.
 
 example:
 :*active

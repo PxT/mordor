@@ -1,0 +1,78 @@
+--------------------Configuration: mordor - Win32 Debug--------------------
+Begining build with project "D:\mordor5\src499r\mordor\mordor.dsp", at root.
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MTd /W3 /Gm /GX /Zi /Od /D "_CONSOLE" /D "_MBCS" /D "FINGERACCT" /D "WIN32" /D "_DEBUG" /D "_CRTDBG_MAP_ALLOC" /Fo"Debug/" /Fd"Debug/" /FD /c "
+			"Win32 Resource Compiler" with flags "/l 0x409 /d "_DEBUG" "
+			"Browser Database Maker" with flags "/nologo /o"Debug/mordor.bsc" "
+			"COFF Linker for 80x86" with flags "mordbd.lib morutild.lib portd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/mordor.pdb" /debug /machine:I386 /out:"Debug/mordor.exe" /pdbtype:sept "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "F:\TEMP\RSPD024.TMP" with contents </nologo /MTd /W3 /Gm /GX /Zi /Od /D "_CONSOLE" /D "_MBCS" /D "FINGERACCT" /D "WIN32" /D "_DEBUG" /D "_CRTDBG_MAP_ALLOC" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"D:\mordor5\src499r\mordor\creature.c"
+>
+Creating command line "cl.exe @F:\TEMP\RSPD024.TMP" 
+Creating temp file "F:\TEMP\RSPD025.TMP" with contents <mordbd.lib morutild.lib portd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/mordor.pdb" /debug /machine:I386 /out:"Debug/mordor.exe" /pdbtype:sept 
+.\Debug\access.obj
+.\Debug\action.obj
+.\Debug\bank.obj
+.\Debug\combat.obj
+.\Debug\command1.obj
+.\Debug\command10.obj
+.\Debug\command11.obj
+.\Debug\command12.obj
+.\Debug\command13.obj
+.\Debug\command2.obj
+.\Debug\command3.obj
+.\Debug\command4.obj
+.\Debug\command5.obj
+.\Debug\command6.obj
+.\Debug\command7.obj
+.\Debug\command8.obj
+.\Debug\command9.obj
+.\Debug\creature.obj
+.\Debug\dm1.obj
+.\Debug\dm2.obj
+.\Debug\dm3.obj
+.\Debug\dm4.obj
+.\Debug\dm5.obj
+.\Debug\dm6.obj
+.\Debug\dm7.obj
+.\Debug\dm8.obj
+.\Debug\errhandl.obj
+.\Debug\global.obj
+.\Debug\io.obj
+.\Debug\logic.obj
+.\Debug\magic1.obj
+.\Debug\magic2.obj
+.\Debug\magic3.obj
+.\Debug\magic4.obj
+.\Debug\magic5.obj
+.\Debug\magic6.obj
+.\Debug\magic7.obj
+.\Debug\magic8.obj
+.\Debug\magic9.obj
+.\Debug\main.obj
+.\Debug\misc.obj
+.\Debug\msp.obj
+.\Debug\ntservic.obj
+.\Debug\object.obj
+.\Debug\player.obj
+.\Debug\post.obj
+.\Debug\readini.obj
+.\Debug\room.obj
+.\Debug\screen.obj
+.\Debug\special1.obj
+.\Debug\talk.obj
+.\Debug\update.obj
+\mordor5\src499r\mordb\Debug\mordbd.lib>
+Creating command line "link.exe @F:\TEMP\RSPD025.TMP" 
+Compiling...
+creature.c
+Linking...
+
+
+
+mordor.exe - 0 error(s), 0 warning(s)

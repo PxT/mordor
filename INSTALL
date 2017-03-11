@@ -1,0 +1,68 @@
+Installation notes for Mordor 6.x
+---------------------------------
+  Visit our website at http://mordor.nazgul.com/ or email
+mordor@mordor.nazgul.com with questions if you have questions
+after a successful installation.
+
+STEP 1: VERIFY INSTALLATION
+
+Execute the following commands:
+a) cd bin
+b) ./mordord -r
+c) telnet localhost 4040
+
+Step 1: Details
+
+  You should be able to change directory into bin/ and
+run the Mordor daemon (mordord).  Assuming that you are
+running on Intel GNU/Linux and that you have not moved
+any of the directories in this distribution around it will
+start.  To test and see if mordord is running, telnet to 
+localhost port 4040.  You should see a prompt like this:
+
+====
+$ telnet localhost 4040
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+
+Mordor MUD
+  Mordor v6.66
+Programmed by:
+  Brooke Paul, Paul Telford & John P. Freeman
+
+
+Based upon Quest for Mordor by:
+  Brett J. Vickers
+Contributions by:
+  Steve Smith, Eric Krichbaum, Charles Marchant,
+  Michael Kolb, Anthony Kulig, Mark Stoltzfus.
+
+
+Please enter name:
+====
+
+If you don't see this prompt and get a connection refused, check
+the log/ directory for several log files.  A good place to start is
+error.log.
+
+
+STEP 2: CREATING A DM CHARACTER
+
+a) telnet localhost 4040
+b) answer prompts and create a new character
+c) vi mordor.cf to add your new character as a DM
+d) restart mordord
+e) log in as a DM
+
+Step 2: Details
+Creating a DM character -
+  You can now create a new character, and make them a DM.  Just
+go through the character creation process, and then add the 
+name of your new character to the mordor.cf file under one
+of the DMNAME= sections.  You will then need to restart mordord
+and log in again.  Once you have completed this, you can reload
+the mordor configuration (mordor.cf) without restarting by using
+the DM command *game.
+
+

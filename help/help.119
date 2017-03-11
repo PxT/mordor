@@ -1,12 +1,12 @@
-Help on:
+Help on DM command:
+
 	*add [r|c|o] [#]
 
-This creates a new room in the database, or a new creature or object for
-editing.  A number must be specified when creating a new room, while
-creatures and objects will arrive in your room or inventory, respectively. 
-
-NOTE: Rooms are automatically added to the database, whereas creatures
-and objects must be saved after completion using the *save command. 
+  This creates a new room, creature or object.  A number must be 
+specified when creating a new room, while creatures and objects will 
+arrive in your room or inventory, respectively.  Rooms are automatically 
+added to the database, whereas creatures and object must be saved after 
+completion using the *save command.
 
 example:
 :*add r 4123

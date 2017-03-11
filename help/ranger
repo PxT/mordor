@@ -1,0 +1,18 @@
+RANGER
+
+	The ranger is a skillful fighter with the abilities to track
+opponents, to search for hidden exits, monsters, and treasures, and to hide
+from enemies very well.  They can also use the scout skill to see into a
+nearby area.  A ranger can hasten, and thus be allowed to attack faster than
+other classes.  Rangers are necessary for some of the quests, as tracking can
+be required in some areas.  Parties without a ranger can become hopelessly
+lost.  Because they have close ties to the druidic arts as well as combat
+prowess, they can cast healing spells better than average.
+
+Skills:
+Hasten, scout, sneak, track.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:		2   3   4   5   6   7   8   9   10  11
+Stat gained:	STR CON PTY INT DEX STR DEX CON PTY DEX

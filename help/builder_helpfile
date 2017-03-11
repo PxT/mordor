@@ -1,0 +1,27 @@
+
+
+
+TO MODIFY EXITS:
+	help *set		will give you the full *set options
+	*dmhelp xflags		shows all the exit flags available for use
+	*set x east 2320	makes a new exit called east to room 2320
+	*set x east 0		deletes the exit called east
+	*set xf east 1		sets the east exist to be invisible
+
+TO MODIFY ROOMS:
+	*dmhelp rflags		shows all the room flags available for use
+	*set x f 13		sets location to a no teleport room
+	
+TO ADD ROOM DESCRIPTIONS:
+	*name The East Road	to give a room the name "The East Road"
+	*app -s This road..	to append "This road.." to the short description of a room
+	*app -l	heads north..	to append "heads north.." to the long description of a room
+	
+	*save	THIS IS THE MOST IMPORTANT COMMAND - *save as you build!
+
+TO MODIFY ROOM DESCRIPTIONS:
+	*rep mda mad		to replace misspelled words such as mda with mad
+	*rep mad mad hatter	to replace mad with the string mad hatter
+	*del -s			deletes the entire short description
+	*del -l 		deletes the entire long description
+	*del -e	flowing		deletes everything after the word flowing

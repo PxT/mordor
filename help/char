@@ -8,10 +8,11 @@ CLASS	CHARACTER			RACE	CHARACTER
   7	Ranger				  7	Half Giant
   8	Thief				  8	Gnome
   9	Bard				  9	Troll
- 10     Monk                             10     Half Orc
- 11     Druid                            11     Ogre
- 12     Alchemist                        12     Dark Elf
- 13     Caretaker                        13     Golblin
- 14     Dungeonmaster
+ 10	Monk
+ 11	Druid
+ 12	Alchemist
+ 13	Builder
+ 14	Caretaker
+ 15 	Dungeonmaster
 
 

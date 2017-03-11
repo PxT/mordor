@@ -53,3 +53,11 @@ SFEARS          51      /* Fear */
 STRANO          52      /* Cause blindness */
 SBLIND          53      /* Transport object */
 SSILNC          54      /* Silence */
+SFORT		55	/* Fortune */
+SCONJ		56	/* Conjure */
+SCURS		57	/* Curse */
+SDISP		58	/* Dispel */
+SHURRI          59      /* hurricane */
+SINCIN          60      /* incinerate */  
+STRMOR          61      /* tremor */  
+SFLOOD          62      /* flood */  

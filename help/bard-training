@@ -1,0 +1,72 @@
+From rmcphers@parker.bio.uci.edu Tue Nov 28 12:47:30 1995
+Return-Path: rmcphers@parker.bio.uci.edu
+Received: from parker.bio.uci.edu (rmcphers@parker.bio.uci.edu [128.200.21.102]) by moria.bio.uci.edu (8.6.12/8.6.9) with ESMTP id MAA02816 for <auth@moria.bio.uci.edu>; Tue, 28 Nov 1995 12:47:27 -0800
+Received: (from rmcphers@localhost) by parker.bio.uci.edu (8.6.9/8.6.9) id NAA16437; Tue, 28 Nov 1995 13:42:16 -0800
+Date: Tue, 28 Nov 1995 13:42:14 -0800 (PST)
+From: Ron Mcpherson <rmcphers@parker.bio.uci.edu>
+To: auth@moria.bio.uci.edu
+Subject: bard training (fwd)
+Message-ID: <Pine.LNX.3.91.951128134156.16408C-100000@parker.bio.uci.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Status: O
+X-Status: 
+
+
+BARD TRAINING GUIDE
+
+Bards must collect artifacts and trade them to get a training key, each 
+training room is carefully set to permanently trap anyone training more 
+than one level.  The following list documents the training for each level.
+
+    training						primary
+lvl  room #	item #	      (lvl)monster #	 	monster location 
+_________________________________________________________________________
+
+2  Celd  4911	*saddle 277    (1)stablehand 230	stables Celduin
+							streets of Parth
+3  Celd  4916	*wishbone 824  (3)rooster 	
+
+4  Parth 4917	mining  483   (4)dwarven miner 211 	streets of Parth
+		* pick		 (or orc miner 411)	or Celduin sewers
+
+5  Parth 4912	abaccus 820   (5)jeweler 584  		Zarlow's in Finwe
+
+6  Parth 4918	juggling 821  (6)court jester 855	King of gypsies
+		  pin                                   (Shanty Town)
+
+7  Finwe 4919	*sextant 822   (7)warrant officer 544	Steamboat
+
+8  Finwe 4913	mortar/  823  (8)alchemist 829		Castle
+		& pestle
+
+9  Celd  4920   *hourglass 825  (10)advisor 493		University
+
+10 Finwe 4921	chess set 826  (10)Fallon 572		Home of Church
+
+11 Parth 2028	*poetry bk 827  (10)romendcl adept 792   Romndacl Temple
+
+12 Parth 2034	music scr 828  (15)minstrel Esgaroth 125 Parth amphitheater
+___________________________________________________________________________
+
+notes:
+
+Above level 12 bards train at library in Parth.
+
+The asterisk denotes that another higher level monster also drops the item.
+
+The order of items and skills has been changed (luck was moved): 
+
+level    instructor		skills in order
+
+2 3 4    minstrel 	   	riding, luck, geology
+5 6 7  	 muse 			math, acrobatics, navigation
+8 9 10	 bard 			alchemy, time-keeping, strategy
+11, 12	 master bard 		poetry, music
+
+
+
+
+-Ron
+
+

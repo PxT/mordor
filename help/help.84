@@ -1,0 +1,11 @@
+Help on command:
+
+	transform
+
+  This class skill allows experienced Druids to transform organic items
+into useful potions or weapons that can harm, heal, or cure.  
+
+example:
+
+:transform leaf
+

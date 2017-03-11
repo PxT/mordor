@@ -13,6 +13,7 @@ wimpy		You will automatically flee when your hp is low
 prompt		Enables the output of your HP & MP with the prompt
 ansi		If you have a vt100 or ansi terminal you can view color
 echo            Your sends, emotes, and says will not be echoed to you.
+classignore	You will receive class-based messages.
 
 Example:
 

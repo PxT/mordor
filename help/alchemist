@@ -1,0 +1,16 @@
+ALCHEMIST
+
+	An Alchemist is a a master of phyical materials and of the natural
+elements that make up all life.  They are particularly fond of metals and
+gems, and can become great artificers capable of transmuting normal elements
+into true magical materials.  Alchemists are a mage subclass, and so are
+competent spell casters.  Their knowledge about material makes them better
+fighters than mages.
+
+Skills:
+Recharge, transmute, enchant.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:		2   3   4   5   6   7   8   9   10  11
+Stat gained:	INT PTY DEX STR CON INT CON PTY DEX CON

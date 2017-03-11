@@ -1,0 +1,13 @@
+Help on command:
+
+	touch
+
+  This skill allows experienced Monks to inflict great damage on their
+enemies.  The damage will usually be half the hit points of the enemy
+but a powerful Monk may sometimes completely destroy an enemy.  Touch 
+of Death does not work on undead creatures.
+
+example:
+
+:touch hippie
+

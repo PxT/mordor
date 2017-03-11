@@ -1,0 +1,92 @@
+How to compile Mordor 6.x
+Paul Telford <paul@droflet.net>
+
+-- INTRODUCTION -- 
+This version of Mordor has been tested on a variety of
+platforms.  It should compile cleanly on: 
+* Linux (Intel Pentium/Itanium, z90, Alpha, SA-110 StrongARM, iPAQ PDA) 
+* Solaris (Sparc)
+* HP-UX 
+* FreeBSD (Intel, Alpha) 
+* Compaq Tru64 Unix (Alpha) 
+* Intel Windows using Cygwin gcc
+
+It has also compiled in the past on:
+* Windows 9X/NT (MS VisualC++)
+* Irix
+  Although we have no reason to believe it won't work, compilation on these 
+platforms has not been recently tested as we do not have ready access to 
+compilers on these machines.  If you can provide access, or any reports of 
+compiling on these platforms, we would like to hear from you.
+
+You should be able to compile this software on any Unix platform with minimal 
+tweaking.  If you find that you are having trouble porting to your particular 
+machine,  please contact us so that we may assist you.  If you make 
+modifications to the source code to help it compile on a particular platform, 
+please return those patches to us so that they can be integrated into the 
+main distribution.  (please use the '-u' option to diff)
+
+-- COMPILING --
+The easiest way to compile is to first check the file os.mak for any platform 
+specific changes you might have to make (see OPTIONS below).  Then, type 
+'make world' to build mordor, and all associated utilities.  All the
+binaries will be copied to the bin/ directory EXCEPT for the engine itself.  
+You must manually copy the executable from mordor/ to bin/.  This is to stop 
+you from accidentally overwriting an old version that you intended to keep.
+
+If you only want to build the engine itself, and not the utilities, use 
+'make all'.  Individual pieces can easily be built -- 'make editor', 
+'make auth' etc. or by changing into the appropriate directory and typing 
+'make'.
+
+This software has been tested using gcc, and should compile with no warnings 
+or errors using the -Wall flag.
+
+-- OPTIONS --
+Define the following in your Makefile or project file before compiling
+to enable the following options:
+
+
+DMALLOC --  This is for serious debugging, or if you are interested in 
+looking at the memory usage of Mordor.  You also need to install the 
+associated library funxtions.  See http://www.letters.com/dmalloc for more 
+information.
+ 
+MOBS_ALWAYS_ACTIVE -- This make creatures remain in the active list even
+if they are not in a currently active room. Mostly used for testing 
+purposes.
+
+FREEBSD -- This is for FreeBSD systems.
+
+IRIX -- This is for IRIX (Silicon Graphics) systems.  Mordor has been 
+compiled under IRIX 5.3 on a number of SGI systems.
+
+HPUX -- This is for HP systems.  We have tested using HP-UX 11.00
+
+SUNOS -- This is for SunOS/Solaris.  Tested on Solaris 2.6
+
+FINGERACCT -- This enables the *finger command for DMs.  You must have 
+~/bin/fing compiled properly from ~/src/finger.c.  This option is not 
+available on Win32 at this time.
+
+COMPRESS -- This enables file and in memory compression.  It is on by
+default and is recommended.
+
+WIN32 -- Use this if you are compiling for Win95/NT.  A project file for
+MSVC++ is included.
+
+WINNT -- Use this as well as WIN32 if you are compiling for NT.
+
+CYGWIN -- Use this if you are compiling using Cygwin's gcc compiler on
+Windows 9X/NT.  This is the recommended option for Windows users.  Do not
+define WIN32 or WINNT if you use this flag.  Tested under Windows 2000.
+See http://www.cygwin.com for info on obtaining gcc.
+
+  Be sure to check out the online FAQ at http://mordor.nazgul.com if you 
+have any questions.
+
+-- CONVERTER --
+The convert utility will not be built under 'make world' as it will not be 
+needed by the majority of people.  Build it manually using 'make convert'.  
+You should read and understand the README file in that directory before 
+using it.

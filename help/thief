@@ -1,0 +1,14 @@
+THIEF
+
+	A thief is a very valuable player in any group of adventurers, and in
+some cases, necessary.  A thief is capable of picking locks and stealing from
+opponents, and has the ability to sneak undetected from place to place.  Like
+the assassin, a thief can backstab. 
+
+Skills:
+Backstab, peek, pick locks, scout, sneak.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	INT STR CON PTY DEX INT DEX STR CON DEX

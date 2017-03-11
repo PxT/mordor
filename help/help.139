@@ -1,9 +1,12 @@
-Help on:
+
+
+Help on command:
+
 	*CNAME <creature> [#] [-dtk] <name>
 
-This will set the description, talk string, and keys for a monster.
-This is very similar to the *ONAME command, except that it works on
-monsters and not objects.
+	This will set the description, talk string, and keys for a 
+monster.  This is very similar to the *ONAME command, except that it 
+works on monsters and not objects.
 
 example:
 :*cn nobleman -d He's short and fat.

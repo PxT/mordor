@@ -1,0 +1,11 @@
+Syntax:
+
+	CAST DISPEL <creature>
+
+Cost: 15
+
+  This spell dispels resistive and sorcery magics.  There is 
+always a chance that the spell may not succeed.
+
+:cast dispel Gonzo
+You cast dispel on Gonzo.

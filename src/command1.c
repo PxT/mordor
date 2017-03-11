@@ -3,17 +3,53 @@
  *
  *	Command handling/parsing routines.
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul 
+ * $Id: command1.c,v 6.25 2001/07/22 19:03:06 develop Exp $
+ *
+ * $Log: command1.c,v $
+ * Revision 6.25  2001/07/22 19:03:06  develop
+ * first run at alllowing thieves to steal gold from other players
+ *
+ * Revision 6.24  2001/07/17 19:25:11  develop
+ * *** empty log message ***
+ *
+ * Revision 6.24  2001/07/14 21:26:44  develop
+ * *** empty log message ***
+ *
+ * Revision 6.23  2001/06/10 12:32:04  develop
+ * added disclaimer before law/chaos choice at character creation
+ *
+ * Revision 6.22  2001/04/30 19:55:02  develop
+ * *** empty log message ***
+ *
+ * Revision 6.21  2001/04/26 01:20:51  develop
+ * changed output for NOCREATE
+ *
+ * Revision 6.20  2001/04/25 01:22:26  develop
+ * added output to elog_broad for character create attempt when
+ * NOCREATE is set.
+ *
+ * Revision 6.19  2001/04/23 04:24:20  develop
+ * added email response to NOCREATE output
+ *
+ * Revision 6.18  2001/04/23 04:06:47  develop
+ * added NOCREATE
+ *
+ * Revision 6.17  2001/04/23 03:52:29  develop
+ * added NOCREATE flag to toggle character creation
+ *
+ * Revision 6.16  2001/03/08 16:09:09  develop
+ * *** empty log message ***
+ *
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
+
 #include <ctype.h>
 #include <string.h>
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 /**********************************************************************/
 /*				login				      */
 /**********************************************************************/
@@ -22,18 +58,11 @@
 /* he logs in.  It asks for the player's name and password, and performs  */
 /* the according function calls.					  */
 
-void login(fd, param, str)
-int 	fd;
-int	param;
-char	*str;
+void login(int 	fd, int	param, char	*str )
 {
-	int		i, match=0;
-	extern int	Numplayers;
-	char		tempstr[20], str2[50], path[80], forbid[20];
-	long 		t;
+	int		i,art,o; /*, match=0; */
 	creature	*ply_ptr;
-	FILE		*fp;
-
+	char		tempstr[20];
 
 	switch(param) {
 	case 0:
@@ -41,98 +70,106 @@ char	*str;
 			disconnect(fd);
 			return;
 		}
-		print(fd, "\nPlease enter name: ");
+		output(fd, "\nPlease enter name: ");
 		RETURN(fd, login, 1);
 	case 1:
-		/* Doneval: Here I check the name of the player. If it's the same
-		of one of the mail's boards, bad. 
-		Brooke, check the already made characters! *
-		for(i=0;i<=BOARDS;i++) {
-			if(!strcmp(boards[i], str)) {
-				print(fd, "\nThis is the name of a mail board.\n");
-				ask_for(fd, "Please enter name: ");
-			}
+		Ply[fd].extr->loginattempts +=1;
+		if(Ply[fd].extr->loginattempts>3){
+                	disconnect(fd);
+			return;
 		}
-		*/
 
-		if(!isalpha(str[0])) {
-			print(fd, "Please enter name: ");
+		if(!isalpha((int)str[0])) {
+			output(fd, "Please enter name: ");
 			RETURN(fd, login, 1);
 		}
 
-if(PARANOID) {
-	/* Check for ident */
-	if((!strcmp(Ply[fd].io->userid, "no_port") || !strcmp(Ply[fd].io->userid, "unknown")) && (strcmp(Ply[fd].io->address, "moria.bio.uci.edu") || strcmp(Ply[fd].io->address, "128.200.21.101"))) {
-		print(fd, "\n\nI am unable to get authorization from your server.\n");
-		print(fd, "Please try connecting from another host, or contact\n");
-		print(fd, "your system administrator to request RFC 931 auth/identd.\n\n");
-		print(fd, "If you have connected from this account in the past,\n");
-		print(fd, "try logging in more slowly.\n\n");
-		output_buf();
-		disconnect(fd);
-		return;
-	}
-}
-
-	/* Check for double log */
-	for(i=0; i<Tablesize; i++) {
-		if(!Ply[i].ply) continue;
-		if(Ply[i].ply->fd < 0) continue;
-		if(strcmp(Ply[i].io->userid, "no_port") || strcmp(Ply[i].io->userid, "unknown")) continue;
-		if(!strcmp(Ply[i].io->userid, Ply[fd].io->userid)) {
-			match += 1;
-			if(match > 0){
-				print(fd, "\n\n%s\n", account_exists);
-				print(fd, "Please only play one character at a time.\n\n");
-				output_buf();
+		if(PARANOID) {
+			/* Check for ident */
+			if((!strcmp(Ply[fd].io->userid, "no_port") || !strcmp(Ply[fd].io->userid, "unknown")) && (strcmp(Ply[fd].io->address, "mordor.nazgul.com") || strcmp(Ply[fd].io->address, "128.200.21.101"))) {
+				output(fd, "\n\nI am unable to get authorization from your server.\n");
+				output(fd, "Please try connecting from another host, or contact\n");
+				output(fd, "your system administrator to request RFC 931 auth/identd.\n\n");
+				output(fd, "If you have connected from this account in the past,\n");
+				output(fd, "try logging in more slowly.\n\n");
+				output_ply_buf(fd);
 				disconnect(fd);
 				return;
 			}
 		}
-	}
+
+		/* Check for double log */
+/*
+		for(i=0; i<Tablesize; i++) {
+			if(!Ply[i].ply) 
+				continue;
+			if(Ply[i].ply->fd < 0) 
+				continue;
+			if(!strcmp(Ply[i].io->userid, "no_port") || !strcmp(Ply[i].io->userid, "unknown")) 
+				continue;
+			if(!strcmp(Ply[i].io->userid, Ply[fd].io->userid)) {
+				match += 1;
+				if(match > 0){
+					sprintf(g_buffer, "\n\n%s\n", account_exists);
+					output(fd, g_buffer );
+					output(fd, "Please only play one character at a time.\n\n");
+					output_ply_buf(fd);
+					disconnect(fd);
+					return;
+				}
+			}
+		}
+*/
 
 
-	if(strlen(str) < 3) {
-		print(fd, "Name must be at least 3 characters.\n\n");
-		print(fd, "Please enter name: ");
-		RETURN(fd, login, 1);
-	}
-	if(strlen(str) >= 20) {
-		print(fd, "Name must be less than 20 characters.\n\n");
-		print(fd, "Please enter name: ");
-		RETURN(fd, login, 1);
-	}
-
-	for(i=0; i<strlen(str); i++)
-		if(!isalpha(str[i])) {
-			print(fd, "Name must be alphabetic.\n\n");
-			print(fd, "Please enter name: ");
+		if(strlen(str) < 3) {
+			output(fd, "Name must be at least 3 characters.\n\n");
+			output(fd, "Please enter name: ");
+			RETURN(fd, login, 1);
+		}
+		if(strlen(str) >= 20) {
+			output(fd, "Name must be less than 20 characters.\n\n");
+			output(fd, "Please enter name: ");
 			RETURN(fd, login, 1);
 		}
 
+		for(i=0; i< (int)strlen(str); i++)
+			if(!isalpha((int)str[i])) {
+				output(fd, "Name must be alphabetic.\n\n");
+				output(fd, "Please enter name: ");
+				RETURN(fd, login, 1);
+			}
+
+		/* check to make sure the name isn't a reserved article */
+		lowercize(str, 0);
+                o = art = 0;
+                while(article[o][0] != '@') {
+                        if(!strcmp(article[o++], str)) {
+                                art = 1;
+                                break;
+                        }
+                }
+                if(art) {
+                        output(fd, "That name is not allowed.\n");
+                        output(fd, "\nPlease enter name: ");
+                        RETURN(fd, login, 1);
+                }
+
+		/* check to see the name is allowed */
 		lowercize(str, 1);
 		str[25]=0;
 
-/* check to see the name is allowed */
-/*
-		sprintf(path, "%s/forbidden_name", PLAYERPATH);
-        fp=fopen(path, "r");
-        if(!fp)
-                merror("ERROR - forbidden name", NONFATAL);
-		else {
-			while(!feof(fp)) {
-                fscanf(fp, "%s", forbid);
-                if(!strcmp(forbid, str)) {
-                    print(fd, "That name is not allowed.\n");
-					print(fd, "\nPlease enter name: ");
-                    RETURN(fd, login, 1);
-                }
-			}
-        }
-*/
+		if ( contains_bad_word( str ) )
+		{
+	        output(fd, "That name is not allowed.\n");
+			output(fd, "\nPlease enter name: ");
+            		RETURN(fd, login, 1);
+        	}
+
 		if(load_ply(str, &ply_ptr) < 0) {
 			strcpy(Ply[fd].extr->tempstr[0], str);
-			print(fd, "\n%s? Did I get that right? ", str);
+			sprintf(g_buffer, "\n%s? Did I get that right? ", str);
+			output(fd, g_buffer);
 			RETURN(fd, login, 2);
 		}
 
@@ -142,68 +179,65 @@ if(PARANOID) {
 
 			if(CHECKDOUBLE) {
 				if(checkdouble(ply_ptr->name)) {
-			#ifdef WIN32
 					scwrite(fd, "No simultaneous playing.\n\r", 26);
-			#else 
-					write(fd, "No simultaneous playing.\n\r", 26);
-			#endif /* WIN32 */
 					disconnect(fd);
 					return;
 				}
 			} /* CHECKDOUBLE */
 
-			print(fd, "%c%c%cPlease enter password: ", 255, 251, 1); 
+			sprintf(g_buffer, "Please enter password: %c%c%c", 255, 251, 1); 
+			output(fd, g_buffer); 
 			RETURN(fd, login, 3);
 		}
 
 	case 2:
 		if(str[0] != 'y' && str[0] != 'Y') {
 			Ply[fd].extr->tempstr[0][0] = 0;
-			print(fd, "Please enter name: ");
+			output(fd, "Please enter name: ");
 			RETURN(fd, login, 1);
 		}
 		else {
-			print(fd, "\nHit return: ");
-			RETURN(fd, create_ply, 1);
+			if(NOCREATE) {
+				output(fd, "\nThat name is not known, and you may not create a new character at this time.\nPlease hit return to try again.\n");
+				sprintf(g_buffer, "\n\rIf you would like to create a character, please email %s.\n\r", questions_to_email);
+				output(fd, g_buffer);
+				sprintf(g_buffer, "Character create denied from: %s", Ply[fd].io->address);
+                		slog(g_buffer);
+				RETURN(fd, login, 1);
+			} 
+			else {
+				output(fd, "\nHit return: ");
+				RETURN(fd, create_ply, 1);
+			}
 		}
 
 	case 3:
 		if(strcmp(str, Ply[fd].ply->password)) {
-			#ifdef WIN32
-			     	scwrite(fd, "\255\252\1\n\rIncorrect.\n\r", 17);
-			#else
-				write(fd, "\255\252\1\n\rIncorrect.\n\r", 17);
-			#endif /* WIN32 */
-
+	     	scwrite(fd, "\255\252\1\n\rIncorrect.\n\r", 17);
 			disconnect(fd);
 			return;
 		}
 		else {
-			print(fd, "%c%c%c\n\r", 255, 252, 1);
+			sprintf(g_buffer, "%c%c%c\n\r", 255, 252, 1);
+			output(fd, g_buffer );
 			strcpy(tempstr, Ply[fd].ply->name);
-			for(i=0; i<Tablesize; i++)
-				if(Ply[i].ply && i != fd)
-					if(!strcmp(Ply[i].ply->name,
-					  Ply[fd].ply->name))
-						disconnect(i);	
-				free_crt(Ply[fd].ply);
+
+			/* check for double login */
+			check_double_login( fd );
+					
+			free_crt(Ply[fd].ply);
 
 /* It used to cause a crash if a player suicided at the same time */
 /* as creating a new charater, this fixes it.			  */
 
 			if(load_ply(tempstr, &Ply[fd].ply) < 0)
 			{
-				#ifdef WIN32
-					scwrite(fd, "Player no longer exists!\n\r", 25);
-				#else 	
-					write(fd, "Player no longer exists!\n\r", 25);
-				#endif /* WIN32 */        
+				scwrite(fd, "Player no longer exists!\n\r", 25);
 			
-				t = time(0);
-				strcpy(str2, (char *)ctime(&t));
-				str2[strlen(str2)-1] = 0;
-				logn("sui_crash","%s: %s (%s) suicided.\n", 
-					str2, Ply[fd].ply->name, Ply[fd].io->address);
+				sprintf(g_buffer,"%s (%s) suicided.", 
+					Ply[fd].ply->name, Ply[fd].io->address);
+
+				logn("sui_crash",g_buffer );
 				disconnect(fd);
 				return;
 			}
@@ -220,23 +254,20 @@ if(PARANOID) {
 
 /* This function allows a new player to create his or her character. */
 
-void create_ply(fd, param, str)
-int	fd;
-int	param;
-char	*str;
+void create_ply(int	fd, int	param, char	*str )
 {
-	int 	i, k, l, n, sum, num[5], dm_need_pass=0;
-	char	ph, ph_str[10];
+	int 	i, k, l, m, n, obj, sum, num[5];
+	object	*obj_ptr;
 
 	switch(param) {
 	case 1:
-/*		print(fd,"\n\n"); */
+/*		output(fd,"\n\n"); */
 		Ply[fd].ply = (creature *)malloc(sizeof(creature));
 		if(!Ply[fd].ply)
 			merror("create_ply", FATAL);
 		zero(Ply[fd].ply, sizeof(creature));
 		Ply[fd].ply->fd = -1;
-		Ply[fd].ply->rom_num = 1;
+		Ply[fd].ply->rom_num = start_room_num;
 
 
 	if((!strcmp(Ply[fd].extr->tempstr[0],dmname[0])) ||
@@ -246,50 +277,43 @@ char	*str;
 	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[4])) ||
 	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[5])) ||
 	   (!strcmp(Ply[fd].extr->tempstr[0],dmname[6]))) {
-		print(fd, "\nA password is required to create that character.\n");
-	 	print(fd, "Please enter password: ");
-		output_buf();
-RETURN(fd, create_ply, 2);
-}
-else goto no_pass;
-case 2:
-		if(strcmp(dm_pass, str)) {
-		   disconnect(fd);
-		   return;
-		}
-case 3:
-no_pass:
+		output(fd, "\nA password is required to create that character.\n");
+	 	output(fd, "Please enter password: ");
+		output_ply_buf(fd);
+		RETURN(fd, create_ply, 2);
+	}
+	else goto no_pass;
+	case 2:
+			if(strcmp(dm_pass, str)) {
+			   disconnect(fd);
+			   return;
+			}
+	case 3:
+	no_pass:
 		if(ANSILINE) {
 			clrscr(fd);
-			ask_for(fd, "[M] Male or [F] Female: ");
 		}
-		else
-			print(fd, "[M] Male or [F] Female: ");
+		
+		ask_for(fd, "[M] Male or [F] Female: ");
 		RETURN(fd, create_ply, 4);
 	case 4:
 		if(low(str[0]) != 'm' && low(str[0]) != 'f') {
-			if(ANSILINE)
-				ask_for(fd, "[M] Male or [F] Female: ");
-			else
-				print(fd, "[M] Male or [F] Female: ");
+			ask_for(fd, "[M] Male or [F] Female: ");
 			RETURN(fd, create_ply, 4);
 		}
 		if(low(str[0]) == 'm')
 			F_SET(Ply[fd].ply, PMALES);
-		print(fd, "\nAvailable classes:");
-		print(fd, "\n		    /----- AVAILABLE CLASSES ------\\");
-		print(fd, "\n		    |                              |");
-		print(fd, "\n		    |  [A] Assassin  [B] Barbarian |");  
-		print(fd, "\n		    |  [C] Cleric    [D] Fighter   |");
-		print(fd, "\n		    |  [E] Bard      [F] Mage      |"); 
-		print(fd, "\n		    |  [G] Paladin   [H] Ranger    |");
-		print(fd, "\n		    |  [I] Thief     [J] Monk      |");
-		print(fd, "\n		    |  [K] Druid     [L] Alchemist |");
-		print(fd, "\n		    \\------------------------------/");
-		if(ANSILINE)
-			ask_for(fd, "Choose one: ");
-		else
-			print(fd, "\nChoose one: ");
+		output(fd, "\nAvailable classes:");
+		output(fd, "\n		    /----- AVAILABLE CLASSES ------\\");
+		output(fd, "\n		    |                              |");
+		output(fd, "\n		    |  [A] Assassin  [B] Barbarian |");  
+		output(fd, "\n		    |  [C] Cleric    [D] Fighter   |");
+		output(fd, "\n		    |  [E] Bard      [F] Mage      |"); 
+		output(fd, "\n		    |  [G] Paladin   [H] Ranger    |");
+		output(fd, "\n		    |  [I] Thief     [J] Monk      |");
+		output(fd, "\n		    |  [K] Druid     [L] Alchemist |");
+		output(fd, "\n		    \\------------------------------/");
+		ask_for(fd, "Choose one: ");
 		RETURN(fd, create_ply, 5);
 	case 5:
 		switch(low(str[0])) {
@@ -306,32 +330,24 @@ no_pass:
 			case 'k': Ply[fd].ply->class = DRUID; break;
 			case 'l': Ply[fd].ply->class = ALCHEMIST; break;
 			default: {
-				if(ANSILINE)
-					ask_for(fd, "Choose one: ");
-				else
-					print(fd, "\nChoose one: ");
+				ask_for(fd, "Choose one: ");
 				RETURN(fd, create_ply, 5);
 			}
 		}
 		if(!Ply[fd].ply->class) {
-			print(fd, "Invalid selection: %s", str);
-			if(ANSILINE)
-				ask_for(fd, "Choose one: ");
-			else
-				print(fd, "\nChoose one: ");
+			sprintf(g_buffer, "Invalid selection: %s", str);
+			output(fd, g_buffer);
+			ask_for(fd, "Choose one: ");
 			RETURN(fd, create_ply, 5);
 		}
 
-		print(fd, "\n		 ----- CHARACTER STATS -----");
-		print(fd, "\nYou have 54 points to distribute among your 5 stats. Please enter your 5");
-		print(fd, "\nnumbers in the following order: Strength, Dexterity, Constitution,");
-		print(fd, "\nIntelligence, Piety.  No stat may be smaller than 3 or larger than 18.i");
-		print(fd, "\nUse the following format: ## ## ## ## ##\n\n");
+		output(fd, "\n		 ----- CHARACTER STATS -----");
+		output(fd, "\nYou have 54 points to distribute among your 5 stats. Please enter your 5");
+		output(fd, "\nnumbers in the following order: Strength, Dexterity, Constitution,");
+		output(fd, "\nIntelligence, Piety.  No stat may be smaller than 3 or larger than 18.i");
+		output(fd, "\nUse the following format: ## ## ## ## ##\n\n");
 		
-		if(ANSILINE)
-			ask_for(fd, ": ");
-		else
-			print(fd, ": ");
+		ask_for(fd, ": ");
 		RETURN(fd, create_ply, 6);
 	case 6:
 		n = strlen(str); l = 0; k = 0;
@@ -344,25 +360,28 @@ no_pass:
 			if(k>4) break;
 		}
 		if(k<5) {
-			print(fd, "Please enter all 5 numbers.\n");
-			if(ANSILINE)
-				ask_for(fd, ": ");
-			else
-				print(fd, "\n: ");
+			Ply[fd].extr->loginattempts+=1;
+			if(Ply[fd].extr->loginattempts>5){
+                		disconnect(fd);
+                       	return;
+               		}
+
+			output(fd, "Please enter all 5 numbers.\n");
+			ask_for(fd, ": ");
 			RETURN(fd, create_ply, 6);
 		}
 		sum = 0;
 		for(i=0; i<5; i++) {
 			if(num[i] < 3 || num[i] > 18) {
-				print(fd, "No stats < 3 or > 18 please.\n");
-				print(fd, ": ");
+				output(fd, "No stats < 3 or > 18 please.\n");
+				output(fd, ": ");
 				RETURN(fd, create_ply, 6);
 			}
 			sum += num[i];
 		}
 		if(sum > 54) {
-			print(fd, "Stat total may not exceed 54.\n");
-			print(fd, ": ");
+			output(fd, "Stat total may not exceed 54.\n");
+			output(fd, ": ");
 			RETURN(fd, create_ply, 6);
 		}
 		Ply[fd].ply->strength = num[0];
@@ -370,14 +389,11 @@ no_pass:
 		Ply[fd].ply->constitution = num[2];
 		Ply[fd].ply->intelligence = num[3];
 		Ply[fd].ply->piety = num[4];
-		print(fd, "\n		      ----- WEAPON PROFICIENCIES -----");
-		print(fd, "\nChoose a weapons proficiency:");
-		print(fd, "\n[A] Sharp  [B] Thrusting  [C] Blunt");
-		print(fd, "\n[D] Pole   [E] Missile\n\n");
-		if(ANSILINE)
-			ask_for(fd, ": ");
-		else
-			print(fd, ": ");
+		output(fd, "\n		      ----- WEAPON PROFICIENCIES -----");
+		output(fd, "\nChoose a weapons proficiency:");
+		output(fd, "\n[A] Sharp  [B] Thrusting  [C] Blunt");
+		output(fd, "\n[D] Pole   [E] Missile    [F] Bare Hand\n\n");
+		ask_for(fd, ": ");
 		RETURN(fd, create_ply, 7);
 	case 7:
 		switch(low(str[0])) {
@@ -386,51 +402,59 @@ no_pass:
 			case 'c': Ply[fd].ply->proficiency[2]=1024; break;
 			case 'd': Ply[fd].ply->proficiency[3]=1024; break;
 			case 'e': Ply[fd].ply->proficiency[4]=1024; break;
-			default: print(fd, "        <-- Try again.");
-				if(ANSILINE)
-					ask_for(fd, ": ");
-				else
-					print(fd, "\n: ");
+			case 'f': Ply[fd].ply->proficiency[5]=1024; break;
+			default: output(fd, "        <-- Try again.");
+				ask_for(fd, ": ");
 				RETURN(fd, create_ply, 7);
 		}
-		print(fd, "\n			  ----- ALIGNMENT -----");
-		print(fd, "\nLawful players cannot attack or steal from other players, nor can they\nbe attacked or stolen from by other players.");
-		print(fd, "\nChaotic players may attack or steal from other chaotic players, and they can\nbe attacked or stolen from by other chaotic players.\n\n");
-		if(ANSILINE)
-			ask_for(fd, "Choose an alignment, [C] Chaotic or [L] Lawful: "); 
-		else
-			print(fd, "\nChoose an alignment, [C] Chaotic or [L] Lawful: ");
+		output(fd, "\n                    ----- MAGIC PROFICIENCIES -----");
+		output(fd, "\nChoose a magic proficiency:");
+		output(fd, "\n[A] Earth    [B] Wind     [C] Fire     [D] Water");
+		output(fd, "\n");
+		ask_for(fd, ": ");
 		RETURN(fd, create_ply, 8);
 	case 8:
+		switch(low(str[0])) {
+			case 'a': Ply[fd].ply->realm[0]=2048; break;
+			case 'b': Ply[fd].ply->realm[1]=2048; break;
+			case 'c': Ply[fd].ply->realm[2]=2048; break;
+			case 'd': Ply[fd].ply->realm[3]=2048; break;
+			default: output(fd, "        <-- Try again.");
+				ask_for(fd, ": ");
+				RETURN(fd, create_ply, 8);
+		}
+		output(fd, "\n			  ----- ALIGNMENT -----");
+                output(fd, "\nLawful players cannot attack or steal from other players, nor can they\nbe attacked or stolen from.\n");
+                output(fd, "\nChaotic players may attack or steal from other chaotic players, and they can\nbe attacked or stolen from.\n");
+		output(fd, "\nIf you choose chaos you may be attacked repeatedly, and harassed continuously.\n");
+		output(fd, "\nIt is STRONGLY suggested that you choose to be lawful if this is your first time creating a character.\n");
+		output(fd, "\nAlignment also dictates which guild you may join.\n\n");
+		ask_for(fd, "Choose an alignment, [C] Chaotic or [L] Lawful: "); 
+		RETURN(fd, create_ply, 9);
+	case 9:
 		if(low(str[0]) == 'c')
 			F_SET(Ply[fd].ply, PCHAOS);
 		else if(low(str[0]) == 'l')
 			F_CLR(Ply[fd].ply, PCHAOS);
 		else {
-			if(ANSILINE)
-				ask_for(fd, "[C] Chaotic or [L] Lawful: ");
-			else
-				print(fd, "\n[C] Chaotic or [L] Lawful: ");
-			RETURN(fd, create_ply, 8);
+			ask_for(fd, "[C] Chaotic or [L] Lawful: ");
+			RETURN(fd, create_ply, 9);
 		}
-		print(fd, "\nAvailable races:");
-		print(fd, "\n      /----------------- ELF RACES ----------------\\");
-		print(fd, "\n      |  [A] Elf    [B] Dark-Elf    [C] Half-Elf   |");
-		print(fd, "\n      |----------------- ORC RACES ----------------|");
-		print(fd, "\n      |  [D] Orc    [E] Half-Orc    [F] Goblin     |");
-		print(fd, "\n      |----------------- BIG RACES ----------------|");
-		print(fd, "\n      |  [G] Troll  [H] Ogre        [I] Half-Giant |");
-		print(fd, "\n      |-------------- LITTLE RACES ----------------|");
-		print(fd, "\n      |  [J] Dwarf  [K] Hobbit      [L] Gnome      |");
-		print(fd, "\n      |------------ HUMANOID RACES ----------------|");
-		print(fd, "\n      |  [M] Human                                 |");
-		print(fd, "\n      \\-------------------------------------------/\n\n");
-		if(ANSILINE)
-			ask_for(fd, "Choose one: ");
-		else
-			print(fd, "\nChoose one: ");
-		RETURN(fd, create_ply, 9);
-	case 9:
+		output(fd, "\nAvailable races:");
+		output(fd, "\n      /----------------- ELF RACES ----------------\\");
+		output(fd, "\n      |  [A] Elf    [B] Dark-Elf    [C] Half-Elf   |");
+		output(fd, "\n      |----------------- ORC RACES ----------------|");
+		output(fd, "\n      |  [D] Orc    [E] Half-Orc    [F] Goblin     |");
+		output(fd, "\n      |----------------- BIG RACES ----------------|");
+		output(fd, "\n      |  [G] Troll  [H] Ogre        [I] Half-Giant |");
+		output(fd, "\n      |-------------- LITTLE RACES ----------------|");
+		output(fd, "\n      |  [J] Dwarf  [K] Hobbit      [L] Gnome      |");
+		output(fd, "\n      |------------ HUMANOID RACES ----------------|");
+		output(fd, "\n      |  [M] Human                                 |");
+		output(fd, "\n      \\-------------------------------------------/\n\n");
+		ask_for(fd, "Choose one: ");
+		RETURN(fd, create_ply, 10);
+	case 10:
 		switch(low(str[0])) {
  		case 'a': Ply[fd].ply->race = ELF; break;
  		case 'b': Ply[fd].ply->race = DARKELF; break;
@@ -447,22 +471,20 @@ no_pass:
 		case 'm': Ply[fd].ply->race = HUMAN; break;
 		}
 		if(!Ply[fd].ply->race) {
-			if(ANSILINE)
-				ask_for(fd, "Choose one: ");
-			else
-				print(fd, "\nChoose one: ");
-			RETURN(fd, create_ply, 9);
+			ask_for(fd, "Choose one: ");
+			RETURN(fd, create_ply, 10);
 		}
 
 		switch(Ply[fd].ply->race) {
 		case DARKELF:
 			Ply[fd].ply->intelligence+=1;
-			Ply[fd].ply->constitution+=1;
 			Ply[fd].ply->piety-=2;
+			Ply[fd].ply->dexterity+=1;
 			break;
 		case DWARF: 
 			Ply[fd].ply->strength++; 
-			Ply[fd].ply->piety--; 
+			Ply[fd].ply->piety-=2; 
+			Ply[fd].ply->constitution++;
 			break;
 		case ELF: 
 			Ply[fd].ply->intelligence+=2;
@@ -470,41 +492,44 @@ no_pass:
 			Ply[fd].ply->strength--; 
 			break;
 		case GOBLIN:
-			Ply[fd].ply->intelligence-=2;
-			Ply[fd].ply->constitution++;
-			Ply[fd].ply->strength++;
+			Ply[fd].ply->intelligence--;
+			Ply[fd].ply->dexterity++;
 			break;
 		case GNOME:
-			Ply[fd].ply->piety++;
+			Ply[fd].ply->piety+=2;
 			Ply[fd].ply->strength--;
+			Ply[fd].ply->constitution--;
 			break;
 		case HALFELF: 
 			Ply[fd].ply->intelligence++; 
-			Ply[fd].ply->constitution--; 
+			Ply[fd].ply->strength--; 
 			break;
 		case HALFORC:
-			Ply[fd].ply->constitution--;
+			Ply[fd].ply->strength++; 
+			Ply[fd].ply->piety--;
 			break;			
 		case HOBBIT: 
-			Ply[fd].ply->dexterity++; 
+			Ply[fd].ply->dexterity+=2; 
 			Ply[fd].ply->strength--; 
+			Ply[fd].ply->piety--;
 			break;
 		case HUMAN: 
 			Ply[fd].ply->constitution++; 
 			break;
 		case OGRE:
 			Ply[fd].ply->strength++;
-			Ply[fd].ply->piety--;
+			Ply[fd].ply->intelligence--;
 			break;
 		case ORC: 
 			Ply[fd].ply->strength++; 
-			Ply[fd].ply->constitution++;
-			Ply[fd].ply->dexterity--; 
+			Ply[fd].ply->dexterity++; 
 			Ply[fd].ply->intelligence--;
+			Ply[fd].ply->piety--;
 			break;
 		case TROLL: 
-			Ply[fd].ply->strength++; 
+			Ply[fd].ply->piety--; 
 			Ply[fd].ply->intelligence--;
+			Ply[fd].ply->constitution+=2;
 			break;
 		case HALFGIANT: 
 			Ply[fd].ply->strength+=2; 
@@ -513,26 +538,73 @@ no_pass:
 			break;
 		}
 
-		print(fd, "\nChoose a password (up to 14 chars): ");
-		RETURN(fd, create_ply, 10);
-	case 10:
+		sprintf(g_buffer, "%c%c%cChoose a password (up to 14 chars): ", 255,251,1);
+		output(fd, g_buffer);
+		RETURN(fd, create_ply, 11);
+	case 11:
+		/* check for double login */
+		if ( find_who(Ply[fd].extr->tempstr[0] ) )
+		{
+			char *str_temp = "That character is already playing.\n\r";
+			scwrite(fd, str_temp, strlen(str_temp));
+			disconnect(fd);
+			return;
+		}
+
 		if(strlen(str) > 14) {
-			print(fd, "Too long.\nChoose a password: ");
-			RETURN(fd, create_ply, 10);
+			output(fd, "Too long.\nChoose a password: ");
+			RETURN(fd, create_ply, 11);
 		}
 		if(strlen(str) < 3) {
-			print(fd, "Too short.\nChoose a password: ");
-			RETURN(fd, create_ply, 10);
+			output(fd, "Too short.\nChoose a password: ");
+			RETURN(fd, create_ply, 11);
 		}
+
+		/* un-invis the input */
+		sprintf(g_buffer, "%c%c%c\n", 255,252,1);
+		output(fd, g_buffer);
+
 		strncpy(Ply[fd].ply->password, str, 14);
 		strcpy(Ply[fd].ply->name, Ply[fd].extr->tempstr[0]);
 		up_level(Ply[fd].ply);
 		Ply[fd].ply->fd = fd;
+
 		init_ply(Ply[fd].ply);
-		save_ply(Ply[fd].ply->name, Ply[fd].ply);
-		print(fd, "\n");
+		save_ply(Ply[fd].ply);
+		output(fd, "\n");
 		F_SET(Ply[fd].ply, PNOAAT);
-		print(fd, "Type 'welcome' at prompt to get more info on the game\nand help you get started.\n");
+
+                if(Ply[fd].ply->class > BUILDER) {
+                        for(i=0;i<get_spell_list_size();i++)
+                               S_SET(Ply[fd].ply,i);
+                }
+
+		/* Set-up newbies w/ some basic stuff */
+		Ply[fd].ply->gold = 100;
+		for(obj = 0; obj < 4; obj++) {
+		m=load_obj(init_eq[obj], &obj_ptr);
+		if(m > -1) 
+		    add_obj_crt(obj_ptr, Ply[fd].ply);
+		}
+		
+		for(obj=0;obj<5;obj++) {
+			if(Ply[fd].ply->proficiency[obj] == 1024) {
+				if(load_obj(init_eq[obj+4], &obj_ptr) > -1)
+					add_obj_crt(obj_ptr, Ply[fd].ply);
+			}
+		}
+
+		if(Ply[fd].ply->realm[0] == 2048) 
+			S_SET(Ply[fd].ply, SRUMBL);
+		if(Ply[fd].ply->realm[1] == 2048) 
+			S_SET(Ply[fd].ply, SHURTS);
+		if(Ply[fd].ply->realm[2] == 2048) 
+			S_SET(Ply[fd].ply, SBURNS);
+		if(Ply[fd].ply->realm[3] == 2048) 
+			S_SET(Ply[fd].ply, SBLIST);
+
+		if(MSP) output(fd, "This world supports the Mud Sound Protocol.  Type 'set sound' to enable.\n");
+		output(fd, "Type 'welcome' at prompt to get more info on the game and help you get started.\n\n");
 
 		RETURN(fd, command, 1);
 	}
@@ -546,14 +618,14 @@ no_pass:
 /* appropriate function, depending on what service is requested by the 	*/
 /* player.								*/
 
-void command(fd, param, str)
-int	fd;
-int	param;
-char	*str;
+void command(int fd, int param, char *str )
 {
 	cmd	cmnd;
 	int	n;
 	unsigned char ch;
+
+	/* zero out the command first */
+	memset(&cmnd, 0, sizeof(cmnd));
 
 	/*
 	this logn command will print out all the commands entered by players.
@@ -561,17 +633,21 @@ char	*str;
 	input which may be causing a crash.
 	*/
 	if(RECORD_ALL)
-		logn("all_cmd","\n%s-%d (%d): %s\n",Ply[fd].ply->name,fd,Ply[fd].ply->rom_num,str);  
+	{
+		sprintf(g_buffer, "\n%s-%d (%d): %s",Ply[fd].ply->name,fd,Ply[fd].ply->rom_num,str);  
+		logn("all_cmd", g_buffer);  
+	}
 
 	switch(param) {
 	case 1:
 
 		if(F_ISSET(Ply[fd].ply, PHEXLN)) {
-			for(n=0;n<strlen(str);n++) {
+			for(n=0; n < (int) strlen(str);n++) {
 				ch = str[n];
-				print(fd, "%02X", ch);
+				sprintf(g_buffer, "%02X", ch);
+				output(fd, g_buffer);
 			}
-			print(fd, "\n");
+			output(fd, "\n");
 		}
 
 		if(!strcmp(str, "!"))
@@ -584,7 +660,9 @@ char	*str;
 
 		strncpy(cmnd.fullstr, str, 255);
 		lowercize(str, 0);
-		parse(str, &cmnd); n = 0;
+		parse(str, &cmnd); 
+		
+		n = 0;
 
 		if(cmnd.num)
 			n = process_cmd(fd, &cmnd);
@@ -592,29 +670,13 @@ char	*str;
 			n = PROMPT;
 
 		if(n == DISCONNECT) {
-			#ifdef WIN32
-				scwrite(fd, "Goodbye!\n\r\n\r", 11);
-			#else
-				write(fd, "Goodbye!\n\r\n\r", 11);
-			#endif
-
+			scwrite(fd, "Goodbye!\n\r\n\r", 11);
 			disconnect(fd);
 			return;
 		}
 		else if(n == PROMPT) {
-				ANSI(fd, MAGENTA);
-				if(F_ISSET(Ply[fd].ply, PPROMP))
-					sprintf(str, "(%d H %d M): ",
-						Ply[fd].ply->hpcur, Ply[fd].ply->mpcur);
-				else
-					strcpy(str, ": ");
-				#ifdef WIN32
-					scwrite(fd, str, strlen(str));
-				#else 
-					write(fd, str, strlen(str));
-				#endif /* WIN32 */
-				ANSI(fd, WHITE);
-			}
+			ply_prompt(Ply[fd].ply );
+		}
 
 		if(n != DOPROMPT) {
 			RETURN(fd, command, 1);
@@ -623,6 +685,7 @@ char	*str;
 			return;
 	}
 }
+
 
 /**********************************************************************/
 /*				parse				      */
@@ -633,64 +696,123 @@ char	*str;
 /* resulting words are stored in a command structure pointed to by the */
 /* second argument. 						       */
 
-void parse(str, cmnd)
-char	*str;
-cmd	*cmnd;
+void parse(char	*str, cmd *cmnd )
 {
-	int	i, j, l, m, n, o, art;
-	char	tempstr[25];
+	int	i, j, l, n, o, art;
+	char	token[MAX_TOKEN_SIZE];
+	int		isquote;
 
-	l = m = n = 0;
+	l = n = 0;
 	j = strlen(str);
+	isquote = 0;
 
 	for(i=0; i<=j; i++) {
-		if(str[i] == ' ' || str[i] == '#' || str[i] == 0) {
-			str[i] = 0;	/* tokenize */
 
-			/* Strip extra white-space */
-			while((str[i+1] == ' ' || str[i] == '#') && i < j+1)
-				str[++i] = 0;
+		/* look for first non space or comment  */
+		if (str[i] == ' '  || str[i] == '#' )
+			continue;
 
-			strncpy(tempstr, &str[l], 24); tempstr[24] = 0;
-			l = i+1;
-			if(!strlen(tempstr)) continue;
+		/* ok we at first non space */
+		if ( str[i] == '\"' )
+		{
+			isquote = 1;
+			/* skip quote char */
+			i++;
+		}
+		
+		/* save this position as the begining of a token */
+		l = i;
 
+		/* now find the end of the token */
+		if( isquote )
+		{
+			while ( str[i] != '\0' && str[i] != '\"' )
+			{
+				i++;
+			}
+
+			/* terminate the token */
+			if ( str[i] == '\"' )
+			{
+				str[i] = '\0';
+			}
+		}
+		else
+		{
+			while ( str[i] != '\0' && str[i] != ' ' && str[i] != '#')
+			{
+				i++;
+			}
+
+			/* terminate the token */
+			str[i] = '\0';
+		}
+
+		/* dont overflow the buffers */
+		strncpy(token, &str[l], MAX_TOKEN_SIZE); 
+		token[MAX_TOKEN_SIZE - 1] = 0;
+
+		/* whas there any thing here? */
+		if(!strlen(token)) 
+		{
+			isquote = 0;
+			continue;
+		}
+
+		if ( isquote )
+		{
+			strncpy(cmnd->str[n], token, MAX_TOKEN_SIZE);
+			cmnd->str[n][MAX_TOKEN_SIZE - 1] = '\0';
+			cmnd->val[n] = 1L;
+			isquote = 0;
+			n++;
+		}
+		else
+		{
 			/* Ignore article/useless words */
 			o = art = 0;
 			while(article[o][0] != '@') {
-				if(!strcmp(article[o++], tempstr)) {
+				if(!strcmp(article[o++], token)) {
 					art = 1;
 					break;
 				}
 			}
-			if(art) continue;
+			if(art) 
+				continue;
 
 			/* Copy into command structure */
-			if(n == m) {
-				strncpy(cmnd->str[n++], tempstr, 20);
-				cmnd->val[m] = 1L;
+			if(n == 0) {
+				strncpy(cmnd->str[n], token, MAX_TOKEN_SIZE);
+				cmnd->str[n][MAX_TOKEN_SIZE - 1] = '\0';
+				/* set the value to 1 in case there is non following */
+				cmnd->val[n] = 1L;
+				n++;
 			}
-			else if(isdigit(tempstr[0]) || (tempstr[0] == '-' &&
-				isdigit(tempstr[1]))) {
-				cmnd->val[m++] = atol(tempstr);
+			else if(isdigit((int)token[0]) || (token[0] == '-' &&
+				isdigit((int)token[1]))) {
+				/* this is a value for the previous command */
+				cmnd->val[MAX(0, n - 1)] = atol(token);
 			}
 			else {
-				strncpy(cmnd->str[n++], tempstr, 20);
-				cmnd->val[m++] = 1L;
+				strncpy(cmnd->str[n], token, MAX_TOKEN_SIZE);
+				cmnd->str[n][MAX_TOKEN_SIZE - 1] = '\0';
+				/* set the value to 1 in case there is non following */
+				cmnd->val[n] = 1L;
+				n++;
 			}
-
 		}
-		if(m >= COMMANDMAX) {
-			n = 5;
+
+		if(n >= COMMANDMAX) {
 			break;
 		}
 	}
 
-	if(n > m)
-		cmnd->val[m++] = 1L;
+	/* set the number of tokens in the command struct */
 	cmnd->num = n;
 
+	return;
 }
+
 
 /**********************************************************************/
 /*				process_cmd			      */
@@ -699,9 +821,7 @@ cmd	*cmnd;
 /* This function takes the command structure of the person at the socket */
 /* in the first parameter and interprets the person's command.		 */
 
-int process_cmd(fd, cmnd)
-int	fd;
-cmd	*cmnd;
+int process_cmd(int	fd, cmd	*cmnd )
 {
 	int	match=0, cmdno=0, c=0;
 
@@ -720,13 +840,14 @@ cmd	*cmnd;
 	} while(cmdlist[c].cmdno);
 
 	if(match == 0) {
-		print(fd, "The command \"%s\" does not exist.\n", cmnd->str[0]);
-		RETURN(fd, command, 1);
+		sprintf(g_buffer, "The command \"%s\" does not exist.\n", cmnd->str[0]);
+		output(fd, g_buffer);
+		RETURNV(fd, command, 1, PROMPT);
 	}
 
 	else if(match > 1) {
-		print(fd, "Command is not unique.\n");
-		RETURN(fd, command, 1);
+		output(fd, "Command is not unique.\n");
+		RETURNV(fd, command, 1, PROMPT);
 	}
 
 	if(cmdlist[cmdno].cmdno < 0)
@@ -736,14 +857,13 @@ cmd	*cmnd;
 }
 
 
-int checkdouble(name)
-char *name;
+int checkdouble( char *name )
 {
 	char	path[128], tempname[80];
 	FILE 	*fp;
 	int	rtn=0;
 
-	sprintf(path, "%s/simul/%s", PLAYERPATH, name);
+	sprintf(path, "%s/simul/%s", get_player_path(), name);
 	fp = fopen(path, "r");
 	if(!fp)
 		return(0);
@@ -761,4 +881,94 @@ char *name;
 
 	fclose(fp);
 	return(rtn);
+}
+
+
+/**********************************************************************/
+/*				check_double_login			      */
+/**********************************************************************/
+
+/* This function takes the socket if a player about to connect and */
+/* disconnects all other players with the same name to prevent */
+/* double logins with the same char */
+void check_double_login(int fd)
+{
+	int	i;
+
+	/* check for multiple logins with same char */
+	for(i=0; i<Tablesize; i++)
+	{
+		if(Ply[i].ply && i != fd)
+		{
+			if(!strcmp(Ply[i].ply->name, Ply[fd].ply->name))
+			{
+				scwrite(fd, "No simultaneous playing.\n\r", 26);
+				disconnect(i);
+			}
+		}
+	}
+
+	return;
+}
+
+
+
+/**********************************************************************/
+/*				contains_bad_word		      */
+/**********************************************************************/
+/* This function takes a string and checks against the bad word list  */
+/* to see if it contains any bad words.				      */
+/* Returns 1 (TRUE) if the string contains a bad word, 0 otherwise.   */
+int contains_bad_word(char *str)
+{
+	char		path[256];
+	char		bad_word[80];
+	char		*temp_str;
+	FILE		*fp;
+
+	/* default is OK if no file or bad word not found */
+	int			nReturn = 0;
+
+	sprintf(path, "%s/badwords.txt", get_log_path());
+	fp=fopen(path, "r");
+	if(fp)
+	{
+		/* make a copy of the string and lowercase it */
+		temp_str = malloc( strlen(str) + 1);
+		if ( temp_str)
+		{
+			/* copy it in th temp buffer */
+			strcpy(temp_str, str );
+
+			/* and make it lowercase */
+			lowercize(temp_str, 0);
+
+			while(!feof(fp)) 
+			{
+				fscanf(fp, "%s", bad_word);
+
+				/* make this lower case too */
+				lowercize( bad_word, 0 );
+
+				/* check for the word anywhere in the string */
+				if(strstr(temp_str, bad_word) != NULL) 
+				{
+					/* found one */
+					nReturn = 1;
+					break;
+				}
+			}
+
+			/* now dont forget to clean up */
+			free(temp_str);
+		}
+		else
+		{
+			/* TODO - error message here about out of memory */
+		}
+
+		fclose( fp );
+	}
+
+	return( nReturn );
 }

@@ -1,0 +1,11 @@
+Syntax:
+
+	CAST HURRICANE
+
+Cost: 25
+
+  This wind realm spell summons a hurricane to attack everyone
+nearby who is not grouped with you.
+
+:cast hurricane
+You cast a 24 point hurricane spell on all enemies.

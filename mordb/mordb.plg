@@ -1,0 +1,31 @@
+--------------------Configuration: mordb - Win32 Debug--------------------
+Begining build with project "D:\mordor5\src\mordb\mordb.dsp", at root.
+Active configuration is Win32 (x86) Static Library (based on Win32 (x86) Static Library)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MTd /W3 /GX /Z7 /Od /D "_WINDOWS" /D "COMPRESS" /D "WIN32" /D "_DEBUG" /D "_CRTDBG_MAP_ALLOC" /Fo"Debug/" /Fd"Debug/" /FD /c "
+			"Browser Database Maker" with flags "/nologo /o"Debug/mordb.bsc" "
+			"Library Manager" with flags "/nologo /out:"Debug\mordbd.lib" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "C:\TEMP\RSPC141.TMP" with contents </nologo /MTd /W3 /GX /Z7 /Od /D "_WINDOWS" /D "COMPRESS" /D "WIN32" /D "_DEBUG" /D "_CRTDBG_MAP_ALLOC" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"D:\mordor5\src\mordb\files1.c"
+>
+Creating command line "cl.exe @C:\TEMP\RSPC141.TMP" 
+Creating command line "link.exe -lib /nologo /out:"Debug\mordbd.lib"  .\Debug\access.obj .\Debug\active.obj .\Debug\compress.obj .\Debug\files1.obj .\Debug\files2.obj .\Debug\files3.obj .\Debug\files4.obj \mordor5\src\morutil\Debug\morutild.lib" 
+Compiling...
+files1.c
+Creating library...
+Creating temp file "C:\TEMP\RSPC192.BAT" with contents <@echo off
+copy debug\mordbd.lib ..\lib
+copy mordb.h ..\include
+>
+Creating command line "C:\TEMP\RSPC192.BAT" 
+Copying Externals
+        1 file(s) copied
+        1 file(s) copied
+
+
+
+mordbd.lib - 0 error(s), 0 warning(s)

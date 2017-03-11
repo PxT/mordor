@@ -1,0 +1,35 @@
+--------------------Configuration: plist - Win32 Release--------------------
+Begining build with project "D:\mordor5\src\plist\plist.dsp", at root.
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c "
+			"Win32 Resource Compiler" with flags "/l 0x409 /d "NDEBUG" "
+			"Browser Database Maker" with flags "/nologo /o"Release/plist.bsc" "
+			"COFF Linker for 80x86" with flags "mordb.lib morutil.lib port.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/plist.pdb" /machine:I386 /out:"Release/plist.exe" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "C:\TEMP\RSP43B4.TMP" with contents </nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c 
+"D:\mordor5\src\plist\plist.c"
+>
+Creating command line "cl.exe @C:\TEMP\RSP43B4.TMP" 
+Creating temp file "C:\TEMP\RSP43B5.TMP" with contents <mordb.lib morutil.lib port.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/plist.pdb" /machine:I386 /out:"Release/plist.exe" 
+.\Release\plist.obj
+\mordor5\src\mordb\Release\mordb.lib>
+Creating command line "link.exe @C:\TEMP\RSP43B5.TMP" 
+Compiling...
+plist.c
+Linking...
+LINK : warning LNK4089: all references to "WSOCK32.dll" discarded by /OPT:REF
+Creating temp file "C:\TEMP\RSP50E5.BAT" with contents <@echo off
+xcopy release\plist.exe ..\..\bin
+>
+Creating command line "C:\TEMP\RSP50E5.BAT" 
+Copying Executable
+plist.exe
+        1 File(s) copied
+
+
+
+plist.exe - 0 error(s), 1 warning(s)

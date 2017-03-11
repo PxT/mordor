@@ -3,15 +3,19 @@
  *
  *  Additional user routines dealing with magic spells.  
  *
- *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *  Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: magic2.c,v 6.13 2001/03/08 16:09:09 develop Exp $
+ *
+ * $Log: magic2.c,v $
+ * Revision 6.13  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 /**********************************************************************/
 /*              vigor                     */
 /**********************************************************************/
@@ -21,10 +25,7 @@
 /* intelligence.  If the healer is a cleric then there is an additional */
 /* point of healing for each level of the cleric.           */
 
-int vigor(ply_ptr, cmnd, how)
-creature    *ply_ptr;
-cmd     *cmnd;
-int     how;
+int vigor(creature *ply_ptr, cmd *cmnd, int how )
 {
     creature    *crt_ptr;
     room        *rom_ptr;
@@ -34,12 +35,12 @@ int     how;
     rom_ptr = ply_ptr->parent_rom;
 
     if(ply_ptr->mpcur < 2 && how == CAST) {
-        print(fd, "Not enough magic points.\n");
+        output(fd, "Not enough magic points.\n");
         return(0);
     }
 
     if(!S_ISSET(ply_ptr, SVIGOR) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
     if(ply_ptr->class == BARBARIAN) {
@@ -53,21 +54,18 @@ int     how;
     if(cmnd->num == 2) {
 
         if(how == CAST){
-            heal = MAX(bonus[ply_ptr->intelligence], 
-              bonus[ply_ptr->piety]) + 
-            ((ply_ptr->class == CLERIC) ? ply_ptr->level/2 +
-              mrand(1,1+ply_ptr->level/2) : 0) + 
-            ((ply_ptr->class == PALADIN) ? ply_ptr->level/3 +
-              mrand(1,1+ply_ptr->level/4) : 0) +
-	    ((ply_ptr->class == DRUID) ? ply_ptr->level/4 +
-	      mrand(1,1+ply_ptr->level/4) : 0) +
-	    ((ply_ptr->class == BARD) ? ply_ptr->level/4 +
-              mrand(1,1+ply_ptr->level/5) : 0) +
+            heal = bonus[(int)ply_ptr->piety] + 
+            ((ply_ptr->class == CLERIC) ? ply_ptr->level * 0.8 : 0) +
+            ((ply_ptr->class == PALADIN) ? ply_ptr->level * 0.6: 0) +
+            ((ply_ptr->class == DRUID) ? ply_ptr->level * 0.6: 0) +
+            ((ply_ptr->class == BARD) ? ply_ptr->level * 0.5: 0) +
+            ((ply_ptr->class == MONK) ? ply_ptr->level * 0.4: 0) +
+            ((ply_ptr->class == RANGER) ? ply_ptr->level * 0.3: 0) +
             mrand(1,6);
             ply_ptr->mpcur -= 2;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 		heal += mrand(1,3);
-		print(fd,"The room's magical properties increase the power of your spell.\n");
+		output(fd,"The room's magical properties increase the power of your spell.\n");
 	    }
 	}
         else
@@ -82,15 +80,15 @@ int     how;
 
 
         if(how == CAST || how == SCROLL) {
-            print(fd, "Vigor spell cast.\n");
-            broadcast_rom(fd, ply_ptr->rom_num, 
-                      "%M casts a vigor spell on %sself.", 
-                      ply_ptr,
+            output(fd, "Vigor spell cast.\n");
+            sprintf(g_buffer, "%%M casts a vigor spell on %sself.", 
                       F_ISSET(ply_ptr, PMALES) ? "him":"her");
+            broadcast_rom(fd, ply_ptr->rom_num, 
+				g_buffer, m1arg(ply_ptr));
             return(1);
         }
         else {
-            print(fd, "You feel better.\n");
+            output(fd, "You feel better.\n");
             return(1);
         }
     }
@@ -99,39 +97,32 @@ int     how;
     else {
 
         if(how == POTION) {
-            print(fd, "You can only use a potion on yourself.\n");
+            output(fd, "You can only use a potion on yourself.\n");
             return(0);
         }
 
-        cmnd->str[2][0] = up(cmnd->str[2][0]);
-        crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-                   cmnd->str[2], cmnd->val[2]);
+        crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr,
+                   cmnd->str[2], cmnd->val[2], PLY_FIRST);
 
         if(!crt_ptr) {
-            cmnd->str[2][0] = low(cmnd->str[2][0]);
-            crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
-                       cmnd->str[2], cmnd->val[2]);
-
-            if(!crt_ptr) {
-                print(fd, "That person is not here.\n");
-                return(0);
-            }
+            output(fd, "That person is not here.\n");
+            return(0);
         }
 
         if(how == CAST){
-            heal = MAX(bonus[ply_ptr->intelligence], 
-              bonus[ply_ptr->piety]) + 
-            ((ply_ptr->class == CLERIC) ? ply_ptr->level/2 +
-              mrand(1,1+ply_ptr->level/2) : 0) + 
-            ((ply_ptr->class == PALADIN) ? ply_ptr->level/3 +
-              mrand(1,1+ply_ptr->level/4) : 0) +
-	    ((ply_ptr->class == MONK) ? ply_ptr->level/3 +
-              mrand(1,1+ply_ptr->level/5) : 0) +
+            heal = MAX(bonus[(int)ply_ptr->intelligence], 
+              bonus[(int)ply_ptr->piety]) + 
+            ((ply_ptr->class == CLERIC) ? ply_ptr->level * 0.8 : 0) + 
+            ((ply_ptr->class == PALADIN) ? ply_ptr->level * 0.6: 0) + 
+            ((ply_ptr->class == DRUID) ? ply_ptr->level * 0.6: 0) + 
+            ((ply_ptr->class == BARD) ? ply_ptr->level * 0.5: 0) + 
+            ((ply_ptr->class == MONK) ? ply_ptr->level * 0.4: 0) + 
+            ((ply_ptr->class == RANGER) ? ply_ptr->level * 0.3: 0) + 
             mrand(1,6);
             ply_ptr->mpcur -= 2;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 		heal += mrand(1,3);
-		print(fd,"The room's magical properties increase the power of your spell.\n");
+		output(fd,"The room's magical properties increase the power of your spell.\n");
 	    }
 	}
         else
@@ -139,8 +130,9 @@ int     how;
 
         heal = MAX(1, heal);
 
-	if(NICEEXP) {
-		if(ply_ptr != crt_ptr && crt_ptr->type == PLAYER) {
+	if(GUILDEXP) 
+	{
+		if(ply_ptr != crt_ptr && crt_ptr->type == PLAYER && check_guild(ply_ptr) == 8) {
 			exp=0;
 			if((ply_ptr->class == CLERIC || ply_ptr->class == PALADIN)&& how==CAST) 
 				exp=MAX(1, heal)/4;
@@ -150,22 +142,24 @@ int     how;
 
 			if(exp && (crt_ptr->hpcur < crt_ptr->hpmax)) {
 				ply_ptr->experience+=exp;
-				print(fd, "You gain %d experience for your deed.\n", exp);
+				sprintf(g_buffer, "You guild awards you %d experience for your deed.\n", exp);
+				output(fd, g_buffer);
 			}
 		}
 	}
+	
 	crt_ptr->hpcur += MAX(1, heal);
 
         if(crt_ptr->hpcur > crt_ptr->hpmax)
             crt_ptr->hpcur = crt_ptr->hpmax;
 
         if(how == CAST || how == SCROLL || how == WAND) {
-            print(fd, "Vigor spell cast on %m.\n", crt_ptr);
-            print(crt_ptr->fd, "%M casts a vigor spell on you.\n",
-                  ply_ptr);
+            mprint(fd, "Vigor spell cast on %m.\n", m1arg(crt_ptr));
+            mprint(crt_ptr->fd, "%M casts a vigor spell on you.\n",
+                  m1arg(ply_ptr));
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
                        "%M casts a vigor spell on %m.",
-                       ply_ptr, crt_ptr);
+                       m2args(ply_ptr, crt_ptr));
             return(1);
         }
     }
@@ -182,10 +176,7 @@ int     how;
 /* another player or a monster.  It will remove any poison that is in   */
 /* that player's system.                        */
 
-int curepoison(ply_ptr, cmnd, how)
-creature    *ply_ptr;
-cmd     *cmnd;
-int     how;
+int curepoison(creature *ply_ptr, cmd *cmnd, int how )
 {
     room        *rom_ptr;
     creature    *crt_ptr;
@@ -195,12 +186,12 @@ int     how;
     rom_ptr = ply_ptr->parent_rom;
 
     if(ply_ptr->mpcur < 6 && how == CAST) {
-        print(fd, "Not enough magic points.\n");
+        output(fd, "Not enough magic points.\n");
         return(0);
     }
 
     if(!S_ISSET(ply_ptr, SCUREP) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
     if(spell_fail(ply_ptr, how)) {
@@ -216,17 +207,17 @@ int     how;
             ply_ptr->mpcur -= 6;
 
         if(how == CAST || how == SCROLL || how == WAND)  {
-            print(fd, "Curepoison spell cast on yourself.\n");
-            print(fd, "You feel much better.\n");
-            broadcast_rom(fd, ply_ptr->rom_num, 
-                      "%M casts curepoison on %sself.", 
-                      ply_ptr,
+            output(fd, "Curepoison spell cast on yourself.\n");
+            output(fd, "You feel much better.\n");
+            sprintf(g_buffer, "%%M casts curepoison on %sself.", 
                       F_ISSET(ply_ptr, PMALES) ? "him":"her");
+            broadcast_rom(fd, ply_ptr->rom_num, 
+                      g_buffer, m1arg(ply_ptr));
         }
         else if(how == POTION && F_ISSET(ply_ptr, PPOISN))
-            print(fd, "You feel the poison subside.\n");
+            output(fd, "You feel the poison subside.\n");
         else if(how == POTION)
-            print(fd, "Nothing happens.\n");
+            output(fd, "Nothing happens.\n");
 
         F_CLR(ply_ptr, PPOISN);
 
@@ -236,23 +227,17 @@ int     how;
     else {
 
         if(how == POTION) {
-            print(fd, "You can only use a potion on yourself.\n");
+            output(fd, "You can only use a potion on yourself.\n");
             return(0);
         }
 
-        cmnd->str[2][0] = up(cmnd->str[2][0]);
-        crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-                   cmnd->str[2], cmnd->val[2]);
+        crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr,
+                   cmnd->str[2], cmnd->val[2], PLY_FIRST);
+
 
         if(!crt_ptr) {
-            cmnd->str[2][0] = low(cmnd->str[2][0]);
-            crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
-                       cmnd->str[2], cmnd->str[2]);
-
-            if(!crt_ptr) {
-                print(fd, "That's not here.\n");
-                return(0);
-            }
+            output(fd, "That's not here.\n");
+            return(0);
         }
 
         if(how == CAST) 
@@ -261,11 +246,12 @@ int     how;
         F_CLR(crt_ptr, PPOISN);
 
         if(how == CAST || how == SCROLL || how == WAND) {
-            print(fd, "Curepoison cast on %m.\n", crt_ptr);
+            mprint(fd, "Curepoison cast on %m.\n", m1arg(crt_ptr));
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
                        "%M casts curepoison on %m.",
-                       ply_ptr, crt_ptr);
-            print(crt_ptr->fd, "%M casts curepoison on you.\nYou feel much better.\n", ply_ptr);
+                       m2args(ply_ptr, crt_ptr));
+            mprint(crt_ptr->fd, "%M casts curepoison on you.\nYou feel much better.\n", 
+				m1arg(ply_ptr));
         }
 
     }
@@ -281,37 +267,36 @@ int     how;
 /* This spell allows a player to cast a light spell which will illuminate */
 /* any darkened room for a period of time (depending on level).       */
 
-int light(ply_ptr, cmnd, how)
-creature    *ply_ptr;
-cmd     *cmnd;
-int     how;
+int light(creature *ply_ptr, cmd *cmnd, int how )
 {
     int fd;
 
     fd = ply_ptr->fd;
 
     if(ply_ptr->mpcur < 5 && how == CAST) {
-        print(fd, "Not enough magic points.\n");
+        output(fd, "Not enough magic points.\n");
         return(0);
     }
 
     if(!S_ISSET(ply_ptr, SLIGHT) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
     if(how == CAST){
     	if (F_ISSET(ply_ptr->parent_rom,RPMEXT))
-	print(fd,"The room's magical properties increase the power of your spell.\n");
+	output(fd,"The room's magical properties increase the power of your spell.\n");
         ply_ptr->mpcur -= 5;
     }
 
     F_SET(ply_ptr, PLIGHT);
     ply_ptr->lasttime[LT_LIGHT].ltime = time(0);
-    ply_ptr->lasttime[LT_LIGHT].interval = 300L+ply_ptr->level*300L +
-	(F_ISSET(ply_ptr->parent_rom,RPMEXT)) ? 600L : 0;
+    ply_ptr->lasttime[LT_LIGHT].interval = 300L +
+	bonus[(int)ply_ptr->intelligence]*300L +
+	((F_ISSET(ply_ptr->parent_rom,RPMEXT)) ? 600L : 0);
 
-    print(fd, "You cast a light spell.\n");
-    broadcast_rom(fd, ply_ptr->rom_num, "%M casts a light spell.", ply_ptr);
+    output(fd, "You cast a light spell.\n");
+    broadcast_rom(fd, ply_ptr->rom_num, "%M casts a light spell.", 
+		m1arg(ply_ptr));
 
     return(1);
 
@@ -325,14 +310,11 @@ int     how;
 /* on himself or on another player, improving the armor class by a      */
 /* score of 10.                             */
 
-int protection(ply_ptr, cmnd, how)
-creature    *ply_ptr;
-cmd     *cmnd;
-int     how;
+int protection(creature *ply_ptr, cmd *cmnd, int how )
 {
     creature    *crt_ptr;
     room        *rom_ptr;
-    long        t;
+    time_t        t;
     int     fd;
 
     fd = ply_ptr->fd;
@@ -340,12 +322,12 @@ int     how;
     t = time(0);
 
     if(ply_ptr->mpcur < 10 && how == CAST) {
-        print(fd, "Not enough magic points.\n");
+        output(fd, "Not enough magic points.\n");
         return(0);
     }
 
     if(!S_ISSET(ply_ptr, SPROTE) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
     if(spell_fail(ply_ptr, how) && ply_ptr->class != CLERIC && ply_ptr->class != PALADIN && how != POTION) {
@@ -363,14 +345,14 @@ int     how;
         ply_ptr->lasttime[LT_PROTE].ltime = t;
         if(how == CAST) {
             ply_ptr->lasttime[LT_PROTE].interval = MAX(300, 1200 + 
-                bonus[ply_ptr->intelligence]*600);
+                bonus[(int)ply_ptr->intelligence]*600);
             if(ply_ptr->class == CLERIC || ply_ptr->class == 
                PALADIN)
                 ply_ptr->lasttime[LT_PROTE].interval += 
                 60*ply_ptr->level;
             ply_ptr->mpcur -= 10;
     	if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
-	    print(fd,"The room's magical properties increase the power of your spell.\n");
+	    output(fd,"The room's magical properties increase the power of your spell.\n");
 	    ply_ptr->lasttime[LT_PROTE].interval += 800L;
 	}
         }
@@ -378,14 +360,14 @@ int     how;
             ply_ptr->lasttime[LT_PROTE].interval = 1200;
 
         if(how == CAST || how == SCROLL || how == WAND)  {
-            print(fd,"Protection spell cast.\nYou feel watched.\n");
-            broadcast_rom(fd, ply_ptr->rom_num, 
-                      "%M casts a protection spell on %sself.", 
-                      ply_ptr,
+            output(fd,"Protection spell cast.\nYou feel watched.\n");
+            sprintf(g_buffer, "%%M casts a protection spell on %sself.", 
                       F_ISSET(ply_ptr, PMALES) ? "him":"her");
+            broadcast_rom(fd, ply_ptr->rom_num, 
+                      g_buffer, m1arg(ply_ptr));
         }
         else if(how == POTION)
-            print(fd, "You feel watched.\n");
+            output(fd, "You feel watched.\n");
 
         return(1);
     }
@@ -394,7 +376,7 @@ int     how;
     else {
 
         if(how == POTION) {
-            print(fd, "You can only use a potion on yourself.\n");
+            output(fd, "You can only use a potion on yourself.\n");
             return(0);
         }
 
@@ -403,7 +385,7 @@ int     how;
                    cmnd->str[2], cmnd->val[2]);
 
         if(!crt_ptr) {
-            print(fd, "That player is not here.\n");
+            output(fd, "That player is not here.\n");
             return(0);
         }
 
@@ -413,14 +395,14 @@ int     how;
         crt_ptr->lasttime[LT_PROTE].ltime = t;
         if(how == CAST) {
             crt_ptr->lasttime[LT_PROTE].interval = MAX(300, 1200 + 
-                bonus[ply_ptr->intelligence]*600);
+                bonus[(int)ply_ptr->intelligence]*600);
             if(ply_ptr->class == CLERIC || ply_ptr->class == 
                PALADIN)
                 crt_ptr->lasttime[LT_PROTE].interval += 
                 60*ply_ptr->level;
             ply_ptr->mpcur -= 10;
     	if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
-	    print(fd,"The room's magical properties increase the power of your spell.\n");
+	    output(fd,"The room's magical properties increase the power of your spell.\n");
 	    crt_ptr->lasttime[LT_PROTE].interval += 800L;
 	}
         }
@@ -428,13 +410,14 @@ int     how;
             crt_ptr->lasttime[LT_PROTE].interval = 1200;
 
         if(how == CAST || how == SCROLL || how == WAND) {
-            print(fd, "Protection cast on %s.\n", crt_ptr->name);
-            print(crt_ptr->fd, 
-                  "%M casts a protection spell on you.\n%s",
-                  ply_ptr, "You feel watched.\n");
+            sprintf(g_buffer, "Protection cast on %s.\n", crt_ptr->name);
+            output(fd, g_buffer);
+            mprint(crt_ptr->fd, 
+                  "%M casts a protection spell on you.\nYou feel watched.\n",
+                  m1arg(ply_ptr));
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
                        "%M casts a protection spell on %m.",
-                       ply_ptr, crt_ptr);
+                       m2args(ply_ptr, crt_ptr));
             return(1);
         }
     }
@@ -452,10 +435,7 @@ int     how;
 /* intelligence.  If the healer is a cleric then there is an additional */
 /* point of healing for each level of the cleric.           */
 
-int mend(ply_ptr, cmnd, how)
-creature    *ply_ptr;
-cmd     *cmnd;
-int     how;
+int mend(creature *ply_ptr, cmd *cmnd, int how )
 {
     creature    *crt_ptr;
     room        *rom_ptr;
@@ -465,12 +445,12 @@ int     how;
     rom_ptr = ply_ptr->parent_rom;
 
     if(ply_ptr->mpcur < 4 && how == CAST) {
-        print(fd, "Not enough magic points.\n");
+        output(fd, "Not enough magic points.\n");
         return(0);
     }
 
     if(!S_ISSET(ply_ptr, SMENDW) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
     if(ply_ptr->class == BARBARIAN || ply_ptr->class == FIGHTER || ply_ptr->class == MONK) {
@@ -484,26 +464,22 @@ int     how;
     if(cmnd->num == 2) {
 
         if(how == CAST){
-            heal = MAX(bonus[ply_ptr->intelligence], 
-              bonus[ply_ptr->piety]) + 
-            ((ply_ptr->class == CLERIC) ? ply_ptr->level + 
-              mrand(1, 1+ply_ptr->level/2) : 0) + 
-            ((ply_ptr->class == PALADIN) ? ply_ptr->level/2 +
-              mrand(1, 1+ply_ptr->level/3) : 0) +
-	    ((ply_ptr->class == DRUID) ? ply_ptr->level/3 +
-	      mrand(1, 1+ply_ptr->level/4) : 0) +
-	    ((ply_ptr->class == BARD) ? ply_ptr->level/4 +
-              mrand(1, 1+ply_ptr->level/5) : 0) +
-
-            dice(2,6,0);
+            heal = bonus[(int)ply_ptr->piety] + 
+            ((ply_ptr->class == CLERIC) ? ply_ptr->level * 1.2 : 0) +
+            ((ply_ptr->class == PALADIN) ? ply_ptr->level : 0) +
+            ((ply_ptr->class == DRUID) ? ply_ptr->level : 0) +
+            ((ply_ptr->class == BARD) ? ply_ptr->level * 0.8: 0) +
+            ((ply_ptr->class == MONK) ? ply_ptr->level * 0.6: 0) +
+            ((ply_ptr->class == RANGER) ? ply_ptr->level * 0.5: 0) +
+            dice(4,3,0);
             ply_ptr->mpcur -= 4;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 		heal += mrand(1,6)+1;
-		print(fd,"The room's magical properties increase the power of your spell.\n");
+		output(fd,"The room's magical properties increase the power of your spell.\n");
 	    }
 	}
         else
-            heal = dice(2,6,0);
+            heal = dice(4,3,0);
 
         heal = MAX(1, heal);
 
@@ -514,15 +490,15 @@ int     how;
 
 
         if(how == CAST || how == SCROLL) {
-            print(fd, "Mend-wounds spell cast.\n");
-            broadcast_rom(fd, ply_ptr->rom_num, 
-                      "%M casts a mend-wounds spell on %sself.", 
-                      ply_ptr,
+            output(fd, "Mend-wounds spell cast.\n");
+            sprintf(g_buffer, "%%M casts a mend-wounds spell on %sself.", 
                       F_ISSET(ply_ptr, PMALES) ? "him":"her");
+            broadcast_rom(fd, ply_ptr->rom_num, 
+                      g_buffer, m1arg(ply_ptr));
             return(1);
         }
         else {
-            print(fd, "You feel better.\n");
+            output(fd, "You feel better.\n");
             return(1);
         }
     }
@@ -531,58 +507,56 @@ int     how;
     else {
 
         if(how == POTION) {
-            print(fd, "You can only use a potion on yourself.\n");
+            output(fd, "You can only use a potion on yourself.\n");
             return(0);
         }
 
-        cmnd->str[2][0] = up(cmnd->str[2][0]);
-        crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-                   cmnd->str[2], cmnd->val[2]);
+        crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr,
+                   cmnd->str[2], cmnd->val[2], PLY_FIRST);
 
         if(!crt_ptr) {
-            cmnd->str[2][0] = low(cmnd->str[2][0]);
-            crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
-                       cmnd->str[2], cmnd->val[2]);
-
-            if(!crt_ptr) {
-                print(fd, "That person is not here.\n");
-                return(0);
-            }
+            output(fd, "That person is not here.\n");
+            return(0);
         }
 
         if(how == CAST) {
-            heal = MAX(bonus[ply_ptr->intelligence],
-              bonus[ply_ptr->piety]) + 
-            ((ply_ptr->class == CLERIC) ? ply_ptr->level + 
-              mrand(1, 1+ply_ptr->level/2) : 0) + 
-            ((ply_ptr->class == PALADIN) ? ply_ptr->level/2 +
-              mrand(1, 1+ply_ptr->level/3) : 0) +
-            dice(2,6,0);
+            heal = MAX(bonus[(int)ply_ptr->intelligence],
+              bonus[(int)ply_ptr->piety]) + 
+            ((ply_ptr->class == CLERIC) ? ply_ptr->level * 1.2 : 0) +
+            ((ply_ptr->class == PALADIN) ? ply_ptr->level : 0) +
+            ((ply_ptr->class == DRUID) ? ply_ptr->level : 0) +
+            ((ply_ptr->class == BARD) ? ply_ptr->level * 0.8 : 0) +
+            ((ply_ptr->class == MONK) ? ply_ptr->level * 0.6: 0) +
+            ((ply_ptr->class == RANGER) ? ply_ptr->level * 0.5: 0) +
+            dice(4,3,0);
             ply_ptr->mpcur -= 4;
 	    if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 		heal += mrand(1,6)+1;
-		print(fd,"The room's magical properties increase the power of your spell.\n");
+		output(fd,"The room's magical properties increase the power of your spell.\n");
 	    }
         }
         else
-            heal = dice(2,6,0);
+            heal = dice(4,3,0);
 
         heal = MAX(1, heal);
 
-		if(NICEEXP) {
-			if(ply_ptr != crt_ptr && crt_ptr->type == PLAYER) {
-                exp=0;
-				if((ply_ptr->class == CLERIC || ply_ptr->class == PALADIN)&& how==CAST)
-					exp=MAX(1, heal)/4;
-				else
-					if(how==CAST)
-						exp=MAX(1, heal)/2;
-				if(exp && (crt_ptr->hpcur < crt_ptr->hpmax)) {
-					ply_ptr->experience+=exp;
-					print(fd, "You gain %d experience for your deed.\n", exp);
-				}
-			}
-		}
+        if(GUILDEXP)
+        {
+                if(ply_ptr != crt_ptr && crt_ptr->type == PLAYER && check_guild(ply_ptr) == 8) {
+                        exp=0;
+                        if((ply_ptr->class == CLERIC || ply_ptr->class == PALADIN)&& how==CAST)
+                                exp=MAX(1, heal)/4;
+                        else
+                                if(how==CAST)
+                                        exp=MAX(1, heal)/2;
+    
+                        if(exp && (crt_ptr->hpcur < crt_ptr->hpmax)) {
+                                ply_ptr->experience+=exp;
+                                sprintf(g_buffer, "You guild awards you %d experience for your deed.\n", exp);           
+                                output(fd, g_buffer);
+                        }
+                }
+        }
 
         crt_ptr->hpcur += MAX(1, heal);
 
@@ -590,12 +564,12 @@ int     how;
             crt_ptr->hpcur = crt_ptr->hpmax;
 
         if(how == CAST || how == SCROLL || how == WAND) {
-            print(fd, "Mend-wounds spell cast on %m.\n", crt_ptr);
-            print(crt_ptr->fd, 
-                  "%M casts a mend-wounds spell on you.\n", ply_ptr);
+            mprint(fd, "Mend-wounds spell cast on %m.\n", m1arg(crt_ptr));
+            mprint(crt_ptr->fd, 
+                  "%M casts a mend-wounds spell on you.\n", m1arg(ply_ptr));
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
                        "%M casts a mend-wounds spell on %m.",
-                       ply_ptr, crt_ptr);
+                       m2args(ply_ptr, crt_ptr));
             return(1);
         }
     }

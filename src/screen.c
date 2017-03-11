@@ -2,69 +2,154 @@
  * SCREEN.C:
  *
  *	 Screen handling routines.
+ *	Copyright 1993, 1999 Brooke Paul
  *
+ *
+ * $Id: screen.c,v 6.13 2001/03/08 16:09:09 develop Exp $
+ *
+ * $Log: screen.c,v $
+ * Revision 6.13  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
 
-void setcolor(fd, color)
-short	fd;
-int	color;
+
+void ANSI( int fd, int color )
 {
-	if(fd > -1)
-		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "%c[%dm", 27, color);
+	char	str[25];
+
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: ANSI() called with fd < 0");
+	}
+	else
+	{
+		if( F_ISSET(Ply[fd].ply, PANSIC ) )
+		{
+			sprintf(str, "%c[%dm", 27, color);
+			output(fd, str);
+		}
+	}
+
+	return;
 }
 
-void gotoxy(fd, x, y)
-short	fd;
-int	x;
-int	y;
+
+
+void gotoxy(int fd, int x, int y )
 {
-	if(fd > -1) 
+	char	str[25];
+
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: gotoxy() called with fd < 0");
+	}
+	else
+	{
 		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "%c[%d;%df", 27, x, y);
+		{
+			sprintf(str, "%c[%d;%df", 27, x, y);
+			output(fd, str);
+		}
+	}
 }
 
-void scroll(fd, y1, y2)
-short	fd;
-int	y1;
-int	y2;
+void scroll(int fd, int y1, int y2 )
 {
-	if(fd > -1) 
+	char	str[25];
+
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: scroll() called with fd < 0");
+	}
+	else
+	{
 		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "%c[%d;%dr", 27, y1, y2);
+		{
+			sprintf(str, "%c[%d;%dr", 27, y1, y2);
+			output(fd, str);
+		}
+	}
 }
 
-void delline(fd)
-short	fd;
+void delline(int fd )
 {
-	if(fd > -1)
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: delline() called with fd < 0");
+	}
+	else
+	{
 		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "\033[K");
+			output(fd, "\033[K");
+	}
 }
 
-void clrscr(fd)
-short	fd;
+void clrscr(int fd )
 {
-	if(fd > -1)
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: clrscr() called with fd < 0");
+	}
+	else
+	{
 		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "\033[2J");
+			output(fd, "\033[2J");
+	}
 }
 	 
-void save_cursor(fd)
-short	fd;
+void save_cursor(int fd )
 {
-	if(fd > -1) 
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: save_cursor() called with fd < 0");
+	}
+	else
+	{
 		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "\0337");
+			output(fd, "\0337");
+	}
 }
 
-void load_cursor(fd)
-short	fd;
+void load_cursor( int fd )
 {
-	if(fd > -1) 
+	/* a check for debug version */
+	ASSERTLOG( fd >= 0 );
+
+	/* and some preventative code for the release version */
+	if ( fd < 0  )
+	{
+		elog_broad("Error: load_cursor() called with fd < 0");
+	}
+	else
+	{
 		if(F_ISSET(Ply[fd].ply, PANSIC)) 
-			print(fd, "\0338");
+			output(fd, "\0338");
+	}
 }

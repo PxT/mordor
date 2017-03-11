@@ -8,8 +8,9 @@ Type help *<command> to find the correct syntax and options.
 	*cname			*delete 		*dmhelp
 	*dust			*echo 			*enemy
 	*finger			*flushcrtobj 		*flushrooms
-	*force			*gcast 			*group
-	*info			*invisible 		*list
+	*force			*games			*gcast
+ 	*group			*info			*invisible
+	*jail	 		*list
 	*lock			*log 			*monster
 	*name			*notepad 		*oname
 	*parameter 		*perm 			*prepend
@@ -17,6 +18,6 @@ Type help *<command> to find the correct syntax and options.
 	*rm 			*save 			*send
 	*set 			*shutdown 		*silence
 	*spy 			*status	 		*teleport
-	*users
+	*users			*talk			*possess
 ***********************************************************************
-NOTE:   Eavesdrop function is not a *<command>.  Set the DM's flag #16.
+NOTE:   Eavesdrop function is not a *<command>.  Use: set eavesdropper

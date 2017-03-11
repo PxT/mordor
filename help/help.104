@@ -1,7 +1,8 @@
-Help on:
-        *save [r|o|c] [name] [index]
+Help on DM commmand:
 
-This function allows DMs to save rooms, objects, or creatures
+	*save [r|o|c] [name] [index]
+
+  This function allows DMs to save rooms, objects, or creatures
 to the database.  The name and index are required to save objects and
 creatures.
 

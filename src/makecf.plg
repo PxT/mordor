@@ -1,0 +1,37 @@
+--------------------Configuration: makecf - Win32 Debug--------------------
+Begining build with project "D:\mordor4\mordor\makecf.dsp", at root.
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MLd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /Fp".\Debug/makecf.pch" /YX /Fo".\Debug/" /Fd".\Debug/" /FD /c "
+			"Win32 Resource Compiler" with flags "/l 0x409 /d "_DEBUG" "
+			"Browser Database Maker" with flags "/nologo /o".\Debug/makecf.bsc" "
+			"COFF Linker for 80x86" with flags "kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:".\Debug/makecf.pdb" /debug /machine:I386 /out:".\Debug/makecf.exe" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "C:\TEMP\RSPB2E1.TMP" with contents </nologo /MLd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /Fp".\Debug/makecf.pch" /YX /Fo".\Debug/" /Fd".\Debug/" /FD /c 
+"D:\mordor4\mordor\makecf.c"
+>
+Creating command line "cl.exe @C:\TEMP\RSPB2E1.TMP" 
+Creating temp file "C:\TEMP\RSPB2E2.TMP" with contents <kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:".\Debug/makecf.pdb" /debug /machine:I386 /out:".\Debug/makecf.exe" 
+.\Debug\makecf.obj>
+Creating command line "link.exe @C:\TEMP\RSPB2E2.TMP" 
+Compiling...
+makecf.c
+D:\mordor4\mordor\makecf.c(46) : error C2079: 'buf' uses undefined struct 'utsname'
+D:\mordor4\mordor\makecf.c(57) : error C2065: 'BINPATH' : undeclared identifier
+D:\mordor4\mordor\makecf.c(66) : warning C4013: 'uname' undefined; assuming extern returning int
+D:\mordor4\mordor\makecf.c(67) : error C2224: left of '.nodename' must have struct/union type
+D:\mordor4\mordor\makecf.c(67) : error C2224: left of '.domainname' must have struct/union type
+D:\mordor4\mordor\makecf.c(74) : error C2224: left of '.nodename' must have struct/union type
+D:\mordor4\mordor\makecf.c(74) : error C2224: left of '.domainname' must have struct/union type
+D:\mordor4\mordor\makecf.c(74) : error C2224: left of '.release' must have struct/union type
+D:\mordor4\mordor\makecf.c(75) : error C2224: left of '.version' must have struct/union type
+D:\mordor4\mordor\makecf.c(75) : error C2224: left of '.machine' must have struct/union type
+D:\mordor4\mordor\makecf.c(75) : error C2224: left of '.sysname' must have struct/union type
+Error executing cl.exe.
+
+
+
+makecf.exe - 10 error(s), 1 warning(s)

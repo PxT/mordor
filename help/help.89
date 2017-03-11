@@ -1,0 +1,16 @@
+Help on command:
+
+	Recharge
+
+  This command is only available to experienced Alchemists.  This skill
+allows an alchemist to recharge magical wands.  The Alchemist uses his
+or her own mana points to recharge a wand being held.  Recharge is limited
+by the number of mana points of the Alchemist and a daily limitation.
+
+example:
+
+: hold phil
+You hold a philosopher's stone (M).
+:recharge
+You successfully recharge the philosopher's stone.
+

@@ -1,0 +1,22 @@
+Mordor 6.x Installation Notes for Microsoft Operating System Users
+==================================================================
+
+ NOTE:
+*** This program does not work with 95/BOB/98/NT/2000/ME/XP ***
+
+  If you don't know what a compiler is, have never compiled a program, and
+don't want to learn, give up now.  Mordor will run on Microsoft operating
+systems, but does not come set up to do so by default.  You will need to
+compile a binary for your particular system if you really want to run
+Mordor on your Gates-box.
+
+  You can get a compiler at:
+
+	http://www.cygwin.com/
+
+  Alternatively, you can set up Linux or FreeBSD on your machine and not 
+only run mordor, but greatly improve your system's security, relability, 
+and performance.
+
+  WOOT!!
+

@@ -1,4 +1,0 @@
-
-  message will put up a message on a given port.  Set the PORT and 
-FILENAME parameters in message.c and recompile to choose the port 
-and text file to output upon connection.

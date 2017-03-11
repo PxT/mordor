@@ -3,15 +3,32 @@
  *
  *	Additional spell-casting routines.
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: magic4.c,v 6.17 2001/06/23 06:31:42 develop Exp $
+ *
+ * $Log: magic4.c,v $
+ * Revision 6.17  2001/06/23 06:31:42  develop
+ * tweaked output when conjure involved
+ *
+ * Revision 6.16  2001/06/23 06:19:41  develop
+ * fixed output in summon/teleport/word when conjure is involved
+ *
+ * Revision 6.15  2001/06/23 04:49:12  develop
+ * fixed follow list bug in teleport crt_prt->first_fol
+ * was there instead of ply_pre->first_fol
+ *
+ * Revision 6.14  2001/06/06 19:36:46  develop
+ * conjure added
+ *
+ * Revision 6.13  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 /**********************************************************************/
 /*				detectinvis			      */
 /**********************************************************************/
@@ -19,14 +36,11 @@
 /* This function allows players to cast the detect-invisible spell which */
 /* allows the spell-castee to see invisible items. 			 */
 
-int detectinvis(ply_ptr, cmnd, how)
-creature	*ply_ptr;
-cmd		*cmnd;
-int		how;
+int detectinvis(creature *ply_ptr, cmd *cmnd, int how )
 {
 	creature	*crt_ptr;
 	room		*rom_ptr;
-	long		t;
+	time_t		t;
 	int		fd;
 
 	fd = ply_ptr->fd;
@@ -34,12 +48,12 @@ int		how;
 	t = time(0);
 
 	if(ply_ptr->mpcur < 10 && how == CAST) {
-		print(fd, "Not enough magic points.\n");
+		output(fd, "Not enough magic points.\n");
 		return(0);
 	}
 
 	if(!S_ISSET(ply_ptr, SDINVI) && how == CAST) {
-		print(fd, "You don't know that spell.\n");
+		output(fd, "You don't know that spell.\n");
 		return(0);
 	}
         if(spell_fail(ply_ptr, how)) {
@@ -54,13 +68,13 @@ int		how;
 		ply_ptr->lasttime[LT_DINVI].ltime = t;
 		if(how == CAST) {
 			ply_ptr->lasttime[LT_DINVI].interval = MAX(300, 1200 + 
-				bonus[ply_ptr->intelligence]*600);
+				bonus[(int)ply_ptr->intelligence]*600);
 			if(ply_ptr->class == MAGE)
 				ply_ptr->lasttime[LT_DINVI].interval += 
 				60*ply_ptr->level;
 			ply_ptr->mpcur -= 10;
 if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
-            print(fd,"The room's magical properties increase the power of your spell.\n");
+            output(fd,"The room's magical properties increase the power of your spell.\n");
             ply_ptr->lasttime[LT_DINVI].interval += 600L;
         }                                
 		}
@@ -68,14 +82,14 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 			ply_ptr->lasttime[LT_DINVI].interval = 1200;
 
 		if(how == CAST || how == SCROLL || how == WAND) {
-			print(fd,"Detect-invisible spell cast.\n");
-			broadcast_rom(fd, ply_ptr->rom_num, 
-				      "%M casts detect-invisible on %sself.", 
-				      ply_ptr,
+			output(fd,"Detect-invisible spell cast.\n");
+			sprintf(g_buffer, "%%M casts detect-invisible on %sself.", 
 				      F_ISSET(ply_ptr, PMALES) ? "him":"her");
+			broadcast_rom(fd, ply_ptr->rom_num, 
+				      g_buffer, m1arg(ply_ptr));
 		}
 		else if(how == POTION)
-			print(fd, "Your eyes tingle.\n");
+			output(fd, "Your eyes tingle.\n");
 
 		F_SET(ply_ptr, PDINVI);
 
@@ -86,7 +100,7 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 	else {
 
 		if(how == POTION) {
-			print(fd, "You can only use a potion on yourself.\n");
+			output(fd, "You can only use a potion on yourself.\n");
 			return(0);
 		}
 
@@ -95,20 +109,20 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 				   cmnd->str[2], cmnd->val[2]);
 
 		if(!crt_ptr) {
-			print(fd, "That player is not here.\n");
+			output(fd, "That player is not here.\n");
 			return(0);
 		}
 
 		crt_ptr->lasttime[LT_DINVI].ltime = t;
 		if(how == CAST) {
 			crt_ptr->lasttime[LT_DINVI].interval = MAX(300, 1200 + 
-				bonus[ply_ptr->intelligence]*600);
+				bonus[(int)ply_ptr->intelligence]*600);
 			if(ply_ptr->class == MAGE)
 				crt_ptr->lasttime[LT_DINVI].interval += 
 				60*ply_ptr->level;
 			ply_ptr->mpcur -= 10;
 if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
-            print(fd,"The room's magical properties increase the power of your spell.\n");
+            output(fd,"The room's magical properties increase the power of your spell.\n");
             crt_ptr->lasttime[LT_DINVI].interval += 600L;
         }                                
 		}
@@ -118,13 +132,13 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 		F_SET(crt_ptr, PDINVI);
 
 		if(how == CAST || how == SCROLL || how == WAND) {
-			print(fd, "Detect-invisible cast on %m.\n", crt_ptr);
-			print(crt_ptr->fd, 
+			mprint(fd, "Detect-invisible cast on %m.\n", m1arg(crt_ptr));
+			mprint(crt_ptr->fd, 
 			      "%M casts a detect-invisible spell on you.\n",
-			      ply_ptr);
+			      m1arg(ply_ptr));
 			broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
 				       "%M casts detect-invisible on %m.",
-				       ply_ptr, crt_ptr);
+				       m2args(ply_ptr, crt_ptr));
 			return(1);
 		}
 	}
@@ -140,14 +154,11 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 /* This function allows players to cast the detect-magic spell which */
 /* allows the spell-castee to see magic items. 			     */
 
-int detectmagic(ply_ptr, cmnd, how)
-creature	*ply_ptr;
-cmd		*cmnd;
-int		how;
+int detectmagic(creature *ply_ptr, cmd *cmnd, int how )
 {
 	creature	*crt_ptr;
 	room		*rom_ptr;
-	long		t;
+	time_t		t;
 	int		fd;
 
 	fd = ply_ptr->fd;
@@ -155,12 +166,12 @@ int		how;
 	t = time(0);
 
 	if(ply_ptr->mpcur < 10 && how == CAST) {
-		print(fd, "Not enough magic points.\n");
+		output(fd, "Not enough magic points.\n");
 		return(0);
 	}
 
 	if(!S_ISSET(ply_ptr, SDMAGI) && how == CAST) {
-		print(fd, "You don't know that spell.\n");
+		output(fd, "You don't know that spell.\n");
 		return(0);
 	}
  	if(spell_fail(ply_ptr, how)) {
@@ -175,13 +186,13 @@ int		how;
 		ply_ptr->lasttime[LT_DMAGI].ltime = t;
 		if(how == CAST) {
 			ply_ptr->lasttime[LT_DMAGI].interval = MAX(300, 1200 + 
-				bonus[ply_ptr->intelligence]*600);
+				bonus[(int)ply_ptr->intelligence]*600);
 			if(ply_ptr->class == MAGE)
 				ply_ptr->lasttime[LT_DMAGI].interval += 
 				60*ply_ptr->level;
 			ply_ptr->mpcur -= 10;
 		if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
-            print(fd,"The room's magical properties increase the power of your spell.\n");
+            output(fd,"The room's magical properties increase the power of your spell.\n");
             ply_ptr->lasttime[LT_DMAGI].interval += 600L;
         }                                
 		}
@@ -189,14 +200,14 @@ int		how;
 			ply_ptr->lasttime[LT_DMAGI].interval = 1200;
 
 		if(how == CAST || how == SCROLL || how == WAND) {
-			print(fd,"Detect-magic spell cast.\n");
-			broadcast_rom(fd, ply_ptr->rom_num, 
-				      "%M casts detect-magic on %sself.", 
-				      ply_ptr,
+			output(fd,"Detect-magic spell cast.\n");
+			sprintf(g_buffer, "%%M casts detect-magic on %sself.", 
 				      F_ISSET(ply_ptr, PMALES) ? "him":"her");
+			broadcast_rom(fd, ply_ptr->rom_num, 
+				      g_buffer, m1arg(ply_ptr));
 		}
 		else if(how == POTION)
-			print(fd, "Your eyes feel funny.\n");
+			output(fd, "Your eyes feel funny.\n");
 
 		F_SET(ply_ptr, PDMAGI);
 
@@ -207,7 +218,7 @@ int		how;
 	else {
 
 		if(how == POTION) {
-			print(fd, "You can only use a potion on yourself.\n");
+			output(fd, "You can only use a potion on yourself.\n");
 			return(0);
 		}
 
@@ -216,20 +227,20 @@ int		how;
 				   cmnd->str[2], cmnd->val[2]);
 
 		if(!crt_ptr) {
-			print(fd, "That player is not here.\n");
+			output(fd, "That player is not here.\n");
 			return(0);
 		}
 
 		crt_ptr->lasttime[LT_DMAGI].ltime = t;
 		if(how == CAST) {
 			crt_ptr->lasttime[LT_DMAGI].interval = MAX(300, 1200 + 
-				bonus[ply_ptr->intelligence]*600);
+				bonus[(int)ply_ptr->intelligence]*600);
 			if(ply_ptr->class == MAGE)
 				crt_ptr->lasttime[LT_DMAGI].interval += 
 				60*ply_ptr->level;
 			ply_ptr->mpcur -= 10;
 if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
-            print(fd,"The room's magical properties increase the power of your spell.\n");
+            output(fd,"The room's magical properties increase the power of your spell.\n");
             crt_ptr->lasttime[LT_DMAGI].interval += 600L;
         }                                
 		}
@@ -239,13 +250,13 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 		F_SET(crt_ptr, PDMAGI);
 
 		if(how == CAST || how == SCROLL || how == WAND) {
-			print(fd, "Detect-magic cast on %m.\n", crt_ptr);
-			print(crt_ptr->fd, 
+			mprint(fd, "Detect-magic cast on %m.\n", m1arg(crt_ptr));
+			mprint(crt_ptr->fd, 
 			      "%M casts a detect-magic spell on you.\n",
-			      ply_ptr);
+			      m1arg(ply_ptr));
 			broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
 				       "%M casts detect-magic on %m.",
-				       ply_ptr, crt_ptr);
+				       m2args(ply_ptr, crt_ptr));
 			return(1);
 		}
 	}
@@ -261,36 +272,38 @@ if (F_ISSET(ply_ptr->parent_rom,RPMEXT)){
 /* This function allows a player to teleport himself or another player */
 /* to another room randomly.					       */
 
-int teleport(ply_ptr, cmnd, how)
-creature	*ply_ptr;
-cmd		*cmnd;
-int		how;
+int teleport(creature *ply_ptr, cmd	*cmnd, int how )
 {
 	creature	*crt_ptr;
 	room		*rom_ptr, *new_rom;
 	int		fd, rtn, rom_num;
+	ctag		*cp;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 
 	if(ply_ptr->mpcur < 30 && how == CAST) {
-		print(fd, "Not enough magic points.\n");
+		output(fd, "Not enough magic points.\n");
 		return(0);
 	}
 
 	if(!S_ISSET(ply_ptr, STELEP) && how == CAST) {
-		print(fd, "You don't know that spell.\n");
+		output(fd, "You don't know that spell.\n");
 		return(0);
 	}
 
+/*  I think a no telport room is one you cant teleport into not out of */
+#ifdef CRAP
 	if(F_ISSET(rom_ptr, RNOTEL)) {
-                print(fd, "The spell fizzles.\n");
+                output(fd, "The spell fizzles.\n");
                 if(how == CAST)
                         ply_ptr->mpcur -= 30;
                 return(0);
         }
-	if(!dec_daily(&ply_ptr->daily[DL_TELEP]) && ply_ptr->class < CARETAKER) {
-		print(fd, "You are too weak to teleport again today.\n");
+#endif
+
+	if(!dec_daily(&ply_ptr->daily[DL_TELEP]) && ply_ptr->class < BUILDER) {
+		output(fd, "You are too weak to teleport again today.\n");
 		return(0);
 	}
 	if(spell_fail(ply_ptr, how)) {
@@ -306,11 +319,11 @@ int		how;
 			ply_ptr->mpcur -= 30;
 
 		broadcast_rom(fd, ply_ptr->rom_num, 
-			      "%M disappears.", ply_ptr);
+			      "%M disappears.", m1arg(ply_ptr));
 		if(how == CAST || how == SCROLL)
-			print(fd, "Teleport spell cast.\n");
+			output(fd, "Teleport spell cast.\n");
 		else
-			print(fd, "You become disoriented and find yourself in another place.\n");
+			output(fd, "You become disoriented and find yourself in another place.\n");
 
 		do {
 			rom_num = mrand(1, RMAX-1);
@@ -324,8 +337,20 @@ int		how;
 				rtn = -1;
 		} while(rtn < 0);
 
+	        cp = ply_ptr->first_fol;
+       		while(cp) {
+                  if(cp->crt->type == MONSTER && F_ISSET(cp->crt, MCONJU)) {
+                         broadcast_rom(fd, cp->crt->parent_rom->rom_num,
+                                "%M fades away.", m1arg(cp->crt));
+                        del_conjured(cp->crt);
+                        del_crt_rom(cp->crt,cp->crt->parent_rom);
+                        free_crt(cp->crt);
+                  }
+        	cp = cp->next_tag;
+        	}
+
 		del_ply_rom(ply_ptr, rom_ptr);
-		add_ply_rom(ply_ptr, new_rom);
+                add_ply_rom(ply_ptr, new_rom);
 
 		return(1);
 	}
@@ -334,7 +359,7 @@ int		how;
 	else {
 
 		if(how == POTION) {
-			print(fd, "You can only use a potion on yourself.\n");
+			output(fd, "You can only use a potion on yourself.\n");
 			return(0);
 		}
 
@@ -343,23 +368,31 @@ int		how;
 				   cmnd->str[2], cmnd->val[2]);
 
 		if(!crt_ptr) {
-			print(fd, "That player is not here.\n");
+			output(fd, "That player is not here.\n");
 			return(0);
 		}
 		
-		if(ply_ptr->level < 13) {
-	               print(fd, "The spell fizzles.\n");
-        	         if(how == CAST)
-                	         ply_ptr->mpcur -= 30;
-			return(0);	
-		}
-		
-		if(F_ISSET(crt_ptr, PRMAGI) && (mrand(1,60)+(ply_ptr->level-crt_ptr->level)*10) > 80) {
-			print(fd, "Your magic is too weak to teleport %m.\n", crt_ptr);
-			print(crt_ptr->fd, "%M tried to cast teleport on you.\n", ply_ptr);
-				if(how == CAST)
-				ply_ptr->mpcur -= 30;
-			return(0);
+		if( ply_ptr->class < DM )
+		{
+			/* only a non DM can fail */
+			if(ply_ptr->level < 13 ) 
+			{
+				output(fd, "The spell fizzles.\n");
+        		if(how == CAST)
+					ply_ptr->mpcur -= 30;
+				return(0);	
+			}
+			
+
+			if(F_ISSET(crt_ptr, PRMAGI) && (mrand(1,60)+(ply_ptr->level-crt_ptr->level)*10) > 80) {
+				mprint(fd, "Your magic is too weak to teleport %m.\n", 
+					m1arg(crt_ptr));
+				mprint(crt_ptr->fd, "%M tried to cast teleport on you.\n", 
+					m1arg(ply_ptr));
+					if(how == CAST)
+						ply_ptr->mpcur -= 30;
+				return(0);
+			}
 		}
 
 		
@@ -368,13 +401,13 @@ int		how;
 			ply_ptr->mpcur -= 30;
 	
 		if(how == CAST || how == SCROLL || how == WAND) {
-			print(fd, "Teleport cast on %m.\n", crt_ptr);
-			print(crt_ptr->fd, 
+			mprint(fd, "Teleport cast on %m.\n", m1arg(crt_ptr));
+			mprint(crt_ptr->fd, 
 			      "%M casts a teleport spell on you.\n",
-			      ply_ptr);
+			      m1arg(ply_ptr));
 			broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
 				       "%M casts teleport on %m.",
-				       ply_ptr, crt_ptr);
+				       m2args(ply_ptr, crt_ptr));
 
 			do {
 				rom_num = mrand(1, RMAX-1);
@@ -390,8 +423,22 @@ int		how;
 					rtn = -1;
 			} while(rtn < 0);
 
-			del_ply_rom(crt_ptr, rom_ptr);
-			add_ply_rom(crt_ptr, new_rom);
+
+	cp = crt_ptr->first_fol;
+	while(cp) {
+        	if(cp->crt->type == MONSTER && F_ISSET(cp->crt, MCONJU)) {
+               		broadcast_rom(fd, cp->crt->parent_rom->rom_num, 
+				"%M fades away.", m1arg(cp->crt));
+                	del_conjured(cp->crt);
+                	del_crt_rom(cp->crt,cp->crt->parent_rom);
+                	free_crt(cp->crt);
+        	}
+	cp = cp->next_tag;
+	}
+
+		del_ply_rom(crt_ptr, rom_ptr);
+                add_ply_rom(crt_ptr, new_rom);
+
 
 			return(1);
 		}
@@ -408,10 +455,7 @@ int		how;
 /* This function allows mages to enchant weapons at a cost of 25 magic */
 /* points.  They can only do it 3 times a day.			       */
 
-int enchant(ply_ptr, cmnd, how)
-creature	*ply_ptr;
-cmd		*cmnd;
-int		how;
+int enchant(creature *ply_ptr, cmd *cmnd, int how )
 {
 	object		*obj_ptr;
 	room		*rom_ptr;
@@ -421,23 +465,23 @@ int		how;
 	rom_ptr = ply_ptr->parent_rom;
 
 	if(how == CAST && ply_ptr->class != MAGE && 
-	   ply_ptr->class < CARETAKER) {
-		print(fd, "Only mages may enchant.\n");
+	   ply_ptr->class < BUILDER) {
+		output(fd, "Only mages may enchant.\n");
 		return(0);
 	}
 
 	if(ply_ptr->mpcur < 25 && how == CAST) {
-		print(fd, "Not enough magic points.\n");
+		output(fd, "Not enough magic points.\n");
 		return(0);
 	}
 
 	if(!S_ISSET(ply_ptr, SENCHA) && how == CAST) {
-		print(fd, "You don't know that spell.\n");
+		output(fd, "You don't know that spell.\n");
 		return(0);
 	}
 
 	if(cmnd->num < 3) {
-		print(fd, "Cast the spell on what?\n");
+		output(fd, "Cast the spell on what?\n");
 		return(0);
 	}
 
@@ -445,25 +489,25 @@ int		how;
 			   cmnd->str[2], cmnd->val[2]);
 
 	if(!obj_ptr) {
-		print(fd, "You don't have that in your inventory.\n");
+		output(fd, "You don't have that in your inventory.\n");
 		return(0);
 	}
 
 	if(F_ISSET(obj_ptr, OENCHA)) {
-		print(fd, "That object is already enchanted.\n");
+		output(fd, "That object is already enchanted.\n");
 		return(1);
 	}
 
 	if(how == CAST) {
 		if(!dec_daily(&ply_ptr->daily[DL_ENCHA]) && 
-		   ply_ptr->class < CARETAKER) {
-			print(fd, "You have enchanted enough today.\n");
+		   ply_ptr->class < BUILDER) {
+			output(fd, "You have enchanted enough today.\n");
 			return(0);
 		}
 		ply_ptr->mpcur -= 25;
 	}
 
-	if((ply_ptr->class == MAGE || ply_ptr->class >= CARETAKER) &&
+	if((ply_ptr->class == MAGE || ply_ptr->class >= BUILDER) &&
 	   how == CAST) {
 		adj = (ply_ptr->level-5)/5 + 1;
 		adj = MIN(3, adj);
@@ -486,9 +530,10 @@ int		how;
 
 	F_SET(obj_ptr, OENCHA);
 
-	print(fd, "%I begins to glow brightly.\n", obj_ptr);
-	broadcast_rom(fd, rom_ptr->rom_num, "%M enchants %1i.", ply_ptr,
-		      obj_ptr);
+	mprint(fd, "%I begins to glow brightly.\n", m1arg(obj_ptr));
+	broadcast_rom(fd, rom_ptr->rom_num, "%M enchants %1i.", 
+		m2args(ply_ptr, obj_ptr));
 
 	return(1);
 }
+

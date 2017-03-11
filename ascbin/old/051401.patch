@@ -1,0 +1,73 @@
+--- old/ascii1.c	Sat Apr 28 21:55:25 2001
++++ ascii1.c	Mon May 14 11:27:11 2001
+@@ -621,8 +621,6 @@
+ 	
+ 	perm_only = 0;
+ 
+-/* begin of complete object data */
+-	fprintf(fp, "#begOBJ\n");
+ 	
+ /* basic object format (excluding pointers) */
+ 	write_object_basic(fp, -1, obj);
+@@ -641,7 +639,6 @@
+ 	}
+ 	
+ /* end of complete object */ 
+-	fprintf(fp, "#endOBJ\n");
+ 
+ 	return(0);
+ }
+@@ -654,8 +651,6 @@
+ 	
+ 	perm_only = 0;
+ 
+-/* begin of complete creature data */
+-	fprintf(fp, "#begCRT\n");
+ 	
+ /* basic creature format (excluding pointers) */
+ 	write_creature_basic(fp, -1, crt);
+@@ -674,7 +669,6 @@
+ 	}
+ 	
+ /* end of complete creature */ 
+-	fprintf(fp, "#endCRT\n");
+ 
+ 	return(0);
+ 
+@@ -891,6 +885,8 @@
+ 	read_char(fp, &rom->zone_type);
+ 	read_char(fp, &rom->zone_subtype);
+ 	read_char(fp, &rom->env_type);
++	read_short(fp,&rom->special1);
++	read_long(fp,&rom->special2);
+ 
+ /* end basic structure */
+ 
+@@ -1069,7 +1065,7 @@
+ 	char		str[10];
+ 
+ 	fscanf(fp, "%s", str); 
+-	if (strcmp(str, "#begOBJ"))
++	if (strcmp(str, "#begobj"))
+ 		return(1);
+ 
+         read_object_basic(fp, &temp, obj);
+@@ -1134,7 +1130,7 @@
+ 	char		str[10];
+ 
+ 	fscanf(fp, "%s", str);
+-	if (strcmp(str, "#begCRT"))
++	if (strcmp(str, "#begcrt"))
+ 		return(1);
+ 
+         read_creature_basic(fp, &temp, crt);
+@@ -1245,9 +1241,6 @@
+ 	char	str[10];
+ 	
+ /* begin of creature data */
+-	fscanf(fp, "%s", str); 
+-	if (strcmp(str, "#begcrt"))
+-		return(1);
+ 
+ 	read_int(fp, index);  /* creature # */
+ 	

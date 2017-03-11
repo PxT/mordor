@@ -1,0 +1,19 @@
+
+  Plist: Player lister for Mordor MUDs (http://mordor.nazgul.com).
+ Works much like list does for monsters, rooms, and objects.
+
+  Plist is used to examine player files associated with Mordor MUDS.
+Options to date are:
+
+plist [[-pni] [-l #] [-s #]] <players>
+
+-p  Include password in output
+-n  Name only....good for piping to other stuff for actions on player files
+-i  Show inventory
+
+-l  Sort by level
+-s  Sory by spell number
+
+<players> is optional.  Default is all players.
+
+

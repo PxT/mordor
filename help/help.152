@@ -1,0 +1,37 @@
+Help on DM command:
+
+	*talk [i|k|r|l|s|d]
+
+  This function allows a DM or CT to create interactive talk files for
+monsters online.
+Arguments:  i = initialize.  Use this to start (or restart) a talk.
+	    k = key.  Follow this argument with your key, and optional
+		action.  Which should be in the form: ACTION <action>
+		ex: *talk k pez ACTION drool
+	    r = response. Follow this with a '+' or '-' and the talk response.   
+		A '+' will append to the end of the response WITH NO EXTRA
+		SPACES.  When using the '-' case, do not put a space
+		between the '-' and your reponse.  When using the '+'
+		case, the space is optional.  (Check it with *talk l)
+	    l = list.  Lists the key and response stored so far.
+	    s = save.  Saves the talk string to the monster specified.
+		It may be necessary to *reload after saving.
+	    d = delete.  Deletes the specified monster's tlak file 
+		completely.  USE WITH CAUTION!
+
+example:
+:*talk i
+Talk ready for input.
+:*talk k druid
+Keyword set.
+:*talk r -The druids are powerful beings.
+Response added.
+:*talk l
+Keyword: druid
+Response: The druids are powerful beings.
+:*talk s initiate
+Talk saved.
+:*talk d initiate
+File deleted.
+
+

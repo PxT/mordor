@@ -1,0 +1,20 @@
+Syntax:
+
+	CAST CONJURE <creature>
+
+Cost: variable
+
+  This spell conjures a spirit, alchemical, or mythological creature
+that will fight the target.  Conjure may only be cast by mage-type 
+classes who have learned the spell, or have obtained an item that 
+casts the spell.  There is always a chance that the conjured
+creature will be aggressive or attack the conjurer for summoning it.
+
+Example:
+: c conjure Kralle
+You summon a foul shade.
+The foul shade attacks Kralle.
+
+Conjure may be used by Chaotics to player kill.  It cannot be cast
+on lawful characters.  Death to conjured creatures results in experience
+and profficiency loss.

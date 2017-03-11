@@ -1,0 +1,9 @@
+Syntax:
+
+	CAST DRAIN <creature>
+
+Cost: 12
+
+  This spell drains resistive magic points from a creature.  There is 
+always a chance that the spell may not succeed.  There is also a chance
+that the caster may recover magic points from their victim.

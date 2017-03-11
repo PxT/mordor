@@ -3,11 +3,46 @@
  *
  *	Addition user command routines.
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul 
+ *
+ * $Id: command2.c,v 6.22 2001/07/29 16:54:38 develop Exp $
+ *
+ * $Log: command2.c,v $
+ * Revision 6.22  2001/07/29 16:54:38  develop
+ * upped price on shops to 1mil
+ *
+ * Revision 6.23  2001/07/29 16:41:37  develop
+ * added price to logging of sales
+ *
+ * Revision 6.22  2001/07/29 16:35:40  develop
+ * logging added to actions related to player shops
+ *
+ * Revision 6.21  2001/07/25 23:10:52  develop
+ * OTHEFT infects containers
+ *
+ * Revision 6.20  2001/07/25 02:55:04  develop
+ * fixes for thieves dropping stolen items
+ * fixes for gold dropping by pkills
+ *
+ * Revision 6.20  2001/07/24 01:36:23  develop
+ * *** empty log message ***
+ *
+ * Revision 6.19  2001/07/17 19:25:11  develop
+ * *** empty log message ***
+ *
+ * Revision 6.18  2001/04/17 18:56:35  develop
+ * *** empty log message ***
+ *
+ * Revision 6.17  2001/03/09 05:14:07  develop
+ * changes to weight checking
+ *
+ * Revision 6.16  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
+#include "../include/version.h"
 #include "mextern.h"
 
 /**********************************************************************/
@@ -17,9 +52,7 @@
 /* This function is called when a player tries to look at the room he */
 /* is in, or at an object in the room or in his inventory.            */
 
-int look(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int look(creature *ply_ptr, cmd	*cmnd )
 {
 	room		*rom_ptr;
 	object		*obj_ptr;
@@ -34,11 +67,11 @@ cmd		*cmnd;
 
 	fd = ply_ptr->fd;
 	if(F_ISSET(ply_ptr, PBLIND)) {
-		ANSI(fd, BOLD);
-		ANSI(fd, RED);
-		print(fd, "You're blind!\n");
-		ANSI(fd, WHITE);
-		ANSI(fd, NORMAL);
+		ANSI(fd, AM_BOLD);
+		ANSI(fd, BLINDCOLOR);
+		output(fd, "You're blind!\n");
+		ANSI(fd, MAINTEXTCOLOR);
+		ANSI(fd, AM_NORMAL);
 		return(0);
 	}
 	rom_ptr = ply_ptr->parent_rom;
@@ -72,121 +105,244 @@ cmd		*cmnd;
 		}
 
 		if(obj_ptr->description[0])
-			print(fd, "%s\n", obj_ptr->description);
+		{
+			sprintf(g_buffer, "%s\n", obj_ptr->description);
+			output(fd, g_buffer);
+		}
 		else
-			print(fd, "You see nothing special about it.\n");
+			output(fd, "You see nothing special about it.\n");
+
+		if(obj_ptr->type <= ARMOR)
+		{
+			sprintf(g_buffer, "%s", obj_condition(obj_ptr));
+                        output(fd, g_buffer);
+		}
 
 		if(F_ISSET(ply_ptr, PKNOWA)) {
 			if(F_ISSET(obj_ptr, OGOODO))
-				print(fd, "It has a blue aura.\n");
+				output(fd, "It has a blue aura.\n");
 			if(F_ISSET(obj_ptr, OEVILO))
-				print(fd, "It has a red aura.\n");
+				output(fd, "It has a red aura.\n");
 		}
 
 		if(F_ISSET(obj_ptr, OCONTN)) {
 			strcpy(str, "It contains: ");
 			n = list_obj(&str[13], ply_ptr, obj_ptr->first_obj);
 			if(n)
-				print(fd, "%s.\n", str);
+			{
+				strcat( str, ".\n");
+				output(fd, str);
+			}
 		}
 
 		if(obj_ptr->type <= MISSILE) {
-			print(fd, "%I is a ", obj_ptr);
+			mprint(fd, "%I is a ", m1arg(obj_ptr));
 			switch(obj_ptr->type) {
-			case SHARP: print(fd, "sharp"); break;
-			case THRUST: print(fd, "thrusting"); break;
-			case POLE: print(fd, "pole"); break;
-			case BLUNT: print(fd, "blunt"); break;
-			case MISSILE: print(fd, "missile"); break;
+			case SHARP: output(fd, "sharp"); break;
+			case THRUST: output(fd, "thrusting"); break;
+			case POLE: output(fd, "pole"); break;
+			case BLUNT: output(fd, "blunt"); break;
+			case MISSILE: output(fd, "missile"); break;
 			}
-			print(fd, " weapon.\n");
+			output(fd, " weapon.\n");
 		}
 
+		if((F_ISSET(obj_ptr, ODRUDT)  && obj_ptr->shotscur < 0) || (F_ISSET(obj_ptr, OALCHT)  && obj_ptr->shotscur < 0)) {
+		   output(fd, "It looks to be a workable object.\n");
+		   return(0);
+		}
+		   
 		if(obj_ptr->type <= MISSILE || obj_ptr->type == ARMOR ||
 		   obj_ptr->type == LIGHTSOURCE || obj_ptr->type == WAND ||
 		   obj_ptr->type == KEY) { 
+			
+		//  This if added with condition descriptions to show when keys/wands
+		//  are broken
+
+		    if(obj_ptr->type == KEY || obj_ptr->type == WAND)
+		    {
 			if(obj_ptr->shotscur < 1)
-				print(fd, "It's broken or used up.\n");
+				output(fd, "It's broken or used up.\n");
 			else if(obj_ptr->shotscur <= obj_ptr->shotsmax/10)
-				print(fd, "It looks about ready to break.\n");
-
-			if(F_ISSET(obj_ptr, OTMPEN) &&(ply_ptr->class == ALCHEMIST || ply_ptr->class ==MAGE && F_ISSET(ply_ptr, PDMAGI) || ply_ptr->class >= CARETAKER)) 
-				print(fd, "It is weakly enchanted.\n");
+				output(fd, "It looks about ready to break.\n");
+		    }
+			if(F_ISSET(obj_ptr, OTMPEN) &&(ply_ptr->class == ALCHEMIST || (ply_ptr->class ==MAGE && F_ISSET(ply_ptr, PDMAGI)) || ply_ptr->class >= BUILDER)) 
+				output(fd, "It is weakly enchanted.\n");
 		}
 
 		return(0);
 	}
 
-	crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon, cmnd->str[1],
-			   cmnd->val[1]);
-	if(crt_ptr) {
+	crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr, cmnd->str[1],
+			   cmnd->val[1], MON_FIRST);
 
-		print(fd, "You see %1m.\n", crt_ptr);
-		if(crt_ptr->description[0])
-			print(fd, "%s\n", crt_ptr->description);
-		else
-			print(fd, "There is nothing special about it.\n");
-		if(F_ISSET(ply_ptr, PKNOWA)) {
-			print(fd, "%s ",
-				F_ISSET(crt_ptr, MMALES) ? "He":"She");
-			if(crt_ptr->alignment < 0)
-				print(fd, "has a red aura.\n");
-			else if(crt_ptr->alignment == 0)
-				print(fd, "has a grey aura.\n");
-			else print(fd, "has a blue aura.\n");
-		}
-		if(crt_ptr->hpcur < (crt_ptr->hpmax*3)/10)
-			print(fd, "%s has some nasty wounds.\n",
-			      F_ISSET(crt_ptr, MMALES) ? "He":"She");
-		if(is_enm_crt(ply_ptr->name, crt_ptr)) 
-			print(fd, "%s looks very angry at you.\n",
-			      F_ISSET(crt_ptr, MMALES) ? "He":"She");
-		if(crt_ptr->first_enm) {
-			if(!strcmp(crt_ptr->first_enm->enemy, ply_ptr->name))
-				print(fd, "%s is attacking you.\n",
-				      F_ISSET(crt_ptr, MMALES) ? "He":"She");
+	if(crt_ptr)
+	{
+		if ( crt_ptr->type == MONSTER) {
+
+			mprint(fd, "You see %1m.\n", m1arg(crt_ptr));
+			if(crt_ptr->description[0])
+			{
+				output_nl(fd, crt_ptr->description );
+			}
 			else
-				print(fd, "%s is attacking %s.\n",
-				      F_ISSET(crt_ptr, MMALES) ? "He":"She",
-				      crt_ptr->first_enm->enemy);
+				output(fd, "There is nothing special about it.\n");
+			
+			sprintf(g_buffer,"%s%s", F_ISSET(crt_ptr, MMALES) ? "He":"She", 
+				crt_condition(crt_ptr));
+			output(fd, g_buffer);
+
+			if(F_ISSET(ply_ptr, PKNOWA)) {
+				sprintf(g_buffer, "%s ",
+					F_ISSET(crt_ptr, MMALES) ? "He":"She");
+				output(fd, g_buffer);
+
+				if(crt_ptr->alignment < 0)
+					output(fd, "has a red aura.\n");
+				else if(crt_ptr->alignment == 0)
+					output(fd, "has a grey aura.\n");
+				else output(fd, "has a blue aura.\n");
+			}
+	
+	/*		if(crt_ptr->hpcur < (crt_ptr->hpmax*3)/10)
+			{
+				sprintf(g_buffer, "%s has some nasty wounds.\n",
+					  F_ISSET(crt_ptr, MMALES) ? "He":"She");
+				output(fd, g_buffer);
+			}   */
+			
+			if(is_enm_crt(ply_ptr->name, crt_ptr)) 
+			{
+				sprintf(g_buffer, "%s looks very angry at you.\n",
+					  F_ISSET(crt_ptr, MMALES) ? "He":"She");
+				output(fd, g_buffer);
+			}
+			if(crt_ptr->first_enm) {
+				if(!strcmp(crt_ptr->first_enm->enemy, ply_ptr->name))
+				{
+					sprintf(g_buffer, "%s is attacking you.\n",
+						  F_ISSET(crt_ptr, MMALES) ? "He":"She");
+					output(fd, g_buffer);
+				}
+				else
+				{
+					sprintf(g_buffer, "%s is attacking %s.\n",
+						  F_ISSET(crt_ptr, MMALES) ? "He":"She",
+						  crt_ptr->first_enm->enemy);
+					output(fd, g_buffer);
+				}
+			}
+			consider(ply_ptr, crt_ptr);
+			equip_list(fd, crt_ptr);
+			return(0);
 		}
-		consider(ply_ptr, crt_ptr);
-		equip_list(fd, crt_ptr);
-		return(0);
-	}
-
-	cmnd->str[1][0] = up(cmnd->str[1][0]);
-	crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply, cmnd->str[1],
-			   cmnd->val[1]);
-
-	if(crt_ptr) {
-		print(fd, "You see %s the %s %s.\n", crt_ptr->name,
-		      race_adj[crt_ptr->race], title_ply(crt_ptr));
-		if(crt_ptr->description[0])
-			print(fd, "%s\n", crt_ptr->description);
-		if(F_ISSET(ply_ptr, PKNOWA)) {
-			print(fd, "%s ",
-				F_ISSET(crt_ptr, MMALES) ? "He":"She");
-			if(crt_ptr->alignment < -100)
-				print(fd, "has a red aura.\n");
-			else if(crt_ptr->alignment < 101)
-				print(fd, "has a grey aura.\n");
-			else print(fd, "has a blue aura.\n");
+		else
+		{
+			sprintf(g_buffer, "You see %s the %s %s.\n", crt_ptr->name,
+				  get_race_adjective(crt_ptr->race), title_ply(crt_ptr));
+			output(fd, g_buffer);
+			if(crt_ptr->description[0])
+			{
+				output_nl(fd, crt_ptr->description);
+			}
+			
+			if(crt_ptr->class < IMMORTAL) {
+			   sprintf(g_buffer,"%s%s", F_ISSET(crt_ptr, MMALES) ? "He":"She",
+                                crt_condition(crt_ptr));
+                           output(fd, g_buffer);
+			}
+			
+			if(F_ISSET(ply_ptr, PKNOWA) && crt_ptr->class < IMMORTAL) {
+				sprintf(g_buffer, "%s ",
+					F_ISSET(crt_ptr, MMALES) ? "He":"She");
+				output(fd, g_buffer);
+				if(crt_ptr->alignment < -100)
+					output(fd, "has a red aura.\n");
+				else if(crt_ptr->alignment < 101)
+					output(fd, "has a grey aura.\n");
+				else 
+					output(fd, "has a blue aura.\n");
+			}
+		
+		// removed with the addition of condition descriptions AK
+		/*	if(crt_ptr->hpcur < (crt_ptr->hpmax*3)/10)
+			{
+				sprintf(g_buffer, "%s has some nasty wounds.\n",
+					  F_ISSET(crt_ptr, PMALES) ? "He":"She");
+				output(fd, g_buffer);
+			}		*/
+			
+			equip_list(fd, crt_ptr);
+			return(0);
 		}
-		if(crt_ptr->hpcur < (crt_ptr->hpmax*3)/10)
-			print(fd, "%s has some nasty wounds.\n",
-			      F_ISSET(crt_ptr, PMALES) ? "He":"She");
-		equip_list(fd, crt_ptr);
-		return(0);
 	}
-
 	else
-		print(fd, "You don't see that here.\n");
+		output(fd, "You don't see that here.\n");
 
 	return(0);
 
 }
 
+/*********************************************************************/
+/*			crt_condition				     */
+/*********************************************************************/
+/* This function returns the correct description for the condition   */
+/* of the creature that is passed as the only argument                 */
+
+char *crt_condition(creature *crt_ptr)
+{
+	if(crt_ptr->hpcur == crt_ptr->hpmax)
+		return ply_cond_desc[0];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 9 / 10))
+		return ply_cond_desc[1];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 8 / 10))
+		return ply_cond_desc[2];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 7 / 10))
+		return ply_cond_desc[3];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 6 / 10))
+		return ply_cond_desc[4];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 5 / 10))
+		return ply_cond_desc[5];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 4 / 10))
+		return ply_cond_desc[6];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 3 / 10))
+		return ply_cond_desc[7];
+	else if (crt_ptr->hpcur > (crt_ptr->hpmax * 2 / 10))
+		return ply_cond_desc[8];
+	else 
+		return ply_cond_desc[9];
+}
+/**********************************************************************/
+/*                          *obj_condition                            */
+/**********************************************************************/
+
+char *obj_condition(object *obj_ptr)
+{
+	if(obj_ptr->shotscur == obj_ptr->shotsmax)
+		return obj_cond_desc[0];
+	else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 9 / 10))
+		 return obj_cond_desc[1];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 8 / 10))
+		 return obj_cond_desc[2];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 7 / 10))
+		 return obj_cond_desc[3];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 6 / 10))
+		 return obj_cond_desc[4];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 5 / 10))
+		 return obj_cond_desc[5];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 4 / 10))
+		 return obj_cond_desc[6];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 3 / 10))
+		 return obj_cond_desc[7];
+        else if(obj_ptr->shotscur > (obj_ptr->shotsmax * 2 / 10))
+		 return obj_cond_desc[8];
+        else if(obj_ptr->shotscur > 0)
+		 return obj_cond_desc[9];
+	else 
+		return obj_cond_desc[10];
+}
+
+                
 /**********************************************************************/
 /*				move				      */
 /**********************************************************************/
@@ -195,42 +351,13 @@ cmd		*cmnd;
 /* in the first parameter, and attempts to move him in one of the six   */
 /* cardinal directions (n,s,e,w,u,d) if possible.			*/
 
-int move(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int move(creature *ply_ptr, cmd *cmnd )
 {
-	room		*rom_ptr, *old_rom_ptr;
-	creature	*crt_ptr;
 	char		tempstr[10];
 	char		*str;
-	ctag		*cp, *temp;
-	xtag		*xp;
-	int		found=0, fd, old_rom_num, fall, dmg, n;
-	long		t;
 
-	rom_ptr = ply_ptr->parent_rom;
-	fd = ply_ptr->fd;
+	/* find the ordinal direction */
 	str = cmnd->str[0];
-
-	t = time(0);
-	if(ply_ptr->lasttime[LT_MOVED].ltime == t) {
-		if(++ply_ptr->lasttime[LT_MOVED].misc > 3) {
-			please_wait(fd, 1);
-			return(0);
-		}
-	}
-	else if(ply_ptr->lasttime[LT_ATTCK].ltime+3 > t) {
-		please_wait(fd, 3-t+ply_ptr->lasttime[LT_ATTCK].ltime);
-		return(0);
-	}
-	else if(ply_ptr->lasttime[LT_SPELL].ltime+3 > t) {
-		please_wait(fd, 3-t+ply_ptr->lasttime[LT_SPELL].ltime);
-		return(0);
-	}
-	else {
-		ply_ptr->lasttime[LT_MOVED].ltime = t;
-		ply_ptr->lasttime[LT_MOVED].misc = 1;
-	}
 		
 	if(!strcmp(str, "sw") || !strncmp(str, "southw", 6))
 		strcpy(tempstr, "southwest");
@@ -253,232 +380,15 @@ cmd		*cmnd;
 		}
 	}
 
-	xp = rom_ptr->first_ext;
-	while(xp) {
-		if(!strcmp(xp->ext->name, tempstr) && 
-			!F_ISSET(xp->ext,XNOSEE)){
-			found = 1;
-			break;
-		}
-		xp = xp->next_tag;
-	}
+	/* fake a go north type thing */
+	cmnd->num = 2;
+	strcpy( cmnd->str[1], tempstr );
+	cmnd->val[1] = 1;
 
-	if(!found) {
-		print(fd, "You can't go that way.\n");
-		return(0);
-	}
-	if(F_ISSET(xp->ext, XPLSEL)) {
-		if(!F_ISSET(xp->ext, XPLSEL + ply_ptr->class) && ply_ptr->class < CARETAKER){
-			print(fd, "Your class prohibits you from going there.\n");
-			return(0);
-		}
-	}
-	if(F_ISSET(xp->ext, XLOCKD)) {
-		print(fd, "It's locked.\n");
-		return(0);
-	}
-	else if(F_ISSET(xp->ext, XCLOSD)) {
-		print(fd, "You have to open it first.\n");
-		return(0);
-	}
+	return( go( ply_ptr, cmnd) );
 
-	if(F_ISSET(xp->ext, XFLYSP) && !F_ISSET(ply_ptr, PFLYSP)) {
-		print(fd, "You must fly to get there.\n");
-		return(0);
-	}
- 
-        t = Time%24L;
-	if(F_ISSET(xp->ext, XNGHTO) && (t>6 && t < 20)) {
-       		print(fd, "That exit is open only at night.\n");
-        	return(0);
-    	}          
-
-	if(F_ISSET(xp->ext, XDAYON) && (t<6 || t > 20)){
-        	print(fd, "That exit is closed for the night.\n");
-        	return(0);
-    	}          
- 
-    if(F_ISSET(xp->ext,XPGUAR)){
-        cp = rom_ptr->first_mon;
-        while(cp) {
-            if(F_ISSET(cp->crt, MPGUAR)) {
-           	if(!F_ISSET(ply_ptr, PINVIS) && ply_ptr->class < CARETAKER) {
-                	print(fd, "%M blocks your exit.\n", cp->crt);
-                	return(0);
-            	}
-	   	if(F_ISSET(cp->crt, MDINVI) && ply_ptr->class < CARETAKER) {
-                	print(fd, "%M blocks your exit.\n", cp->crt);
-               		return(0);
-        	}	    
-	    }
-            cp = cp->next_tag;
-        }
-    }         
-
-	if(F_ISSET(xp->ext, XPLDGK)) 
-	 if (!F_ISSET(ply_ptr, PPLDGK)){
-       		print(fd, "You do not have the proper authorization to go there.\n");
-        	return(0);
-	 }
-	 else if (BOOL(F_ISSET(xp->ext,XKNGDM)) !=  BOOL(F_ISSET(ply_ptr, PKNGDM))){
-        	print(fd, "You belong to the wrong organization to go there.\n");
-        	return(0);
-      	 }          
-
-	if(F_ISSET(xp->ext, XFEMAL) && F_ISSET(ply_ptr, PMALES)){
-		print(fd, "Sorry, only females are allowed to go there.\n");
-		return(0); 
-	}
-
-	if(F_ISSET(xp->ext, XMALES) && !F_ISSET(ply_ptr, PMALES)){
-		print(fd, "Sorry, only males are allowed to go there.\n");
-		return(0); 
-	}           
-
-	if(F_ISSET(xp->ext, XNAKED) && weight_ply(ply_ptr)) {
-		print(fd, "You cannot bring anything through that exit.\n");
-		return(0);
-	}
-
-	if((F_ISSET(xp->ext, XCLIMB) || F_ISSET(xp->ext, XREPEL)) &&
-	   !F_ISSET(ply_ptr, PLEVIT)) {
-		fall = (F_ISSET(xp->ext, XDCLIM) ? 50:0) + 50 - 
-		       fall_ply(ply_ptr);
-
-		if(mrand(1,100) < fall) {
-			dmg = mrand(5,15+fall/10);
-			if(ply_ptr->hpcur <= dmg){
-				print(fd, "You fell to your death.\n");
-				ply_ptr->hpcur=0;
-				broadcast_rom(fd, ply_ptr->rom_num, "%M died from the fall.\n", ply_ptr);
-				die(ply_ptr, ply_ptr);
-				return(0);
-			}
-			ply_ptr->hpcur -= dmg;
-			print(fd, "You fell and hurt yourself for %d damage.\n",
-			      dmg);
-			broadcast_rom(fd, ply_ptr->rom_num, "%M fell down.", 
-				      ply_ptr);
-			if(F_ISSET(xp->ext, XCLIMB))
-				return(0);
-		}
-	}
-
-	F_CLR(ply_ptr, PHIDDN);
-
-	cp = rom_ptr->first_mon;
-	while(cp) {
-		if(F_ISSET(cp->crt, MBLOCK)
-		   && is_enm_crt(ply_ptr->name, cp->crt)
-		   && !F_ISSET(ply_ptr, PINVIS)
-		   && ply_ptr->class < CARETAKER) {
-			print(fd, "%M blocks your exit.\n", cp->crt);
-			return(0);
-		}
-		cp = cp->next_tag;
-	}
-
-	if(!F_ISSET(rom_ptr, RPTRAK))
-		strcpy(rom_ptr->track, tempstr);
-
-	old_rom_num = rom_ptr->rom_num;
-	old_rom_ptr = rom_ptr;
-
-	load_rom(xp->ext->room, &rom_ptr);
-	if(rom_ptr == old_rom_ptr) {
-		print(fd, "Off map in that direction.\n");
-		return(0);
-	}
-
-	n = count_vis_ply(rom_ptr);
-
-	if(rom_ptr->lolevel > ply_ptr->level && ply_ptr->class < CARETAKER) {
-		print(fd, "You must be at least level %d to go that way.\n",
-		      rom_ptr->lolevel);
-		return(0);
-	}
-	else if(ply_ptr->level > rom_ptr->hilevel && rom_ptr->hilevel &&
-		ply_ptr->class < CARETAKER) {
-		print(fd, "Only players under level %d may go that way.\n",
-		      rom_ptr->hilevel+1);
-		return(0);
-	}
-	else if((F_ISSET(rom_ptr, RONEPL) && n > 0) ||
-		(F_ISSET(rom_ptr, RTWOPL) && n > 1) ||
-		(F_ISSET(rom_ptr, RTHREE) && n > 2)) {
-		print(fd, "That room is full.\n");
-		return(0);
-	}
-	if(ply_ptr->class == DM && !F_ISSET(ply_ptr, PDMINV)){
-		broadcast_rom(fd, old_rom_ptr->rom_num, "%M just wandered to the %s.",
-                              ply_ptr, tempstr);
-        }
-	if(!F_ISSET(ply_ptr, PDMINV) && ply_ptr->class < DM) {
-		broadcast_rom(fd, old_rom_ptr->rom_num, "%M leaves %s.", 
-			      ply_ptr, tempstr);
-	}
-
-	del_ply_rom(ply_ptr, ply_ptr->parent_rom);
-	add_ply_rom(ply_ptr, rom_ptr);
-
-
-	cp = ply_ptr->first_fol;
-	while(cp) {
-		if(cp->crt->rom_num == old_rom_num && cp->crt->type != MONSTER)
-			move(cp->crt, cmnd);
-		if(F_ISSET(cp->crt, MDMFOL) && cp->crt->rom_num == old_rom_num && cp->crt->type == MONSTER) {
-		del_crt_rom(cp->crt, old_rom_ptr);
-		broadcast_rom(fd, old_rom_ptr->rom_num, "%M just wandered to the %s.\n", cp->crt, tempstr); 
-		add_crt_rom(cp->crt, rom_ptr, 1);
-                add_active(cp->crt); 
-	        }	
-	cp = cp->next_tag;
-	}
-
-	if(is_rom_loaded(old_rom_num)) {
-		cp = old_rom_ptr->first_mon;
-		while(cp) {
-			if((!F_ISSET(cp->crt, MFOLLO) || F_ISSET(cp->crt, MDMFOL)) && cp->crt->type == MONSTER) {
-				cp = cp->next_tag;
-				continue;
-			}
-			if(!cp->crt->first_enm) {
-				cp = cp->next_tag;
-				continue;
-			}
-			if(strcmp(cp->crt->first_enm->enemy, ply_ptr->name)) {
-				cp = cp->next_tag;
-				continue;
-			}
-			if(mrand(1,20) > 15 - ply_ptr->dexterity +
-			   cp->crt->dexterity) {
-				cp = cp->next_tag;
-				continue;
-			}
-/* Protect the newbie areas from aggro-dragging */
-			if(F_ISSET(cp->crt,MAGGRE) && F_ISSET(xp->ext,XPGUAR)) {
-				cp = cp->next_tag;
-				continue;
-			}
-			print(fd, "%M followed you.\n", cp->crt);
-			broadcast_rom(fd, old_rom_num, "%M follows %m.",
-				      cp->crt, ply_ptr);
-			temp = cp->next_tag;
-			crt_ptr = cp->crt;
-			if(F_ISSET(crt_ptr, MPERMT))
-				die_perm_crt(crt_ptr);
-			del_crt_rom(crt_ptr, old_rom_ptr);
-			add_crt_rom(crt_ptr, rom_ptr, 1);
-			add_active(crt_ptr);
-			F_CLR(crt_ptr, MPERMT);
-			cp = temp;
-
-		}
-	}
-
-	check_traps(ply_ptr, rom_ptr);
-	return(0);
 }
+
 
 /**********************************************************************/
 /*				say				      */
@@ -488,58 +398,51 @@ cmd		*cmnd;
 /* in the first parameter to say something to all the other people in */
 /* the room.							      */
 
-int say(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int say( creature *ply_ptr, cmd *cmnd )
 {
-	room		*rom_ptr;
-	int		index = -1, i, j, fd;
-	int		len;
+	room	*rom_ptr;
+	int		fd;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 
-	len = strlen(cmnd->fullstr);
-	for(i=0; i<len && i < 256; i++) {
-		if(cmnd->fullstr[i] == ' ') {
-			index = i+1;
-			break;
-		}
-	}
 
 	cmnd->fullstr[255] = 0;
-	/* Check for modem escape code */
-	for(j=0; j<len && j < 256; j++) {
-		if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
-			index = -1;
-		break;
-	}
-    }
+	clean_str( cmnd->fullstr, 1);
 
-	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
-		print(fd, "Say what?\n");
+	if(F_ISSET(ply_ptr, PSILNC)) {
+		output_wc(fd, "Your lips move but no sound comes forth.\n", SILENCECOLOR);
 		return(0);
 	}
-	if(F_ISSET(ply_ptr, PSILNC)) {
-		print(fd, "Your lips move but no sound comes forth.\n");
+
+	/* spam check */
+	if ( check_for_spam( ply_ptr ) )
+	{
+		return(0);
+	}
+
+	if(strlen(cmnd->fullstr) < 1) {
+		output(fd, "Say what?\n");
 		return(0);
 	}
 
 	F_CLR(ply_ptr, PHIDDN);
-	if(F_ISSET(ply_ptr, PLECHO)){
-		ANSI(fd, CYAN);
-		print(fd, "You say, \"%s\"\n", &cmnd->fullstr[index]);
-		ANSI(fd, NORMAL);
+	if(F_ISSET(ply_ptr, PLECHO))
+	{
+		sprintf(g_buffer, "You say, \"%s\"\n", cmnd->fullstr);
+		output_wc(fd, g_buffer, ECHOCOLOR );
 	}
 	else
-		print(fd, "Ok.\n");
+		output(fd, "Ok.\n");
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M says, \"%s.\"", 
-		ply_ptr, &cmnd->fullstr[index]);
+	sprintf(g_buffer, "%%M says, \"%s.\"", cmnd->fullstr);
+	broadcast_rom(fd, rom_ptr->rom_num, g_buffer, m1arg(ply_ptr));
 
 	return(0);
 
 }
+
+
 
 /**********************************************************************/
 /*				get				      */
@@ -548,9 +451,7 @@ cmd		*cmnd;
 /* This function allows players to get things lying on the floor or   */
 /* inside another object.					      */
 
-int get(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int get(creature *ply_ptr, cmd *cmnd )
 {
 	room		*rom_ptr;
 	object		*obj_ptr, *cnt_ptr;
@@ -560,7 +461,7 @@ cmd		*cmnd;
 	fd = ply_ptr->fd;
 
 	if(cmnd->num < 2) {
-		print(fd, "Get what?\n");
+		output(fd, "Get what?\n");
 		return(0);
 	}
 
@@ -576,46 +477,45 @@ cmd		*cmnd;
 			cp = cp->next_tag;
 		}
 
-		if(cp && ply_ptr->class < CARETAKER) {
-			print(fd, "%M won't let you take anything.\n", cp->crt);
+		if(cp && ply_ptr->class < BUILDER) {
+			mprint(fd, "%M won't let you take anything.\n", m1arg(cp->crt));
 			return(0);
 		}
 		if(F_ISSET(ply_ptr, PBLIND)) {
-			print(fd, "You can't see to do that!\n");
+			output_wc(fd, "You can't see to do that!\n", BLINDCOLOR);
 			return(0);
 		}
 		if(!strcmp(cmnd->str[1], "all")) {
-			get_all_rom(ply_ptr);
-			return(0);
+			if(F_ISSET(rom_ptr, RPOWND)) {
+				output(fd, "You can't get all here.\n");
+				return(0);	
+			}
+			else {
+				get_all_rom(ply_ptr);
+				return(0);
+			}
 		}
 
 		obj_ptr = find_obj(ply_ptr, rom_ptr->first_obj,
 				   cmnd->str[1], cmnd->val[1]);
 
 		if(!obj_ptr) {
-			print(fd, "That isn't here.\n");
-			return(0);
-		}
-
-		if(F_ISSET(obj_ptr, OINVIS)) {
-			print(fd, "That isn't here.\n");
+			output(fd, "That isn't here.\n");
 			return(0);
 		}
 
 		if(F_ISSET(obj_ptr, ONOTAK) || F_ISSET(obj_ptr, OSCENE)) {
-			print(fd, "You can't take that!\n");
+			output(fd, "You can't take that!\n");
 			return(0);
 		}
 
-		if(weight_ply(ply_ptr) + weight_obj(obj_ptr) > 
-		   max_weight(ply_ptr)) {
-			print(fd, "You can't carry anymore.\n");
+		if( weight_ply(ply_ptr) + weight_obj(obj_ptr) > max_weight(ply_ptr)) {
+			output(fd, "You can't carry anymore.\n");
 			return(0);
 		}
 
 		if(obj_ptr->questnum && Q_ISSET(ply_ptr, obj_ptr->questnum-1)) {
-			print(fd, "You may not take that. %s.\n",
-			      "You have already fulfilled that quest");
+			output(fd, "You may not take that. You have already fulfilled that quest.\n");
 			return(0);
 		}
 
@@ -629,24 +529,36 @@ cmd		*cmnd;
 
 		F_CLR(obj_ptr, OHIDDN);
 		del_obj_rom(obj_ptr, rom_ptr);
-		print(fd, "You get %1i.\n", obj_ptr);
-		if(obj_ptr->questnum) {
-			print(fd, "Quest fulfilled!  Don't drop it.\n");
-			print(fd, "You won't be able to pick it up again.\n");			
+
+		if(F_ISSET(rom_ptr, RPOWND)) {
+			sprintf(g_buffer, "%s removed from sale by %s in shop (%d).\n", obj_ptr->name, ply_ptr->name, rom_ptr->rom_num);                                                   slog(g_buffer);
+		}
+		
+		if(F_ISSET(obj_ptr, OSTOLE))
+			F_CLR(obj_ptr, OSTOLE);
+		
+		mprint(fd, "You get %1i.\n", m1arg(obj_ptr));
+		if(obj_ptr->questnum && obj_ptr->shotscur>0) 
+		{
+			output(fd, "Quest fulfilled!  Don't drop it.\n");
+			output(fd, "You won't be able to pick it up again.\n");			
 			Q_SET(ply_ptr, obj_ptr->questnum-1);
-			ply_ptr->experience += quest_exp[obj_ptr->questnum-1];
-			print(fd, "%ld experience granted.\n",
-				quest_exp[obj_ptr->questnum-1]);
-			add_prof(ply_ptr,quest_exp[obj_ptr->questnum-1]);
+			ply_ptr->experience += get_quest_exp(obj_ptr->questnum);
+			sprintf(g_buffer, "%ld experience granted.\n",
+				get_quest_exp(obj_ptr->questnum));
+			output(fd, g_buffer );
+			add_prof(ply_ptr, get_quest_exp(obj_ptr->questnum));
 		}
 		broadcast_rom(fd, rom_ptr->rom_num, "%M gets %1i.",
-			      ply_ptr, obj_ptr);
+			      m2args(ply_ptr, obj_ptr));
 
 		if(obj_ptr->type == MONEY) {
 			ply_ptr->gold += obj_ptr->value;
 			free_obj(obj_ptr);
-			print(fd, "You now have %ld gold pieces.\n", 
+
+			sprintf(g_buffer, "You now have %ld gold pieces.\n", 
 				ply_ptr->gold);
+			output(fd, g_buffer);
 		}
 		else
 			add_obj_crt(obj_ptr, ply_ptr);
@@ -676,12 +588,12 @@ cmd		*cmnd;
 		}
 
 		if(!cnt_ptr) {
-			print(fd, "That isn't here.\n");
+			output(fd, "That isn't here.\n");
 			return(0);
 		}
 
 		if(!F_ISSET(cnt_ptr, OCONTN)) {
-			print(fd, "That isn't a container.\n");
+			output(fd, "That isn't a container.\n");
 			return(0);
 		}
 
@@ -694,13 +606,13 @@ cmd		*cmnd;
 				   cmnd->str[1], cmnd->val[1]);
 
 		if(!obj_ptr) {
-			print(fd, "That isn't in there.\n");
+			output(fd, "That isn't in there.\n");
 			return(0);
 		}
 
 		if(weight_ply(ply_ptr) + weight_obj(obj_ptr) >
 		   max_weight(ply_ptr) && cnt_ptr->parent_rom) {
-			print(fd, "You can't carry anymore.\n");
+			output(fd, "You can't carry anymore.\n");
 			return(0);
 		}
 
@@ -709,15 +621,17 @@ cmd		*cmnd;
 
 		cnt_ptr->shotscur--;
 		del_obj_obj(obj_ptr, cnt_ptr);
-		print(fd, "You get %1i from %1i.\n", obj_ptr, cnt_ptr);
+		mprint(fd, "You get %1i from %1i.\n", m2args(obj_ptr, cnt_ptr));
 		broadcast_rom(fd, rom_ptr->rom_num, "%M gets %1i from %1i.",
-			      ply_ptr, obj_ptr, cnt_ptr);
+			      m3args(ply_ptr, obj_ptr, cnt_ptr));
 
 		if(obj_ptr->type == MONEY) {
 			ply_ptr->gold += obj_ptr->value;
 			free_obj(obj_ptr);
-			print(fd, "You now have %ld gold pieces.\n",
+
+			sprintf(g_buffer, "You now have %ld gold pieces.\n",
 				ply_ptr->gold);
+			output(fd, g_buffer);
 		}
 		else
 			add_obj_crt(obj_ptr, ply_ptr);
@@ -734,8 +648,7 @@ cmd		*cmnd;
 /* This function will cause the player pointed to by the first parameter */
 /* to get everything he is able to see in the room.			 */
 
-void get_all_rom(ply_ptr)
-creature	*ply_ptr;
+void get_all_rom( creature *ply_ptr )
 {
 	room	*rom_ptr;
 	object	*obj_ptr, *last_obj;
@@ -756,16 +669,26 @@ creature	*ply_ptr;
 			found++;
 			obj_ptr = op->obj;
 			op = op->next_tag;
-			if(weight_ply(ply_ptr) + weight_obj(obj_ptr) >
-			  max_weight(ply_ptr)) {
+			if( weight_ply(ply_ptr) + weight_obj(obj_ptr) > max_weight(ply_ptr) ) {
 				heavy++;
 				continue;
 			}
+			
+			if(F_ISSET(obj_ptr, OSTOLE))
+				F_CLR(obj_ptr, OSTOLE);
+
 			if(obj_ptr->questnum && 
 			   Q_ISSET(ply_ptr, obj_ptr->questnum-1)) {
 				heavy++;
 				continue;
 			}
+/*
+			if(obj_ptr->strength && 
+			    obj_ptr->strength > ply_ptr->strength) {
+				heavy++;
+				continue;
+			}
+*/
 			if(F_ISSET(obj_ptr, OTEMPP)) {
 				F_CLR(obj_ptr, OPERM2);
 				F_CLR(obj_ptr, OTEMPP);
@@ -774,29 +697,31 @@ creature	*ply_ptr;
 				get_perm_obj(obj_ptr);
 			F_CLR(obj_ptr, OHIDDN);
 			if(obj_ptr->questnum) {
-				print(fd,"Quest fulfilled!  Don't drop it.\n");
-				print(fd,"You won't be able to pick it up again.\n");		
+				output(fd,"Quest fulfilled!  Don't drop it.\n");
+				output(fd,"You won't be able to pick it up again.\n");		
 				Q_SET(ply_ptr, obj_ptr->questnum-1);
 				ply_ptr->experience += 
-					quest_exp[obj_ptr->questnum-1];
-				print(fd, "%ld experience granted.\n",
-					quest_exp[obj_ptr->questnum-1]);
-			add_prof(ply_ptr,quest_exp[obj_ptr->questnum-1]);
+					get_quest_exp(obj_ptr->questnum);
+				sprintf(g_buffer, "%ld experience granted.\n",
+					get_quest_exp(obj_ptr->questnum));
+				output(fd, g_buffer);
+				add_prof(ply_ptr, get_quest_exp(obj_ptr->questnum));
 			}
 			del_obj_rom(obj_ptr, rom_ptr);
 			if(last_obj && !strcmp(last_obj->name, obj_ptr->name) &&
 			   last_obj->adjustment == obj_ptr->adjustment)
 				n++;
 			else if(last_obj) {
-				str2 = obj_str(last_obj, n, 0);
-                                if(strlen(str2)+strlen(str) < 2040){
+				str2 = obj_str(ply_ptr, last_obj, n, 0);
+                if(strlen(str2)+strlen(str) < 2040)
+				{
 					strcat(str, str2);
 					strcat(str, ", ");
-				n=1;
+					n=1;
 				}
 			}
 			if(obj_ptr->type == MONEY) {
-		   	str2 = obj_str(obj_ptr, 1, 0);
+		   		str2 = obj_str(ply_ptr, obj_ptr, 1, 0);
 				if(strlen(str2)+strlen(str) < 2040){
 					strcat(str, str2);
 					strcat(str, ", ");
@@ -816,12 +741,12 @@ creature	*ply_ptr;
 	}
 
 	if(found && last_obj) {
-		str2 = obj_str(last_obj, n, 0);
+		str2 = obj_str(ply_ptr, last_obj, n, 0);
                 if(strlen(str2)+strlen(str) < 2040)
 			strcat(str, str2);
 	}
 	else if(!found) {
-		print(fd, "There's nothing here.\n");
+		output(fd, "There's nothing here.\n");
 		return;
 	}
 
@@ -829,17 +754,23 @@ creature	*ply_ptr;
 		str[strlen(str)-2] = 0;
 
 	if(heavy) {
-		print(fd, "You weren't able to carry everything.\n");
+		output(fd, "You weren't able to carry everything.\n");
 		if(heavy == found) return;
 	}
 
 	if(!strlen(str)) return;
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M gets %s.", ply_ptr, str);
-	print(fd, "You get %s.\n", str);
+	sprintf(g_buffer, "%%M gets %s.", str);
+	broadcast_rom(fd, rom_ptr->rom_num, g_buffer, m1arg(ply_ptr));
+
+	sprintf(g_buffer, "You get %s.\n", str);
+	output(fd, g_buffer);
 	if(dogoldmsg)
-		print(fd, "You now have %ld gold pieces.\n",
+	{
+		sprintf(g_buffer, "You now have %ld gold pieces.\n",
 			ply_ptr->gold);
+		output(fd, g_buffer);
+	}
 
 }
 
@@ -851,9 +782,7 @@ creature	*ply_ptr;
 /* container object.  The player is pointed to by the first parameter and */
 /* the container by the second.						  */
 
-void get_all_obj(ply_ptr, cnt_ptr)
-creature	*ply_ptr;
-object		*cnt_ptr;
+void get_all_obj(creature *ply_ptr, object *cnt_ptr )
 {
 	room	*rom_ptr;
 	object	*obj_ptr, *last_obj;
@@ -891,7 +820,7 @@ object		*cnt_ptr;
 				last_obj->adjustment == obj_ptr->adjustment)
 				n++;
 			else if(last_obj) {
-			str2 = obj_str(last_obj, n, 0);
+			str2 = obj_str(ply_ptr, last_obj, n, 0);
                                 if(strlen(str2)+strlen(str) < 2040){
 				strcat(str, str2);
 				strcat(str, ", ");
@@ -902,8 +831,9 @@ object		*cnt_ptr;
 				ply_ptr->gold += obj_ptr->value;
 				free_obj(obj_ptr);
 				last_obj = 0;
-				print(fd, "You now have %ld gold pieces.\n",
+				sprintf(g_buffer, "You now have %ld gold pieces.\n",
 					ply_ptr->gold);
+				output(fd, g_buffer);
 			}
 			else {
 				add_obj_crt(obj_ptr, ply_ptr);
@@ -915,25 +845,28 @@ object		*cnt_ptr;
 	}
 
 	if(found && last_obj) {
-	str2 = obj_str(obj_ptr, n, 0);
+	str2 = obj_str(ply_ptr, obj_ptr, n, 0);
            if(strlen(str2)+strlen(str) < 2040)
 		strcat(str, str2);
 	}
 	else if(!found) {
-		print(fd, "There's nothing in it.\n");
+		output(fd, "There's nothing in it.\n");
 		return;
 	}
 
 	if(heavy) {
-		print(fd, "You weren't able to carry everything.\n");
+		output(fd, "You weren't able to carry everything.\n");
 		if(heavy == found) return;
 	}
 
 	if(!strlen(str)) return;
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M gets %s from %1i.",
-		      ply_ptr, str, cnt_ptr);
-	print(fd, "You get %s from %1i.\n", str, cnt_ptr);
+	sprintf(g_buffer, "%%M gets %s from %%1i.",str);
+	broadcast_rom(fd, rom_ptr->rom_num, g_buffer,
+		      m2args(ply_ptr, cnt_ptr));
+
+	sprintf(g_buffer, "You get %s from %%1i.\n", str);
+	mprint(fd, g_buffer, m1arg(cnt_ptr));
 
 }
 
@@ -946,12 +879,11 @@ object		*cnt_ptr;
 /* inventory-permanent flag is set.  Also, the room's permanent	      */
 /* time for that item is updated.				      */
 
-void get_perm_obj(obj_ptr)
-object	*obj_ptr;
+void get_perm_obj( object *obj_ptr )
 {
 	object	*temp_obj;
 	room	*rom_ptr;
-	long	t;
+	time_t	t;
 	int	i;
 
 	t = time(0);
@@ -961,6 +893,11 @@ object	*obj_ptr;
 
 	rom_ptr = obj_ptr->parent_rom;
 	if(!rom_ptr) return;
+
+	if(F_ISSET(rom_ptr, RPOWND)) {
+		resave_rom(rom_ptr->rom_num);
+		return;
+	}
 	
 	for(i=0; i<10; i++) {
 		if(!rom_ptr->perm_obj[i].misc) continue;
@@ -977,68 +914,137 @@ object	*obj_ptr;
 	}
 }
 
+int about( creature *ply_ptr, cmd *cmnd )
+{
+	int		fd;
+
+	fd = ply_ptr->fd;
+
+	display_credits(fd);
+
+	return(0);
+
+}
+
 /**********************************************************************/
 /*				inventory			      */
 /**********************************************************************/
 
 /* This function outputs the contents of a player's inventory.        */
 
-int inventory(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int inventory( creature *ply_ptr, cmd *cmnd )
 {
-	otag		*op;
-	char		str[2048], *str2;
-	int		m, n, fd, flags = 0;
+	otag	*op;
+	char	*str;
+	char	*str2;
+	char	*str_temp;
+	int		m, n, fd;
+	size_t	block_size = 2048;
+	size_t	str_size ;
+
+	str_size = block_size;
+	str = malloc( str_size );
 
 	fd = ply_ptr->fd;
 
-	if(F_ISSET(ply_ptr, PBLIND)) {
-		ANSI(fd, BLUE);
-		print(fd, "You're blind as a bat...how can you do that?\n");
-		ANSI(fd, WHITE);
+	if(F_ISSET(ply_ptr, PBLIND)) 
+	{
+		output_wc(fd, "You're blind as a bat...how can you do that?\n", BLINDCOLOR);
 		return(0);
 	}		
-	if(F_ISSET(ply_ptr, PDINVI))
-		flags |= INV;
-	if(F_ISSET(ply_ptr, PDMAGI))
-		flags |= MAG;
 
-	op = ply_ptr->first_obj; n=0; str[0]=0;
-	strcat(str, "You have: ");
-	if(!op) {
-		strcat(str, "nothing.");
-		print(fd, "%s\n", str);
-		return(0);
+	op = ply_ptr->first_obj; 
+	n=0; 
+	strcpy(str, "You have: ");
+	
+	if(!op) 
+	{
+		strcat(str, "nothing.\n");
+		output(fd, str);
 	}
-	while(op) {
-		if(F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->obj, OINVIS)) {
-			m=1;
-			while(op->next_tag) {
-				if(!strcmp(op->next_tag->obj->name, 
-					   op->obj->name) &&
-				   op->next_tag->obj->adjustment ==
-				   op->obj->adjustment &&
-				   (F_ISSET(ply_ptr, PDINVI) ? 
-				   1:!F_ISSET(op->next_tag->obj, OINVIS))) {
-					m++;
-					op = op->next_tag;
+	else
+	{
+		while(op) 
+		{
+			if(F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->obj, OINVIS)) 
+			{
+				m=1;
+				
+				while(op->next_tag) 
+				{
+					if(!strcmp(op->next_tag->obj->name, op->obj->name) &&
+						op->next_tag->obj->adjustment == op->obj->adjustment &&
+						(F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->next_tag->obj, OINVIS))) 
+					{
+						m++;
+						op = op->next_tag;
+					}
+					
+					else
+						break;
 				}
+				
+				str2 = obj_str(ply_ptr, op->obj, m, 0);
+				
+				if(F_ISSET(op->obj, OSTOLE))
+					strcat(str2, "(STOLEN)");
+
+				if( (strlen(str2) + strlen(str)) < (str_size - 8) ) 
+				{
+					strcat(str, str2);
+					strcat(str, ", ");
+					n++;
+				}
+				
 				else
-					break;
+				{
+					/* increase the str size */
+					str_size += block_size;
+					str_temp = realloc( str, str_size );
+					
+					if ( str_temp )
+					{
+						/* it worked */
+						str = str_temp;
+						strcat(str, str2);
+						strcat(str, ", ");
+						n++;
+					}
+					
+					else
+					{
+						/* TODO: print a warning or somethign the realloc failed */
+						/* str was untouched if realloc failed so no need */
+						/* to reset pointers */
+
+						/* size did not change so adjust back */
+						str_size -= block_size;
+					}
+
+				}
 			}
-			str2 = obj_str(op->obj, m, flags);
-                        if(strlen(str2)+strlen(str) < 2040){
-				strcat(str, str2);
-				strcat(str, ", ");
-				n++;
-			}
+			op = op->next_tag;
 		}
-		op = op->next_tag;
+
+		if(n) 
+		{
+			str[strlen(str)-2] = 0;
+			strcat( str, ".\n");
+			output(fd, str );
+		}
+		
+		else
+		{
+			/* has invis items but non visible */
+			strcat(str, "nothing.\n");
+			output(fd, str);
+		}
 	}
-	if(n) {
-		str[strlen(str)-2] = 0;
-		print(fd, "%s.\n", str);
+
+	/* dont forget to clean up */
+	if ( str )
+	{
+		free(str);
 	}
 
 	return(0);
@@ -1052,9 +1058,7 @@ cmd		*cmnd;
 /* This function allows the player pointed to by the first parameter */
 /* to drop an object in the room at which he is located.             */
 
-int drop(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int drop(creature *ply_ptr, cmd	*cmnd )
 {
 	room		*rom_ptr;
 	object		*obj_ptr, *cnt_ptr;
@@ -1063,7 +1067,7 @@ cmd		*cmnd;
 	fd = ply_ptr->fd;
 	
 	if(cmnd->num < 2) {
-		print(fd, "Drop what?\n");
+		output(fd, "Drop what?\n");
 		return(0);
 	}
 	
@@ -1076,13 +1080,18 @@ cmd		*cmnd;
 	if(cmnd->num == 2) {
 
 		if(!strcmp(cmnd->str[1], "all")) {
-			drop_all_rom(ply_ptr);
+			if(!F_ISSET(rom_ptr, RPOWND)) {
+				drop_all_rom(ply_ptr);
+			}
+			else {
+				output(fd, "You may not drop all here.\n");
+				return(0);
+			}
 if(SAVEONDROP)
-			if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
+			if(ply_ptr->type == PLAYER) save_ply(ply_ptr);
 			return(0);
 		}
-		/* drop gold [BDyess] */
-		if(cmnd->str[1][0] == '$' && !F_ISSET(rom_ptr, RDUMPR)) {
+		if(cmnd->str[1][0] == '$' && !F_ISSET(rom_ptr, RDUMPR) && !F_ISSET(rom_ptr, RPOWND)) {
                  gold = atoi(cmnd->str[1]+1);
                   if(gold > 0 && gold <= ply_ptr->gold) {
 		     load_obj(0, &obj_ptr);
@@ -1091,33 +1100,73 @@ if(SAVEONDROP)
                      ply_ptr->gold -= gold;
                    } 
 		   else { 
-                     print(fd, "You don't have that much!\n");
+                     output(fd, "You don't have that much!\n");
                      return(0);
                    }
 		}
-
 		else 
 		obj_ptr = find_obj(ply_ptr, ply_ptr->first_obj, cmnd->str[1], cmnd->val[1]);
 		
 		if(!obj_ptr) {
-			print(fd, "You don't have that.\n");
+			output(fd, "You don't have that.\n");
 			return(0);
 		}
+
+		if(F_ISSET(rom_ptr, RPOWND)) {
+			if(obj_ptr->questnum) {
+				output(fd , "You may not offer to sell quest items.\n");
+				return(0);
+			}
+			if(obj_ptr->type == CONTAINER) {
+				output(fd, "You may not offer to sell that.\n");
+				return(0);
+			}
+		}
+
 		if(!gold)
 			del_obj_crt(obj_ptr, ply_ptr);
 		
-		print(fd, "You drop %1i.\n", obj_ptr);
-		broadcast_rom(fd, rom_ptr->rom_num, "%M dropped %1i.",
-			      ply_ptr, obj_ptr);
+		mprint(fd, "You drop %1i.\n", m1arg(obj_ptr));
+		broadcast_rom(fd, rom_ptr->rom_num, "%M dropped %1i.", m2args(ply_ptr, obj_ptr));
 		if(!F_ISSET(rom_ptr, RDUMPR))
+		{
 			add_obj_rom(obj_ptr, rom_ptr);
+
+			if(F_ISSET(rom_ptr, RPOWND)) {
+				if(!F_ISSET(obj_ptr, ONOSEL)) {
+					obj_ptr->value = find_obj_value(obj_ptr);
+				}
+				if(!obj_ptr->value || obj_ptr->shotscur < 1) {
+					del_obj_rom(obj_ptr, rom_ptr);
+					free_obj(obj_ptr);
+		                        ply_ptr->gold += 5;
+               			         sprintf(g_buffer, "Thanks for recycling.\nYou have %-ld gold.\n", ply_ptr->gold);
+                        		output(fd, g_buffer);
+					if(SAVEONDROP)
+				                if(ply_ptr->type == PLAYER)
+                        				save_ply( ply_ptr);
+					return(0);
+				}
+				F_SET(obj_ptr, OPERMT);
+				sprintf(g_buffer, "%s offered for sale at %ld by %s from shop (%d).\n", obj_ptr->name, obj_ptr->value, ply_ptr->name, rom_ptr->rom_num);
+				slog(g_buffer);
+				resave_rom(rom_ptr->rom_num);
+			}
+			
+			if(F_ISSET(obj_ptr, OSTOLE)) {
+				sprintf(g_buffer, "The %s is no longer marked as being stolen.\n", obj_ptr->name);
+				output(fd, g_buffer);
+			}
+		}	
 		else {
 			free_obj(obj_ptr);
 			ply_ptr->gold += 5;
-			print(fd, "Thanks for recycling.\nYou have %-ld gold.\n", ply_ptr->gold);
+			sprintf(g_buffer, "Thanks for recycling.\nYou have %-ld gold.\n", ply_ptr->gold);
+			output(fd, g_buffer);
 		}
 if(SAVEONDROP)
-		if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
+		if(ply_ptr->type == PLAYER) 
+			save_ply( ply_ptr);
 		return(0);
 	}
 
@@ -1144,19 +1193,19 @@ if(SAVEONDROP)
 		}
 	
 		if(!cnt_ptr) {
-			print(fd, "You don't see that here.\n");
+			output(fd, "You don't see that here.\n");
 			return(0);
 		}
 
 		if(!F_ISSET(cnt_ptr, OCONTN)) {
-			print(fd, "That isn't a container.\n");
+			output(fd, "That isn't a container.\n");
 			return(0);
 		}
 
 		if(!strcmp(cmnd->str[1], "all")) {
 			drop_all_obj(ply_ptr, cnt_ptr);
 if(SAVEONDROP)
-			if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
+			if(ply_ptr->type == PLAYER) save_ply(ply_ptr);
 			return(0);
 		}
 
@@ -1164,31 +1213,34 @@ if(SAVEONDROP)
 				   cmnd->str[1], cmnd->val[1]);
 
 		if(!obj_ptr) {
-			print(fd, "You don't have that.\n");
+			output(fd, "You don't have that.\n");
 			return(0);
 		}
 
 		if(obj_ptr == cnt_ptr) {
-			print(fd, "You can't put something in itself!\n");
+			output(fd, "You can't put something in itself!\n");
 			return(0);
 		}
 
-
+		if(obj_ptr->questnum) {
+	               	 output(fd, "You can't do that.\n");
+       	        	 return(0);
+       		}	
 
 		if(cnt_ptr->shotscur >= cnt_ptr->shotsmax) {
-			print(fd, "%I can't hold anymore.\n", cnt_ptr);
+			mprint(fd, "%I can't hold anymore.\n", m1arg(cnt_ptr));
 			return(0);
 		}
 
 		if(F_ISSET(obj_ptr, OCONTN)) {
-			print(fd, "You can't put containers into containers.\n");
+			output(fd, "You can't put containers into containers.\n");
 			return(0);
 		}
 
                 if(F_ISSET(cnt_ptr, OCNDES)) { 
-		print(fd, "%1i is devoured by %1i!\n", obj_ptr, cnt_ptr);
+		mprint(fd, "%1i is devoured by %1i!\n", m2args(obj_ptr, cnt_ptr));
 		broadcast_rom(fd, rom_ptr->rom_num, "%M put %1i in %1i.",
-			      ply_ptr, obj_ptr, cnt_ptr);
+			      m3args(ply_ptr, obj_ptr, cnt_ptr));
 		del_obj_crt(obj_ptr, ply_ptr);
 		free(obj_ptr);
 			return(0);
@@ -1197,11 +1249,24 @@ if(SAVEONDROP)
 		del_obj_crt(obj_ptr, ply_ptr);
 		add_obj_obj(obj_ptr, cnt_ptr);
 		cnt_ptr->shotscur++;
-		print(fd, "You put %1i in %1i.\n", obj_ptr, cnt_ptr);
+		
+		if(F_ISSET(obj_ptr, OSTOLE))
+		{
+			F_CLR(obj_ptr, OSTOLE);
+			sprintf(g_buffer, "The %s is no longer marked as being stolen.\n", obj_ptr->name);
+			output(fd, g_buffer);
+		}
+
+		/* trying to hide a stolen item in a bag infects the whole bag */
+                if(F_ISSET(obj_ptr, OTHEFT))
+                        F_SET(cnt_ptr, OTHEFT);
+
+		
+		mprint(fd, "You put %1i in %1i.\n", m2args(obj_ptr, cnt_ptr));
 		broadcast_rom(fd, rom_ptr->rom_num, "%M put %1i in %1i.",
-			      ply_ptr, obj_ptr, cnt_ptr);
+			      m3args(ply_ptr, obj_ptr, cnt_ptr));
 if(SAVEONDROP)
-		if(ply_ptr->type == PLAYER) save_ply(ply_ptr->name,ply_ptr);
+		if(ply_ptr->type == PLAYER) save_ply(ply_ptr);
 		return(0);
 	}
 
@@ -1214,8 +1279,7 @@ if(SAVEONDROP)
 /* This function is called when a player wishes to drop his entire    */
 /* inventory into the the room.					      */
 
-void drop_all_rom(ply_ptr)
-creature	*ply_ptr;
+void drop_all_rom( creature	*ply_ptr )
 {
 	object	*obj_ptr;
 	room	*rom_ptr;
@@ -1232,7 +1296,7 @@ creature	*ply_ptr;
 	found = list_obj(str, ply_ptr, ply_ptr->first_obj);
 
 	if(!found) {
-		print(fd, "You don't have anything.\n");
+		output(fd, "You don't have anything.\n");
 		return;
 	}
 
@@ -1241,6 +1305,14 @@ creature	*ply_ptr;
 		if(F_ISSET(ply_ptr, PDINVI) ? 1:!F_ISSET(op->obj, OINVIS)) {
 			obj_ptr = op->obj;
 			op = op->next_tag;
+			
+			if(F_ISSET(obj_ptr, OSTOLE))
+			{
+				F_CLR(obj_ptr, OSTOLE);
+				sprintf(g_buffer, "The %s is no longer marked as being stolen.\n", obj_ptr->name);
+				output(fd, g_buffer);
+			}
+			
 			del_obj_crt(obj_ptr, ply_ptr);
 			if(!F_ISSET(rom_ptr, RDUMPR))
 				add_obj_rom(obj_ptr, rom_ptr);
@@ -1253,11 +1325,19 @@ creature	*ply_ptr;
 			op = op->next_tag;
 	}
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M dropped %s.", ply_ptr, str);
-	print(fd, "You drop %s.\n", str);
+	sprintf(g_buffer, "%%M dropped %s.", str);
+	broadcast_rom(fd, rom_ptr->rom_num, g_buffer, m1arg(ply_ptr));
+
+	sprintf(g_buffer, "You drop %s.\n", str);
+	output(fd, g_buffer);
 
 	if(F_ISSET(rom_ptr, RDUMPR))
-		print(fd, "Thanks for recycling.\nYou have %-ld gold.\n",ply_ptr->gold);
+	{
+		sprintf(g_buffer, 
+			"Thanks for recycling.\nYou have %-ld gold.\n",
+			ply_ptr->gold);
+		output(fd, g_buffer);
+	}
 }
 
 /**********************************************************************/
@@ -1268,9 +1348,7 @@ creature	*ply_ptr;
 /* container object, if possible.  The player is pointed to by the first */
 /* parameter, and the container by the second.				 */
 
-void drop_all_obj(ply_ptr, cnt_ptr)
-creature	*ply_ptr;
-object		*cnt_ptr;
+void drop_all_obj(creature *ply_ptr, object	*cnt_ptr )
 {
 	object	*obj_ptr, *last_obj;
 	room	*rom_ptr;
@@ -1310,12 +1388,20 @@ object		*cnt_ptr;
 			cnt_ptr->shotscur++;
 			del_obj_crt(obj_ptr, ply_ptr);
 			add_obj_obj(obj_ptr, cnt_ptr);
+			
+			if(F_ISSET(obj_ptr, OSTOLE))
+			{
+				F_CLR(obj_ptr, OSTOLE);
+				sprintf(g_buffer, "The %s is no longer marked as being stolen.\n", obj_ptr->name);
+				output(fd, g_buffer);
+			}
+
 			if(last_obj && !strcmp(last_obj->name, obj_ptr->name) &&
 			   last_obj->adjustment == obj_ptr->adjustment)
 				n++;
 			else if(last_obj) {
-			str2 = obj_str(last_obj, n, 0);
-                                if(strlen(str2)+strlen(str) < 2040){
+			str2 = obj_str(ply_ptr, last_obj, n, 0);
+            if(strlen(str2)+strlen(str) < 2040){
 					strcat(str, str2);
 					strcat(str, ", ");
 					n = 1;
@@ -1328,22 +1414,26 @@ object		*cnt_ptr;
 	}
 
 	if(found && last_obj) {
-		str2 = obj_str(last_obj, n, 0);
+		str2 = obj_str(ply_ptr, last_obj, n, 0);
                 if(strlen(str2)+strlen(str) < 2040)
 			strcat(str, str2);
 	}
 	else {
-		print(fd, "You don't have anything to put into it.\n");
+		output(fd, "You don't have anything to put into it.\n");
 		return;
 	}
 
 	if(full)
-		print(fd, "%I couldn't hold everything.\n", cnt_ptr);
+		mprint(fd, "%I couldn't hold everything.\n", m1arg(cnt_ptr));
 
-	if(full == found) return;
+	if(full == found) 
+		return;
 
-	broadcast_rom(fd, rom_ptr->rom_num, "%M put %s into %1i.", ply_ptr,
-		      str, cnt_ptr);
-	print(fd, "You put %s into %1i.\n", str, cnt_ptr);
+	sprintf(g_buffer, "%%M put %s into %%1i.", str);
+	broadcast_rom(fd, rom_ptr->rom_num, g_buffer, 
+		m2args(ply_ptr, cnt_ptr));
+
+	sprintf(g_buffer, "You put %s into %%1i.\n", str);
+	mprint(fd, g_buffer, m1arg(cnt_ptr));
 
 }

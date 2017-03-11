@@ -3,23 +3,33 @@
  *
  *	Additional user routines
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul 
+ *
+ * $Id: command4.c,v 6.20 2001/07/22 20:05:52 develop Exp $
+ *
+ * $Log: command4.c,v $
+ * Revision 6.20  2001/07/22 20:05:52  develop
+ * gold theft changes
+ *
+ * Revision 6.19  2001/06/18 19:58:00  develop
+ * "lose" fix to handle conjures
+ *
+ * Revision 6.18  2001/06/06 19:36:46  develop
+ * conjure added
+ *
+ * Revision 6.17  2001/04/30 19:55:02  develop
+ * re-fixed some help problems
+ *
+ * Revision 6.16  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
 
-#ifndef WIN32
-        #include <sys/time.h>
-#else
-        #include <time.h>
-#endif
-
 #include <string.h>
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 
 /**********************************************************************/
 /*				health				      */
@@ -28,68 +38,73 @@
 /* This function shows a player his current hit points, magic points,  */
 /* experience, gold and level.					       */
 
-int health(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int health( creature *ply_ptr, cmd *cmnd )
 {
 	int	fd;
 
 	fd = ply_ptr->fd;
 	
 	if(F_ISSET(ply_ptr, PBLIND)){
-		ANSI(fd, RED);
-		ANSI(fd, BOLD);
-		ANSI(fd, BLINK);
-		print(fd, "You're obviously blind!\n");
-		ANSI(fd, NORMAL);
-		ANSI(fd, WHITE);
+		ANSI(fd, BLINDCOLOR);
+		ANSI(fd, AM_BOLD);
+		ANSI(fd, AM_BLINK);
+		output(fd, "You're obviously blind!\n");
+		ANSI(fd, AM_NORMAL);
+		ANSI(fd, MAINTEXTCOLOR);
 		return(0);
 	}
-	ANSI(fd, WHITE);
-	print(fd, "%s the %s (level %d)", ply_ptr->name, title_ply(ply_ptr), ply_ptr->level);
+	ANSI(fd, AFC_WHITE);
+	sprintf(g_buffer, "%s the %s (level %d)", ply_ptr->name, title_ply(ply_ptr), ply_ptr->level);
+	output(fd, g_buffer);
 	if(F_ISSET(ply_ptr, PHIDDN)) {
-		ANSI(fd, CYAN);
-		print(fd, " *Hidden*");
-		ANSI(fd, WHITE);
+		output_wc(fd, " *Hidden*", AFC_CYAN);
 	}
 	if(F_ISSET(ply_ptr, PNSUSN)) {
-		ANSI(fd, YELLOW);
-		print(fd, " *Thirsty|Hungry*");
-		ANSI(fd, WHITE);
+		output_wc(fd, " *Thirsty|Hungry*", AFC_YELLOW);
 	}
 	if(F_ISSET(ply_ptr, PPOISN)) {
-		ANSI(fd, BLINK);
-		ANSI(fd, GREEN);
-		print(fd, " *Poisoned*");
-		ANSI(fd, NORMAL);
+		ANSI(fd, AM_BLINK);
+		ANSI(fd, AFC_GREEN);
+		output(fd, " *Poisoned*");
+		ANSI(fd, AM_NORMAL);
 	}
 	if(F_ISSET(ply_ptr, PCHARM)) {
-		ANSI(fd, BOLD);
-		ANSI(fd, CYAN);
-		print(fd, " *Charmed*");
-		ANSI(fd, NORMAL);
+		ANSI(fd, AM_BOLD);
+		ANSI(fd, AFC_CYAN);
+		output(fd, " *Charmed*");
+		ANSI(fd, AM_NORMAL);
 	}
 	if(F_ISSET(ply_ptr, PSILNC)) {
-		ANSI(fd, BLINK);
-		ANSI(fd, MAGENTA);
-		print(fd, " *Mute*");
-		ANSI(fd, NORMAL);
+		ANSI(fd, AM_BLINK);
+		ANSI(fd, AFC_MAGENTA);
+		output(fd, " *Mute*");
+		ANSI(fd, AM_NORMAL);
 	}
 	if(F_ISSET(ply_ptr, PDISEA)) {
-		ANSI(fd, BLINK);
-		ANSI(fd, RED);	
-		print(fd," *Diseased*");
-		ANSI(fd, NORMAL);
+		ANSI(fd, AM_BLINK);
+		ANSI(fd, AFC_RED);	
+		output(fd," *Diseased*");
+		ANSI(fd, AM_NORMAL);
 	}
-	ANSI(fd, GREEN);
-	print(fd, "\n %3d/%3d Hit Points    %3d/%3d Magic Points",
+	ANSI(fd, AFC_GREEN);
+	sprintf(g_buffer, "\n %3d/%3d Hit Points    %3d/%3d Magic Points",
 		ply_ptr->hpcur, ply_ptr->hpmax, ply_ptr->mpcur, ply_ptr->mpmax);
-	ANSI(fd, RED);
-	print(fd, "    AC: %d\n", ply_ptr->armor/10);
-	ANSI(fd, YELLOW);
-	print(fd, " %7ld Experience    %7ld Gold Pieces\n", ply_ptr->experience, ply_ptr->gold);
-	ANSI(fd, NORMAL);
-	ANSI(fd, WHITE);
+	output(fd, g_buffer);
+
+	ANSI(fd, AFC_RED);
+	sprintf(g_buffer, "    AC: %d\n", ply_ptr->armor/10);
+	output(fd, g_buffer );
+
+	ANSI(fd, AFC_YELLOW);
+	sprintf(g_buffer, " %7ld Experience    %7ld Gold Pieces\n", ply_ptr->experience, ply_ptr->gold);
+	output(fd, g_buffer);
+	ANSI(fd, AM_NORMAL);
+	ANSI(fd, AFC_WHITE);
+
+
+	/* show spells under also */
+	show_spells( fd, ply_ptr );
+
 	return(0);
 }
 
@@ -101,15 +116,18 @@ cmd		*cmnd;
 /* specific command.  If help is typed by itself, a list of commands   */
 /* is produced.  Otherwise, help is supplied for the command specified */
 
-int help(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int help( creature *ply_ptr, cmd *cmnd )
 {
 	char 	file[80];
-	int	fd, c=0, match=0, num=0;
+	int	fd, c=0, match=0, num=0,cmdno=0;
+#ifndef WIN32
+	int 	a = '/';
+#else
+	int     a = '\\';
+#endif
 	
 	fd = ply_ptr->fd;
-	strcpy(file, DOCPATH);
+	strcpy(file, get_doc_path());
 
 	if(cmnd->num < 2) {
 		strcat(file, "/helpfile");
@@ -121,69 +139,96 @@ cmd		*cmnd;
 		view_file(fd, 1, file);
 		return(DOPROMPT);
 	}
+	if(!strcmp(cmnd->str[1], "news")) {
+                sprintf(file, "%s/news", get_log_path());
+                view_file(fd, 1, file);
+		return(DOPROMPT);
+	}
+	
 
-	if(!strcmp(cmnd->str[1], "policy")) {
-		strcat(file, "/policy");
+	/* the strrchr call here strips out everything up to the final
+	 * '/' so that players cant read files outside the help dir. */
+
+	if(strrchr(cmnd->str[1], a) == '\0')
+		sprintf(file, "%s/%s", get_doc_path(), cmnd->str[1]);
+	else
+		sprintf(file, "%s/%s", get_doc_path(), strrchr(cmnd->str[1], a));
+
+	if( (strstr(file, ".imm") != '\0') && (ply_ptr->class < CARETAKER) ) {
+		output(fd, "Sorry, no help on that topic.\n");
+		return(DOPROMPT);
+	}
+
+	if(file_exists(file)) {
 		view_file(fd, 1, file);
 		return(DOPROMPT);
 	}
+	else {  /* start looking for spell/command names */
 
 	do {
 		if(!strcmp(cmnd->str[1], cmdlist[c].cmdstr)) {
 			match = 1;
 			num = c;
+			cmdno = cmdlist[c].cmdno;
 			break;
 		}
 		else if(!strncmp(cmnd->str[1], cmdlist[c].cmdstr, 
 			strlen(cmnd->str[1]))) {
 			match++;
+			cmdno = cmdlist[c].cmdno;
 			num = c;
 		}
 		c++;
 	} while(cmdlist[c].cmdno);
 
-	if(num > 200 && ply_ptr->class < CARETAKER) {
-		print(fd, "Command not found.\n");
+	/* reserve help 101-399 for immortal commands */
+	if( (cmdno > 100 && cmdno < 400) && ply_ptr->class < BUILDER) {
+		output(fd, "Command not found.\n");
 		return(0);
 	}
 
 	if(match == 1) {
-		sprintf(file, "%s/help.%d", DOCPATH, cmdlist[num].cmdno);
+		sprintf(file, "%s/help.%d", get_doc_path(), cmdlist[num].cmdno);
 		view_file(fd, 1, file);
 		return(DOPROMPT);
 	}
 	else if(match > 1) {
-			print(fd, "Command is not unique.\n");
+			output(fd, "Command is not unique.\n");
 			return(0);
 	}
 
 	c = num = 0;
 	do {
-		if(!strcmp(cmnd->str[1], spllist[c].splstr)) {
+		if(!strcmp(cmnd->str[1], get_spell_name(c))) {
 			match = 1;
 			num = c;
 			break;
 		}
-		else if(!strncmp(cmnd->str[1], spllist[c].splstr, 
+		else if(!strncmp(cmnd->str[1], get_spell_name(c), 
 			strlen(cmnd->str[1]))) {
 			match++;
 			num = c;
 		}
 		c++;
-	} while(spllist[c].splno != -1);
+	} while( get_spell_num(c) != -1);
 
-	if(match == 0) {
-		print(fd, "That command does not exist.\n");
-		return(0);
-	}
-	else if(match > 1) {
-		print(fd, "Spell name not unique.\n");
+	if(match > 1) {
+		output(fd, "Spell name not unique.\n");
 		return(0);
 	}
 
-	sprintf(file, "%s/spell.%d", DOCPATH, spllist[num].splno);
-	view_file(fd, 1, file);
-	return(DOPROMPT);
+	else if(match == 1) {
+		sprintf(file, "%s/spell.%d", get_doc_path(), get_spell_num(num));
+		view_file(fd, 1, file);
+		return(DOPROMPT);
+	}
+
+	else {
+		output(fd, "Sorry, no help on that topic.\n");
+		return(DOPROMPT);
+	}
+			
+	}
 }
 
 /**********************************************************************/
@@ -193,16 +238,14 @@ cmd		*cmnd;
 /* Outputs welcome file to user, giving him/her info on how to play   */
 /* the game 							      */
 
-int welcome(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int welcome( creature *ply_ptr, cmd *cmnd )
 {
 	char	file[80];
 	int	fd;
 
 	fd = ply_ptr->fd;
 
-	sprintf(file, "%s/welcome", DOCPATH);
+	sprintf(file, "%s/welcome", get_doc_path());
 
 	view_file(fd, 1, file);
 	return(DOPROMPT);
@@ -215,17 +258,15 @@ cmd		*cmnd;
 /* This function displays a player's entire list of information, including */
 /* player stats, proficiencies, level and class.			   */
 
-int info(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int info( creature *ply_ptr, cmd *cmnd )
 {
-	char	alstr[8], tmp[80];
+	char	alstr[8];
 	int 	fd, cnt;
 	long	expneeded, lv;
 
 	fd = ply_ptr->fd;
-
-	update_ply(ply_ptr);
+/*
+	update_ply(ply_ptr); */
 
 	if(ply_ptr->level < MAXALVL)
 		expneeded = needed_exp[ply_ptr->level -1];
@@ -240,97 +281,117 @@ cmd		*cmnd;
 		strcpy(alstr, "Good");
 
 	for(lv=0,cnt=0; lv<MAXWEAR; lv++)
-		if(ply_ptr->ready[lv]) cnt++;
+		if(ply_ptr->ready[lv]) 
+			cnt++;
 	cnt += count_inv(ply_ptr, 0);
 
-        print(fd, "\n\n->");
-	print(fd, "You are ");
-	print(fd, "%s the %s\n", ply_ptr->name, title_ply(ply_ptr));
-        print(fd, "->");
-	print(fd, "Description: ");
-	print(fd, "%s\n", ply_ptr->description);
-	print(fd, "\nLevel: ");
-	print(fd, "%-20d          ", ply_ptr->level);
-	print(fd, "Race: ");
-	print(fd, "%-20s         ", race_str[ply_ptr->race]);
-	print(fd, "\nClass: ");
-	print(fd, "%-20s  ", class_str[ply_ptr->class]);
-	print(fd, "Alignment: ");
-	print(fd, "%-8s %-8s               ", F_ISSET(ply_ptr, PCHAOS) ? "Chaotic" : "Lawful", alstr);
-        print(fd, "\n");
+    output(fd, "\n\n->");
+	output(fd, "You are ");
+	sprintf(g_buffer, "%s the %s\n", ply_ptr->name, title_ply(ply_ptr));
+	output(fd, g_buffer);
+    output(fd, "->");
+	output(fd, "Description: ");
+	sprintf(g_buffer, "%s\n", ply_ptr->description);
+	output(fd, g_buffer);
+	output(fd, "\nLevel: ");
+	sprintf(g_buffer, "%-20d          ", ply_ptr->level);
+	output(fd, g_buffer );
+	output(fd, "Race: ");
+	sprintf(g_buffer, "%-20s         ", get_race_string(ply_ptr->race));
+	output(fd, g_buffer);
+	output(fd, "\nClass: ");
+	sprintf(g_buffer, "%-20s  ", get_class_string(ply_ptr->class));
+	output(fd, g_buffer);
+	output(fd, "Alignment: ");
+	sprintf(g_buffer, "%-8s %-8s               ", F_ISSET(ply_ptr, PCHAOS) ? "Chaotic" : "Lawful", alstr);
+	output_nl(fd, g_buffer);
+	output(fd, "Guild: ");
+        if(F_ISSET(ply_ptr, PPLDGK))
+	{
+           sprintf(g_buffer, "%s", cur_guilds[check_guild(ply_ptr)].name);
+           output(fd, g_buffer );
+	}
+	else
+		output(fd, "None");
+
 
 #define INTERVAL ply_ptr->lasttime[LT_HOURS].interval
 
-	print(fd, "Time of play: ");
+	output(fd, "\nTime of play: ");
 	if(INTERVAL > 86400L)
-		print(fd, "[%3d] ", INTERVAL/86400L);
+	{
+		sprintf(g_buffer, "[%3d] ", (int)(INTERVAL/86400L));
+		output(fd, g_buffer);
+	}
 	else
-		print(fd, "[  0] ");
-	print(fd, "day/s ");
-	if(INTERVAL > 3600L)
-		print(fd, "[%2d] ", (INTERVAL % 86400L)/3600L);
-	else
-		print(fd, "[ 0] ");
-	print(fd, "hour/s ");
-	print(fd, "[%2d] ", (INTERVAL % 3600L)/60L);
-	print(fd, "minute/s                     ");
+		output(fd, "[  0] ");
 
-	print(fd, "\n\nSTR: ");
-	print(fd, "%-2d        ", ply_ptr->strength);
-	print(fd, "DEX: ");
-	print(fd, "%-2d        ", ply_ptr->dexterity);
-	print(fd, "CON: ");
-	print(fd, "%-2d        ", ply_ptr->constitution);
-	print(fd, "INT: ");
-	print(fd, "%-2d        ", ply_ptr->intelligence);
-	print(fd, "PTY: ");
-	print(fd, "%-2d     ", ply_ptr->piety);
-	print(fd, "\n\n  Hit Points[Hp]: ");
-	print(fd, "%5d/%-5d     ", ply_ptr->hpcur, ply_ptr->hpmax);
-	print(fd, "Exp: ");
-	print(fd, "%9lu /%-9lu ", ply_ptr->experience, MAX(0, expneeded-ply_ptr->experience));
-	print(fd, "next level  ");
-	print(fd, "\nMagic Points[Mp]: ");
-	print(fd, "%5d/%-5d                    ", ply_ptr->mpcur, ply_ptr->mpmax);
-	print(fd, "Gold: ");
-	print(fd, "%-9lu       ", ply_ptr->gold);
-	print(fd, "\nArmour class[AC]:     ");
-	print(fd, "%-4d          ", ply_ptr->armor/10);
-	print(fd, "Inventory Weight: ");
-	print(fd, "%-4d ", weight_ply(ply_ptr));
-	print(fd, "Lbs/");
-	print(fd, "%-3d ", cnt);
-	print(fd, "Obj");
-        print(fd, "\n");
-	print(fd, "\nProficiencies:                                                          ");
-	print(fd, "\nSharp:  ");
-	print(fd, "%2d%%   ", profic(ply_ptr, SHARP));
-	print(fd, "Thrust: ");
-	print(fd, "%2d%%   ", profic(ply_ptr, THRUST));
-	print(fd, "Blunt:  ");
-	print(fd, "%2d%%   ", profic(ply_ptr, BLUNT));
-	print(fd, "Pole:   ");
-	print(fd, "%2d%%   ", profic(ply_ptr, POLE));
-	print(fd, "Missile: ");
-	print(fd, "%2d%%    ", profic(ply_ptr, MISSILE));
-	print(fd, "\n\nRealms:                                                                 ");
-	print(fd, "\nEarth:  ");
-	print(fd, "%3d%%   ", mprofic(ply_ptr, EARTH));
-	print(fd, "Wind:   ");
-	print(fd, "%3d%%   ", mprofic(ply_ptr, WIND));
-	print(fd, "Fire:   ");
-	print(fd, "%3d%%   ", mprofic(ply_ptr, FIRE));
-	print(fd, "Water:  ");
-	print(fd, "%3d%%               ", mprofic(ply_ptr, WATER));
-        print(fd, "\n");
+	output(fd, "day/s ");
+	if(INTERVAL > 3600L)
+	{
+		sprintf(g_buffer, "[%2d] ", (int)((INTERVAL % 86400L)/3600L));
+		output(fd, g_buffer);
+	}
+	else
+		output(fd, "[ 0] ");
+	output(fd, "hour/s ");
+
+	sprintf(g_buffer, "[%2d] ", (int)((INTERVAL % 3600L)/60L));
+	output(fd, g_buffer);
+	output(fd, "minute/s                     ");
+
+	sprintf(g_buffer, "\n\nSTR: %-2d        ", ply_ptr->strength);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "DEX: %-2d        ", ply_ptr->dexterity);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "CON: %-2d        ", ply_ptr->constitution);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "INT: %-2d        ", ply_ptr->intelligence);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "PTY: %-2d     ", ply_ptr->piety);
+	output(fd, g_buffer);
+
+	sprintf(g_buffer, "\n\n  Hit Points[Hp]: %5d/%-5d     ", ply_ptr->hpcur, ply_ptr->hpmax);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Exp: %9lu /%-9lu next level  ", ply_ptr->experience, MAX(0, expneeded-ply_ptr->experience));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "\nMagic Points[Mp]: %5d/%-5d                    ", ply_ptr->mpcur, ply_ptr->mpmax);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Gold: %-9lu       ", ply_ptr->gold);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "\nArmour class[AC]:     %-4d          ", ply_ptr->armor/10);
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Inventory Weight: %-4d Lbs/%-3d Objs\n", weight_ply(ply_ptr), cnt);
+	output(fd, g_buffer);
+
+	output(fd, "\nProficiencies:                                                          ");
+	sprintf(g_buffer, "\nSharp:  %2d%% ", profic(ply_ptr, SHARP));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Thrust: %2d%% ", profic(ply_ptr, THRUST));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Blunt:  %2d%% ", profic(ply_ptr, BLUNT));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Pole:  %2d%% ", profic(ply_ptr, POLE));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Missile: %2d%% ", profic(ply_ptr, MISSILE));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Bare Hand: %2d%%", profic(ply_ptr, HAND));
+	output(fd, g_buffer);
+
+	output(fd, "\n\nRealms:                                                                 ");
+	sprintf(g_buffer, "\nEarth:  %3d%%   ", mprofic(ply_ptr, EARTH));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Wind:   %3d%%   ", mprofic(ply_ptr, WIND));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Fire:   %3d%%   ", mprofic(ply_ptr, FIRE));
+	output(fd, g_buffer);
+	sprintf(g_buffer, "Water:  %3d%%               \n", mprofic(ply_ptr, WATER));
+	output(fd, g_buffer);
 	
 	F_SET(ply_ptr, PREADI);
-	if(ANSILINE)
-		ask_for(fd, "[Hit Return, Q to quit]: ");
-	else
-		print(fd, "[Hit Return, Q to Quit]: ");
-	output_buf();
-	Ply[fd].io->intrpt &= ~1;
+	ask_for(fd, "[Hit Return, Q to quit]: ");
+	output_ply_buf(fd);
+    Ply[fd].io->intrpt &= ~1; 
 	Ply[fd].io->fn = info_2;
 	Ply[fd].io->fnparam = 1;
 	return(DOPROMPT);
@@ -342,9 +403,7 @@ cmd		*cmnd;
 
 /* This function is the second half of info which outputs spells	*/
 
-void info_2(fd, param, instr)
-int 	fd, param;
-char 	*instr;
+void info_2(int	fd, int param, char *instr )
 {
 	char		str[2048];
 	char		spl[128][20];
@@ -352,22 +411,23 @@ char 	*instr;
 	creature	*ply_ptr;
 
 	ply_ptr = Ply[fd].ply;
-
+	
 	if(instr[0]) {
-		print(fd, "Aborted.\n");
+		output(fd, "Aborted.\n");
 		F_CLR(ply_ptr, PREADI);
 		RETURN(fd, command, 1);
 	}
 
 	strcpy(str, "\nSpells known: ");
-	for(i=0,j=0; i< spllist_size; i++)
+	for(i=0,j=0; i< get_spell_list_size(); i++)
 		if(S_ISSET(ply_ptr, i))
-			strcpy(spl[j++], spllist[i].splstr);
+			strcpy(spl[j++], get_spell_name(i));
+	
 
 	if(!j)
 		strcat(str, "None.");
 	else {
-		qsort((void *)spl, j, 20, strcmp);
+		qsort((void *)spl, j, 20, (PFNCOMPARE)strcmp);
 		for(i=0; i<j; i++) {
 			strcat(str, spl[i]);
 			strcat(str, ", ");
@@ -375,34 +435,113 @@ char 	*instr;
 		str[strlen(str)-2] = '.';
 		str[strlen(str)-1] = 0;
 	}
-	print(fd, "%s\n", str);
+
+	output_nl(fd, str);
+
+	show_spells( fd, ply_ptr );
+
+	F_CLR(Ply[fd].ply, PREADI);
+	RETURN(fd, command, 1);
+}
+
+
+
+/**********************************************************************/
+/*				show_spells()				      */
+/**********************************************************************/
+void show_spells( int fd, creature *ply_ptr )
+{
+	char		str[512];
+	int			count = 0;
 
 	strcpy(str, "Spells under: ");
-	if(F_ISSET(ply_ptr, PBLESS)) strcat(str, "bless, ");
-	if(F_ISSET(ply_ptr, PLIGHT)) strcat(str, "light, ");
-	if(F_ISSET(ply_ptr, PPROTE)) strcat(str, "protection, ");
-	if(F_ISSET(ply_ptr, PINVIS)) strcat(str, "invisibility, ");
-	if(F_ISSET(ply_ptr, PDINVI)) strcat(str, "detect-invisible, ");
-	if(F_ISSET(ply_ptr, PDMAGI)) strcat(str, "detect-magic, ");
-	if(F_ISSET(ply_ptr, PLEVIT)) strcat(str, "levitation, ");
-	if(F_ISSET(ply_ptr, PRFIRE)) strcat(str, "resist-fire, ");
-	if(F_ISSET(ply_ptr, PFLYSP)) strcat(str, "fly, ");
-	if(F_ISSET(ply_ptr, PRMAGI)) strcat(str, "resist-magic, ");
-	if(F_ISSET(ply_ptr, PKNOWA)) strcat(str, "know-aura, ");
-	if(F_ISSET(ply_ptr, PRCOLD)) strcat(str, "resist-cold, ");
-	if(F_ISSET(ply_ptr, PBRWAT)) strcat(str, "breathe-water, ");
-	if(F_ISSET(ply_ptr, PSSHLD)) strcat(str, "earth-shield, ");
-	if(strlen(str) == 14)
+
+	if(F_ISSET(ply_ptr, PBLESS)) 
+	{
+		strcat(str, "bless, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PLIGHT)) 
+	{
+		strcat(str, "light, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PPROTE)) 
+	{
+		strcat(str, "protection, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PINVIS)) 
+	{
+		strcat(str, "invisibility, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PDINVI)) 
+	{
+		strcat(str, "detect-invisible, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PDMAGI)) 
+	{
+		strcat(str, "detect-magic, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PLEVIT)) 
+	{
+		strcat(str, "levitation, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PRFIRE)) 
+	{
+		strcat(str, "resist-fire, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PFLYSP)) 
+	{
+		strcat(str, "fly, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PRMAGI)) 
+	{
+		strcat(str, "resist-magic, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PKNOWA)) 
+	{
+		strcat(str, "know-aura, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PRCOLD)) 
+	{
+		strcat(str, "resist-cold, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PBRWAT)) 
+	{
+		strcat(str, "breathe-water, ");
+		count++;
+	}
+	if(F_ISSET(ply_ptr, PSSHLD)) 
+	{
+		strcat(str, "resist-earth, ");
+		count++;
+	}
+
+	if( count == 0)
 		strcat(str, "None.");
 	else {
 		str[strlen(str)-2] = '.';
 		str[strlen(str)-1] = 0;
 	}
-	print(fd, "%s\n\n", str);
 
-	F_CLR(Ply[fd].ply, PREADI);
-	RETURN(fd, command, 1);
+	strcat(str, "\n\n");
+	output( fd, str );
+
+
+	return;
 }
+
+
 
 /**********************************************************************/
 /*				psend				      */
@@ -411,30 +550,36 @@ char 	*instr;
 /* This function allows a player to send a message to another player.  If */
 /* the other player is logged in, the message is sent successfully.       */
 
-int psend(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int psend( creature	*ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr = 0;
 	etag		*ign;
-	int			spaces=0, i, j, fd, len;
+	int			i, fd;
 
 	fd = ply_ptr->fd;
 
 	if(cmnd->num < 2) {
-		print(fd, "Send to whom?\n");
+		output(fd, "Send to whom?\n");
 		return 0;
 	}
 
-	if(!F_ISSET(ply_ptr, PSECOK)) {
-		print(fd, "You may not do that yet.\n");
+
+	if(!F_ISSET(ply_ptr, PSECOK) && ply_ptr->class < IMMORTAL) {
+		output(fd, "You may not do that yet.\n");
+		return(0);
+	}
+
+	if(F_ISSET(ply_ptr, PSILNC)) {
+		output_wc(fd, "You can't speak.\n", SILENCECOLOR);
 		return(0);
 	}
 
 	cmnd->str[1][0] = up(cmnd->str[1][0]);
 	for(i=0; i<Tablesize; i++) {
-		if(!Ply[i].ply) continue;
-		if(Ply[i].ply->fd == -1) continue;
+		if(!Ply[i].ply) 
+			continue;
+		if(Ply[i].ply->fd == -1) 
+			continue;
 		if(F_ISSET(Ply[i].ply, PDMINV) && ply_ptr->class < CARETAKER) 
 			continue;
 		if(!strncmp(Ply[i].ply->name, cmnd->str[1], 
@@ -444,76 +589,96 @@ cmd		*cmnd;
 			break;
 	}
 	if(!crt_ptr) {
-		print(fd, "Send to whom?\n");
+		output(fd, "Send to whom?\n");
 		return(0);
 	}
-	if(ply_ptr->class < CARETAKER && (F_ISSET(crt_ptr, PINVIS) && !F_ISSET(ply_ptr, PDINVI))) {
-		print(fd, "Send to whom?\n");
+	if( (ply_ptr->class < BUILDER) && (F_ISSET(crt_ptr, PINVIS)) && (!F_ISSET(ply_ptr, PDINVI))) {
+		output(fd, "Send to whom?\n");
 		return(0);
 	}
- 	if(F_ISSET(crt_ptr, PIGNOR) && (ply_ptr->class < CARETAKER)) {
-		print(fd, "%s is ignoring everyone.\n", crt_ptr->name);
+ 	if(F_ISSET(crt_ptr, PIGNOR) && (ply_ptr->class < BUILDER)) {
+		sprintf(g_buffer, "%s is ignoring everyone.\n", crt_ptr->name);
+		output(fd, g_buffer);
 		return(0);
 	}
 
 	ign = Ply[crt_ptr->fd].extr->first_ignore;
 	while(ign) {
-		if(!strcmp(ign->enemy, ply_ptr->name)) {
-			print(fd, "%s is ignoring you.\n", crt_ptr->name);
+		if(!strcmp(ign->enemy, ply_ptr->name)) 
+		{
+			sprintf(g_buffer, "%s is ignoring you.\n", crt_ptr->name);
+			output(fd, g_buffer);
 			return(0);
 		}
 		ign = ign->next_tag;
 	}
 	
-	len = strlen(cmnd->fullstr);
-	for(i=0; i< len && i<256; i++) {
-		if(cmnd->fullstr[i] == ' ' && cmnd->fullstr[i+1] != ' ')
-			spaces++;
-		if(spaces==2) break;
-	}
 	cmnd->fullstr[255] = 0;
-	/* Check for modem escape code */
-        for(j=0; j<len && j < 256; j++) {
-                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
-                        spaces=0;
-                        break;
-                }
-        }
 
-	if(spaces < 2 || strlen(&cmnd->fullstr[i+1]) < 1) {
-		print(fd, "Send what?\n");
+	/* this has 2 words we need to strip from the beginning */
+	clean_str( cmnd->fullstr, 2);
+
+	if(strlen(cmnd->fullstr) < 1) {
+		output(fd, "Send what?\n");
 		return(0);
 	}
-	if(F_ISSET(ply_ptr, PSILNC)) {
-		print(fd, "You can't speak.\n");
+
+
+	/* spam check */
+	if ( check_for_spam( ply_ptr ) )
+	{
 		return(0);
 	}
+
+
+	if(F_ISSET(crt_ptr, PAFK))
+	{
+		sprintf(g_buffer, "%s is AFK right now and might not respond to your telepath.\n",
+			crt_ptr->name);
+		output(fd, g_buffer);
+	}
+
 	if(F_ISSET(ply_ptr, PLECHO)){
-		ANSI(fd, CYAN);
-		print(fd, "You sent: \"%s\" to %M.\n", &cmnd->fullstr[i+1], crt_ptr);
-		ANSI(fd, NORMAL)
+		ANSI(fd, ECHOCOLOR);
+		sprintf(g_buffer, "You sent: \"%s\" to %%M.\n", cmnd->fullstr);
+		mprint(fd, g_buffer, m1arg(crt_ptr));
+		ANSI(fd, MAINTEXTCOLOR);
 	}
 	else
-		print(fd, "Message sent to %s.\n", crt_ptr->name);
+	{
+		sprintf(g_buffer, "Message sent to %s.\n", crt_ptr->name);
+		output(fd, g_buffer);
+	}
 	
-	print(crt_ptr->fd, "### %M just flashed, \"%s\".\n", ply_ptr,
-	      &cmnd->fullstr[i+1]);
+	sprintf(g_buffer, "### %%M just flashed, \"%s\".\n", 
+		cmnd->fullstr);
+	mprint(crt_ptr->fd, g_buffer, m1arg(ply_ptr));
 	
-	if(F_ISSET(ply_ptr, PDMINV) && crt_ptr->class < CARETAKER) {
-		print(fd, "They will be unable to reply.\n");
+	if(F_ISSET(ply_ptr, PDMINV) && crt_ptr->class < BUILDER) {
+		output(fd, "They will be unable to reply.\n");
 		if(F_ISSET(ply_ptr, PALIAS)) 
-			print(fd, "Sent from: %s.\n", Ply[fd].extr->alias_crt);
+		{
+			sprintf(g_buffer, "Sent from: %s.\n", Ply[fd].extr->alias_crt->name);
+			output(fd, g_buffer);
+		}
 	}
 
-	if(ply_ptr->class > CARETAKER || crt_ptr->class > CARETAKER)
+	if(ply_ptr->class > BUILDER || crt_ptr->class > BUILDER)
 		return(0);
 
-	broadcast_eaves("--- %s sent to %s, \"%s\".", ply_ptr->name,
-		crt_ptr->name, &cmnd->fullstr[i+1]);
+	if (ply_ptr->class == DM)
+		return(0);
+
+	sprintf(g_buffer, "--- %s sent to %s, \"%s\".", ply_ptr->name,
+		crt_ptr->name, cmnd->fullstr);
+	broadcast_eaves(g_buffer);
 
 	return(0);
 
 }
+
+
+
 
 /**********************************************************************/
 /*				broadsend			      */
@@ -524,59 +689,56 @@ cmd		*cmnd;
 /* so the number used that day is checked before the broadcast is     */
 /* allowed.							      */
 
-int broadsend(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int broadsend(creature *ply_ptr, cmd *cmnd )
 {
-	int	i, j, found=0, fd;
-	int 	len;
+	int		fd;
+	char	str[512];
 
 	fd = ply_ptr->fd;
-	len = strlen(cmnd->fullstr);
-	for(i=0; i<len && i < 256; i++) {
-		if(cmnd->fullstr[i] == ' ' && cmnd->fullstr[i+1] != ' ')
-			found++;
-		if(found==1) break;
-	}
+
 	cmnd->fullstr[255] = 0;
+	clean_str( cmnd->fullstr, 1 );
 
-	/* Check for modem escape code */
-        for(j=0; j<len && j < 256; j++) {
-                if(cmnd->fullstr[j] == '+' && cmnd->fullstr[j+1] == '+') {
-                        found=0;
-                        break;
-                }
-        }
-
-	if(found < 1 || strlen(&cmnd->fullstr[i+1]) < 1) {
-		print(fd, "Send what?\n");
+	if(strlen(cmnd->fullstr) < 1) {
+		output(fd, "Send what?\n");
 		return(0);
 	}
 
+        if(SECURE) {
+                if(ply_ptr->level < 2) {
+                        output(fd, "You are not authorized to broadcast.\n");
+                        return(0);
+                 }
+        }
+
 	if(RFC1413) {
 		if((!strcmp(Ply[fd].io->userid, "no_port") || !strcmp(Ply[fd].io->userid, "unknown")) && !F_ISSET(ply_ptr, PAUTHD)){
-			print(fd, "You are not authorized to broadcast.\n");
+			output(fd, "You are not authorized to broadcast.\n");
 			return(0);
 		}
 	} /* RFC1413 */
 
 	if(!F_ISSET(ply_ptr, PSECOK)) {
-		print(fd, "You may not do that yet.\n");
+		output(fd, "You may not do that yet.\n");
 		return(0);
 	}
 
 	if(!HEAVEN)
 		if(!dec_daily(&ply_ptr->daily[DL_BROAD])) {
-			print(fd,"You've used up all your broadcasts today.\n");
+			output(fd,"You've used up all your broadcasts today.\n");
 			return(0);
 		}
 
 	if(F_ISSET(ply_ptr, PSILNC)) {
-		print(fd, "Your voice is too weak to do that.\n");
+		output_wc(fd, "Your voice is too weak to do that.\n", SILENCECOLOR);
 		return(0);
 	}
-	print(fd, "Message broadcast.\n");
-	broadcast("### %M broadcasted, \"%s\".", ply_ptr, &cmnd->fullstr[i+1]);
+	output(fd, "Message broadcast.\n");
+
+	strcpy(str, "### %M broadcasted, \"");
+	strcat(str, cmnd->fullstr);
+	strcat(str, "\"." );
+	broadcast_c(str, ply_ptr);
 
 	return(0);
 
@@ -590,41 +752,58 @@ cmd		*cmnd;
 /* Follow loops are not allowed; i.e. you cannot follow someone who is   */
 /* following you.  Also, you cannot follow yourself.			 */
 
-int follow(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int follow( creature *ply_ptr, cmd *cmnd )
 {
 	creature	*old_ptr, *new_ptr;
 	room		*rom_ptr;
 	ctag		*cp, *pp, *prev;
+	etag		*ignore;
 	int		fd;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 
 	if(cmnd->num < 2) {
-		print(fd, "Follow who?\n");
+		output(fd, "Follow who?\n");
 		return(0);
 	}
 
 	F_CLR(ply_ptr, PHIDDN);
+
+	if(F_ISSET(ply_ptr, PDMOWN)) {
+		output(fd, "You may not do that now.\n");
+		return(0);
+	}
+		
 	lowercize(cmnd->str[1], 1);
 	new_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
 			   cmnd->str[1], cmnd->val[1]);
 
 	if(!new_ptr) {
-		print(fd, "No one here by that name.\n");
+		output(fd, "No one here by that name.\n");
 		return(0);
 	}
 
 	if(new_ptr == ply_ptr && !ply_ptr->following) {
-		print(fd, "You can't follow yourself.\n");
+		output(fd, "You can't follow yourself.\n");
 		return(0);
 	}
 
+	ignore = Ply[new_ptr->fd].extr->first_ignore;
+        while(ignore) {
+                if(!strcmp(ignore->enemy, new_ptr->name)) 
+                {
+                        sprintf(g_buffer, "%s is ignoring you.\n", new_ptr->name);
+                        output(fd, g_buffer);
+                        return(0);
+                }
+                ignore = ignore->next_tag;
+        }
+
 	if(new_ptr->following == ply_ptr) {
-		print(fd, "You can't.  %s's following you.\n",
+		sprintf(g_buffer, "You can't.  %s's following you.\n",
 		      F_ISSET(new_ptr, PMALES) ? "He":"She");
+		output(fd, g_buffer);
 		return(0);
 	}
 
@@ -645,10 +824,11 @@ cmd		*cmnd;
 			cp = cp->next_tag;
 		}
 		ply_ptr->following = 0;
-		print(fd, "You stop following %s.\n", old_ptr->name);
+		sprintf(g_buffer, "You stop following %s.\n", old_ptr->name);
+		output(fd, g_buffer);
 		if(!F_ISSET(ply_ptr, PDMINV))
-			print(old_ptr->fd, "%M stops following you.\n", 
-			      ply_ptr);
+			mprint(old_ptr->fd, "%M stops following you.\n", 
+			      m1arg(ply_ptr));
 	}
 
 	if(ply_ptr == new_ptr)
@@ -669,11 +849,12 @@ cmd		*cmnd;
 		new_ptr->first_fol = pp;
 	}
 
-	print(fd, "You start following %s.\n", new_ptr->name);
-	if(!F_ISSET(ply_ptr, PDMINV)) {
-		print(new_ptr->fd, "%M starts following you.\n", ply_ptr);
+	sprintf(g_buffer, "You start following %s.\n", new_ptr->name);
+	output(fd, g_buffer );
+	if(!F_ISSET(ply_ptr, PDMINV) || (F_ISSET(ply_ptr, PDMINV) && new_ptr->class >= ply_ptr->class)) {
+		mprint(new_ptr->fd, "%M starts following you.\n", m1arg(ply_ptr));
 		broadcast_rom2(fd, new_ptr->fd, ply_ptr->rom_num,
-			      "%M follows %m.", ply_ptr, new_ptr);
+			      "%M follows %m.", m2args(ply_ptr, new_ptr));
 	}
 
 	return(0);
@@ -688,9 +869,7 @@ cmd		*cmnd;
 /* following him.  When successful, that player will no longer be     */
 /* following.							      */
 
-int lose(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int lose( creature *ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr;
 	ctag		*cp, *prev;
@@ -698,34 +877,35 @@ cmd		*cmnd;
 
 	fd = ply_ptr->fd;
 
-if(cmnd->num == 1) {
+	if(cmnd->num == 1) 
+	{
  
-                if (ply_ptr->following == 0){
-                        print(fd, "You're not following anyone.\n");
-                        return(0);
- 
-                }
-      crt_ptr = ply_ptr->following;
+		if (ply_ptr->following == 0){
+			output(fd, "You're not following anyone.\n");
+            return(0);
+            }
+
+		crt_ptr = ply_ptr->following;
         cp = crt_ptr->first_fol;
         if(cp->crt == ply_ptr) {
                 crt_ptr->first_fol = cp->next_tag;
                 free(cp);
         }
         else while(cp) {
-                if(cp->crt == ply_ptr) {
-                        prev->next_tag = cp->next_tag;
-                        free(cp);
-                        break;
-                }
-                prev = cp;
-                cp = cp->next_tag;
+            if(cp->crt == ply_ptr) {
+                prev->next_tag = cp->next_tag;
+                free(cp);
+                break;
+            }
+            prev = cp;
+            cp = cp->next_tag;
         }
         ply_ptr->following = 0; 
-                print(fd,"You stop following %m\n",crt_ptr);
-                if (!F_ISSET(ply_ptr,PDMINV))
-                        print(crt_ptr->fd,"%M stops following you\n",ply_ptr);
-                return(0);
-        }                   
+        mprint(fd,"You stop following %m\n", m1arg(crt_ptr));
+        if (!F_ISSET(ply_ptr,PDMINV))
+			mprint(crt_ptr->fd,"%M stops following you\n", m1arg(ply_ptr));
+        return(0);
+    }                   
 
 	F_CLR(ply_ptr, PHIDDN);
 
@@ -734,12 +914,27 @@ if(cmnd->num == 1) {
 			   cmnd->str[1], cmnd->val[1]);
 
 	if(!crt_ptr) {
-		print(fd, "That person is not following you.\n");
+		crt_ptr = find_crt_in_rom(ply_ptr,ply_ptr->parent_rom,
+			  cmnd->str[1],cmnd->val[1],MON_FIRST);
+	}
+
+	if(!crt_ptr) {
+		output(fd, "That person is not following you.\n");
 		return(0);
 	}
 
 	if(crt_ptr->following != ply_ptr) {
-		print(fd, "That person is not following you.\n");
+		output(fd, "That person is not following you.\n");
+		return(0);
+	}
+
+	if(crt_ptr->type == MONSTER && F_ISSET(crt_ptr, MCONJU)) {
+		broadcast_rom(fd, crt_ptr->parent_rom->rom_num, "%M fades away.\n", m1arg(crt_ptr));
+		sprintf(g_buffer, "%s fades away.\n", crt_ptr->name);
+		output(fd, g_buffer);
+		del_conjured(crt_ptr);
+		del_crt_rom(crt_ptr,crt_ptr->parent_rom);
+		free_crt(crt_ptr);
 		return(0);
 	}
 
@@ -759,11 +954,13 @@ if(cmnd->num == 1) {
 	}
 	crt_ptr->following = 0;
 
-	print(fd, "You lose %s.\n", F_ISSET(crt_ptr, PMALES) ? "him":"her");
+	sprintf(g_buffer, "You lose %s.\n", F_ISSET(crt_ptr, PMALES) ? "him":"her");
+	output(fd, g_buffer);
+
 	if(!F_ISSET(ply_ptr, PDMINV)) {
-		print(crt_ptr->fd, "%M loses you.\n", ply_ptr);
-		broadcast_rom2(fd, crt_ptr->fd, "%M loses %m.", 
-			       ply_ptr, crt_ptr);
+		mprint(crt_ptr->fd, "%M loses you.\n", m1arg(ply_ptr));
+		broadcast_rom2(fd, ply_ptr->fd, crt_ptr->fd, "%M loses %m.", 
+			       m2args(ply_ptr, crt_ptr));
 	}
 
 	return(0);
@@ -777,26 +974,47 @@ if(cmnd->num == 1) {
 /* This function allows you to see who is in a group or party of people */
 /* who are following you.						*/
 
-int group(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int group( creature	*ply_ptr, cmd *cmnd )
 {
 	ctag	*cp;
 	char	str[2048];
 	int	fd, found = 0;
 
+	ASSERTLOG( ply_ptr );
+
 	fd = ply_ptr->fd;
 
-	cp = ply_ptr->first_fol;
-	if(!cp) {
-		print(fd, "No one is following you.\n");
+	if ( ply_ptr->first_fol == NULL 
+		&& ply_ptr->following == NULL )
+	{
+		output(fd, "You are not in a group.\n");
 		return(0);
 	}
 
 	strcpy(str, "People in your group: ");
+
+	if ( ply_ptr->first_fol )
+	{
+		/* you are being followed */
+		cp = ply_ptr->first_fol;
+	}
+	else
+	{
+		/* you are following */
+		cp = ply_ptr->following->first_fol;
+
+		/* if you are following, list the leader */
+		strcat(str, crt_str(ply_ptr, ply_ptr->following, 0, 0));
+		strcat(str, ", ");
+		found = 1;
+	}
+
+
 	while(cp) {
-		if(!F_ISSET(cp->crt, PDMINV)) {
-			strcat(str, crt_str(cp->crt, 0, 0));
+		/* dont list yourself */
+		if ( cp->crt != ply_ptr 
+			&& (!F_ISSET(cp->crt, PDMINV) || ply_ptr->class > BUILDER)) {
+			strcat(str, crt_str(ply_ptr, cp->crt, 0, 0));
 			strcat(str, ", ");
 			found = 1;
 		}
@@ -804,12 +1022,13 @@ cmd		*cmnd;
 	}
 
 	if(!found) {
-		print(fd, "No one is following you.\n");
-		return(0);
+		output(fd, "No one is following you.\n");
 	}
-
-	str[strlen(str)-2] = 0;
-	print(fd, "%s.\n", str);
+	else
+	{
+		str[strlen(str)-2] = 0;
+		output_nl(fd, str);
+	}
 
 	return(0);
 
@@ -824,17 +1043,15 @@ cmd		*cmnd;
 /* in a room.  If the ranger is successful, he will be told what dir-    */
 /* ection the last person who was in the room left.			 */
 
-int track(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int track( creature *ply_ptr, cmd *cmnd )
 {
-	long	i, t;
+	time_t	i, t;
 	int	fd, chance;
 
 	fd = ply_ptr->fd;
 
-	if(ply_ptr->class != RANGER && ply_ptr->class != DRUID && ply_ptr->class < CARETAKER) {
-		print(fd, "Only rangers and druids can track.\n");
+	if(ply_ptr->class != RANGER && ply_ptr->class != DRUID && ply_ptr->class < BUILDER) {
+		output(fd, "Only rangers and druids can track.\n");
 		return(0);
 	}
 
@@ -849,27 +1066,28 @@ cmd		*cmnd;
 	}
 
 	ply_ptr->lasttime[LT_TRACK].ltime = t;
-	ply_ptr->lasttime[LT_TRACK].interval = 5 - bonus[ply_ptr->dexterity];
+	ply_ptr->lasttime[LT_TRACK].interval = MAX(0, 5 - bonus[(int)ply_ptr->dexterity]);
 	
 	if(F_ISSET(ply_ptr, PBLIND)) {
-		print(fd, "You're blind...how can you see tracks?\n");
+		output_wc(fd, "You're blind...how can you see tracks?\n", BLINDCOLOR);
 		return(0);
 	}
-	chance = 25 + (bonus[ply_ptr->dexterity] + ply_ptr->level)*5;
+	chance = 25 + (bonus[(int)ply_ptr->dexterity] + ply_ptr->level)*5;
 
 	if(mrand(1,100) > chance) {
-		print(fd, "You fail to find any tracks.\n");
+		output(fd, "You fail to find any tracks.\n");
 		return(0);
 	}
 
 	if(!ply_ptr->parent_rom->track[0]) {
-		print(fd, "There are no tracks in this room.\n");
+		output(fd, "There are no tracks in this room.\n");
 		return(0);
 	}
 
-	print(fd, "You find tracks leading to the %s.\n",
+	sprintf(g_buffer, "You find tracks leading to the %s.\n",
 	      ply_ptr->parent_rom->track);
-	broadcast_rom(fd, ply_ptr->rom_num, "%M finds tracks.", ply_ptr);
+	output(fd, g_buffer);
+	broadcast_rom(fd, ply_ptr->rom_num, "%M finds tracks.", m1arg(ply_ptr));
 
 	return(0);
 
@@ -883,49 +1101,40 @@ cmd		*cmnd;
 /* another player.  If successful, they will be able to see it and      */
 /* another roll is made to see if they get caught.			*/
 
-int peek(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int peek( creature *ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr;
 	room		*rom_ptr;
 	char		str[2048];
-	long		i, t;
+	time_t		i, t;
 	int		fd, n, chance;
+	long		amt;
 
 	fd = ply_ptr->fd;
 	rom_ptr = ply_ptr->parent_rom;
 	str[0] = 0;
 
 	if(cmnd->num < 2) {
-		print(fd, "Peek at who?\n");
+		output(fd, "Peek at who?\n");
 		return(0);
 	}
 
-	if(ply_ptr->class != THIEF && ply_ptr->class < CARETAKER) {
-		print(fd, "Only thieves can peek.\n");
+	if(ply_ptr->class != THIEF && ply_ptr->class < BUILDER) {
+		output(fd, "Only thieves can peek.\n");
 		return(0);
 	}
 	
 	if(F_ISSET(ply_ptr, PBLIND)){
-		ANSI(fd, RED);
-		print(fd, "You can't do that...You're blind!\n");
-		ANSI(fd, WHITE);
+		output_wc(fd, "You can't do that...You're blind!\n", BLINDCOLOR);
 		return(0);
 	}
 
-	crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
-			   cmnd->str[1], cmnd->val[1]);
+	crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr, cmnd->str[1], cmnd->val[1],
+		MON_FIRST);
 
 	if(!crt_ptr) {
-		lowercize(cmnd->str[1], 1);
-		crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-				   cmnd->str[1], cmnd->val[1]);
-
-		if(!crt_ptr) {
-			print(fd, "That person is not here.\n");
-			return(0);
-		}
+		output(fd, "That person is not here.\n");
+		return(0);
 	}
 
 	i = LT(ply_ptr, LT_PEEKS);
@@ -940,34 +1149,46 @@ cmd		*cmnd;
 	ply_ptr->lasttime[LT_PEEKS].interval = 5;
 
 	if(crt_ptr->type==MONSTER && (F_ISSET(crt_ptr, MUNSTL) || F_ISSET(crt_ptr, MTRADE) || F_ISSET(crt_ptr, MPURIT)) && ply_ptr->class < DM) {        
-		print(fd, "You shouldn't do that, someone will think you are a thief.\n");  
+		output(fd, "You shouldn't do that, someone will think you are a thief.\n");  
 		return(0);		    
 	} 
 		
 	chance = (25 + ply_ptr->level*10)-(crt_ptr->level*5);
-	if (chance<0) chance=0;
-	if (ply_ptr->class >= CARETAKER) chance=100;
+	if (chance<0) 
+		chance=0;
+	if (ply_ptr->class >= BUILDER) 
+		chance=100;
 	if(mrand(1,100) > chance) {
-		print(fd, "You failed.\n");
+		output(fd, "You failed.\n");
 		return(0);
 	}
 
 	chance = MIN(90, 15 + ply_ptr->level*5);
 
-	if(mrand(1,100) > chance && ply_ptr->class < CARETAKER) {
-		print(crt_ptr->fd, "%s peeked at your inventory.\n", ply_ptr);
+	if(mrand(1,100) > chance && ply_ptr->class < BUILDER) {
+		sprintf(g_buffer, "%s peeked at your inventory.\n", ply_ptr->name);
+		output(crt_ptr->fd, g_buffer);
 		broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num, 
 			       "%M peeked at %m's inventory.", 
-			       ply_ptr, crt_ptr);
+			       m2args(ply_ptr, crt_ptr));
 	}
 
 	sprintf(str, "%s is carrying: ", F_ISSET(crt_ptr, PMALES) ? "He":"She");
 	n = strlen(str);
-	if(list_obj(&str[n], ply_ptr, crt_ptr->first_obj) > 0)
-		print(fd, "%s.\n", str);
-	else
-		print(fd, "%s isn't holding anything.\n",
+	if(list_obj(&str[n], ply_ptr, crt_ptr->first_obj) > 0) {
+		output_nl(fd, str);
+	}
+	else {
+		sprintf(g_buffer, "%s isn't holding anything.\n",
 		      F_ISSET(crt_ptr, PMALES) ? "He":"She");
+		output(fd, g_buffer);
+	}
+
+	if(crt_ptr->type == PLAYER) {
+		amt = crt_ptr->gold/(mrand(1,4));
+		sprintf(g_buffer, "%s has about %ld gold.\n", crt_ptr->name, amt);
+		output(fd, g_buffer);
+	}
 
 	return(0);
 

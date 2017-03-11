@@ -1,0 +1,12 @@
+Help on command:
+
+	Transmute
+
+  This skill is only available to experienced Alchemists.  This skill
+allows an alchemist to transmute certain items into useful creations.
+
+example:
+
+:transmute
+You successfully transmute the lead to gold.
+

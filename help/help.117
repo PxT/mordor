@@ -1,21 +1,14 @@
 Help on:
-        *MONSTER [#] [p|n] [#]
 
-This function creates a monster in the parent room.  If no number is
-specified, then it creates one at random from the random list for the
-parent room.  
-	If the 'p' flag is given then a prototpye monster is 
-loaded.  Use the prototype if you intend to make permanent changes to 
-the database, since this insures that the inventory is properly set.   
-	If the 'n' flags is given followed by a number then the specified
-number of monster will appear. 
+	*MONSTER [#]
+
+	This function creates a monster in the parent room.  If no number 
+is specified, then it creates one at random from the random list for the 
+parent room.
 
 example:
 :*monster 105
 The Fenris Wolf just arrived.
 The Fenris Wolf attacks you.
-:*mon 4 n 4
-Four noblemen just arrived.
-:*mon 4 p
-Loading prototype creature.
-A noblemen just arrived.
+
+ 

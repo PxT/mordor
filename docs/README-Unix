@@ -1,21 +1,23 @@
 
-mordor -- This is the game itself.  The version given has been
-compiled under Linux 2.0.29.  If you have another OS, you will need
+mordord -- This is the game itself.  The version given has been
+compiled under Linux 2.4.14.  If you have another OS, you will need
 to compile it yourself.  Look in the src/ directory for more
 information. 
-	You can call frp from a shell program if you like, or just from
-the command line.  It accepts flags, with the two most important being the
-port and the reuse command.  To run the game on a port other than the
-default (4040) you can start it with: mordor <port#>.
+	You can call mordord from a shell program if you like, or just
+from the command line.  It accepts flags, with the two most important
+being the port and the reuse command.  To run the game on a port other
+than the default (4040) you can start it with: mordor <port#>.
 	If you are having trouble with it running try: 
 
 			mordor -r &  
 
-	This will tell it to reuse the ports (we saw ocassional problems
-with this under Linux 1.1.59). 
-	Another common problem is that this distribution is installed
-in the improper place and not configured properly.
+	This will tell it to reuse the ports
+The most common problem is that this distribution is installed
+in the improper place and not configured properly.  Please make sure that 
+the uid that the mordord process is running under owns all files 
+associated with this package.  It is not necessary nor recommended that 
+you run mordord as root.
   
-It *MUST* be installed in the paths defined in mtype.h (default is
-/home/mordor).  If you wish to run it under another directory, you
-will need to change the paths in bin/mordor.cf.
+mordord *MUST* be installed in the paths defined in mtype.h (default is
+/home/mordor).  If you wish to run it under another directory, you will
+need to change the paths in bin/mordor.cf.

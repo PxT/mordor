@@ -1,0 +1,16 @@
+ASSASSIN
+
+	An assassin is one who lurks in shadows, waiting to backstab his or
+her victim.  Assassins are noted for their ability to deal quick death; a
+single attack being capable of doing incredible amounts of damage. The
+assassin can hide better than most classes.  Part of their murderous training
+involves learning to pick locks, which they can do almost as well as thieves.
+Also, they have the ability to look ahead into new areas for victims with
+the scout skill.
+
+Skills:
+Backstab, pick locks, scout, sneak.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+Level:		2   3   4   5   6   7   8   9   10  11
+Stat gained:	STR CON INT PTY DEX STR DEX CON INT DEX

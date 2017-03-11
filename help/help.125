@@ -1,9 +1,11 @@
+
 Help on:
+
 	*LIST <m|o|r> [options]
 
-This funtion calls a program that lists any and all rooms, objects, or
-monsters.  WARNING: The output may be extrememly long if the flags are
-not set properly.
+	This funtion calls a program that lists any and all rooms, 
+objects, or monsters.  WARNING: The output may be extrememly long if the 
+flags are not set properly.
 
 	Options:
 

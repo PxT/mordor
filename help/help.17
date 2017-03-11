@@ -1,6 +1,5 @@
 Help on:
 	SEND <player> <message>
-        SEN <player> <message>
 	TELL <player> <message>
 
 Send can be used to telepathically communicate with another player in

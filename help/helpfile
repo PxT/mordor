@@ -1,12 +1,15 @@
 			LIST OF COMMANDS:
 		      [===================]
 
- COMMUNICATION:				MOVEMENT:		
- say\tell\gtalk\yell\broadcast\ignore 	go / flee / sneak / leave
+COMMUNICATION:				
+say / tell / gtalk / yell / broadcast / ignore / cls / gld 	
+
+MOVEMENT:		
+e / w/ n / s / go / flee / sneak / leave / hide
 +-------------------------------------------------------------------+
  STATUS:					
  score / info / health / who / whois / look / finger / set / clear
- group / equipment / inventory / party / time
+ group / equipment / inventory / party / time / guilds
 +-------------------------------------------------------------------+
  ACTIONS: Not including social commands.
  get / remove / wield / hold / drink / use / wear / bribe / pledge
@@ -17,8 +20,9 @@
  attack / kill / bash / circle / backstab / turn / charm / cast
 +-------------------------------------------------------------------+
  SPECIAL: These are class skills.
- bash / circle / pray / sing / meditate / touch / picklock / peek
- steal / backstab / haste / track / turn / charm / teach / sneak
+bash  / barkskin  / berserk   / charm  / haste /  meditate / picklock  
+peek  / pray      / scout     / sing   / sneak / steal     / teach  
+touch / track     / transform / transmute
 [===================================================================]
  Type "help <command>" to get help on any one of these commands.
  Type "help spells" to list all available spells.

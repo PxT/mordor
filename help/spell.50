@@ -1,0 +1,5 @@
+Fear:
+This spell causes it's target to have a greater chance of fleeing.
+MP Cost: 15
+Syntax:
+cast fear <target>

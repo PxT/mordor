@@ -1,7 +1,9 @@
+
 Help on:
+
 	*RM
 	
-This function outputs the current parent room number.
+	This function outputs the current parent room number.
 
 example:
 :*rm

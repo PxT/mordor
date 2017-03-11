@@ -1,0 +1,8 @@
+The Builders Command consist of:
+	*set	to set exists and rooms
+	*name	to give a room a name
+	*app -s	to a append text to the short description of a room
+	*app -l	to append text to the long description of a room
+	
+	*save	THIS IS THE MOST IMPORTANT COMMAND - *save as you build!
+	

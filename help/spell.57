@@ -1,0 +1,12 @@
+Syntax:
+
+	CAST CURSE <creature>
+
+Cost: 12
+
+  This spell affects clerical and detect-style magics.  There is 
+always a chance that the spell may not succeed.
+
+
+:cast curse Gonozo
+You cast curse on Gonzo.

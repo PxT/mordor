@@ -1,5 +1,6 @@
-Earth-shield:
-This spell protects its target from harsh environments
+Resist-earth:
+This spell protects its target from earth realm magic
+and harsh earth-related environments
 MP cost: 12
 Syntax:
 cast earth-shield <target>

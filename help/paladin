@@ -1,0 +1,16 @@
+PALADIN
+
+	The paladin is a brave warrior of faith, and must continue to be good
+aligned in order to inflict damage. An evil paladin suffers greatly. The
+paladin is a powerful warrior and healer, and like clerics, can turn the
+undead.  A paladin suffers a small experience point loss if he flees from a
+fight.  The paladin is also required to spend a term serving in the militia
+to show their interest in benefitting society. 
+
+Skills:
+Pray, turn.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	STR CON DEX INT PTY STR PTY CON DEX PTY

@@ -1,0 +1,13 @@
+FIGHTER
+
+	The fighter is a master of the fighting arts. As the fighter advances
+he will achieve great proficiency in the use of weapons. The fighter is able
+to bash and circle opponents like a barbarian. 
+
+Skills:
+Bash, circle.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	DEX CON PTY INT STR DEX STR CON PTY STR

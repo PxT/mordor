@@ -1,0 +1,11 @@
+Help on command:
+
+	CHARM <TARGET> [#]
+
+	This skill allows bards to charm creatures and players, thus making 
+the bard immune to attack for the duration of the charm.
+
+Example:
+A nobleman just arrived.
+: charm nob
+Your song charms the nobleman.

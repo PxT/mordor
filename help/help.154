@@ -1,11 +1,11 @@
-Help on DM command:
+HELP ON:
+	*advance <player> <level>
 
-        *advance [player] [level]
+This command allows DM's to advance a player's level.  In doing so it
+will properly adjust HP, MP & stats.
 
-  This will change the level of a character to a specified level.  It will
-  also update hit points and magic points.  (It can lower, too.)
+Example:
 
-example:
-:*advance Terrance 5
+: *advance darwin 12
+Darwin has been advanced to level 12.
 
-Terrance has been raised to level 5.

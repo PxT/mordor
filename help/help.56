@@ -1,6 +1,4 @@
 Help on:
-        ASK <monster> [#] [<keyword>]
-        PARLEY <monster> [#] [<keyword>]
 	TALK <monster> [#] [<keyword>]
 
 Talk allows you to communicate with certain monsters.  Some monsters

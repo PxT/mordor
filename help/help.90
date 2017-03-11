@@ -1,0 +1,13 @@
+Help on command:
+
+	description [text|del]
+
+  With this command you can set your character's description.  To delete 
+the description, use the 'del' form.
+
+example:
+
+:desc I am one mean dwarf!
+Description set.
+:desc del
+Description cleared.

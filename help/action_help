@@ -1,0 +1,87 @@
+
+Action/Logic Creature
+
+Logic creatures is a very powerful and compact script language to give
+monsters a list of actions to preform. The actions can be a simple stream
+of repeating commands or a complex script with test for objects, monsters,
+players, races and many more. Command branching can be forced,on success 
+of a test or on the failure of a test. 
+
+Logic Scripts:
+
+The logic script has the same format as a talk script and uses the same
+naming scheme except for a extra -Act after the level. They are stored i
+n the objmon/talk dir. And mobs can have both a talk script and a action
+script. The following is a list of commands avalible and the file format
+of action scripts.
+
+
+A simple 2 block logic script may look like this.
+
+?R:5 !1:1         
+*
+>S
+Logic Man says 'Look a foul orc is here!'
+
+
+
+One block of a logic script has a systax line (?R:5 !1) and the next
+line is a text script. If there is no text to use in the command then
+a * must be supplied. The above script test '?' for a race 'R' with
+the index of 5 in the room. If it does not find it '!' then it jumps to
+command 1 in a since making a loop. If a orc is found then it drops
+to the next command block and does a action command '>' and says 'S'
+what is in the text line to the room. Once a script reaches the bottom
+it starts all over again.
+
+
+Script Syntax
+-------------
+?                  -- Test command takes several arguments
+!                  -- Not succesful then goto
+@                  -- unconditional goto  
+=                  -- Test successful then goto 
+>                  -- Perform action, takes arguments
+
+
+Notes: 
+-----------------------------------------------------------------------------
+
+? - Test 
+--------
+
+Test can take a number of arguments as follows
+?R:<#>       Test for a certain ply race in the room
+?O:<#>       Test for a certain item in the room
+?o:<#>       Test for a item on a player in the room
+?P           Test for a player in room
+?C:<#>       Test for a creature in the room
+
+             *if a test for a creature/player/object is successful a 
+	      pointer to the victim is retained and actions can then
+	      be performed ont he victim
+
+
+! - If not successful goto 
+--------------------------
+!<#>:<#>    The first number is the command to test the
+            second number is the command to jump to if test
+	    is true
+      
+            
+= - If successful goto 
+--------------------------
+=<#>:<#>    The first number is the command to test the
+            second number is the command to jump to if test
+	    is true
+
+@ - uncoditional jump
+---------------------
+@<#>        Supply the number of the command to jump to
+
+
+> - Do a action
+---------------
+>S          Do say and send the text line to the room
+>Y          Do yell and broadcast the text line to everyone
+

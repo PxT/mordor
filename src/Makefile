@@ -1,67 +1,41 @@
-# uncomment the following if you're running under IRIX
-# OSFLAGS = -DIRIX -signed  
+include ../os.mak
 
-# uncomment the following if you are running under Win95/NT
-# OSFLAGS = -DWIN32
-
-# uncomment the following if you want to use the dmalloc debugger
-# you will need to add '-ldmalloc' to the LIBS line too.
-#OSFLAGS = -DDMALLOC 
-
-# Read the COMPILE file to see more information on the various 
-# CFLAG options.
-
-CFLAGS = -DCOMPRESS -DFINGERACCT $(OSFLAGS) 
-
-LIBS = -lm -lc # -ldmalloc
-CC = cc -g 
-OUTFILE = mordor
-
-OBJECTS = global.o files1.o files2.o files3.o command1.o command2.o \
-          command3.o command4.o command5.o command6.o command7.o \
-          command8.o command9.o command10.o command11.o command12.o \
+CFLAGS = $(CFLAGS2) -Wall
+LIBS = $(LIBS2) -lm -lc -lmordb -lmorutil -lport 
+OUTFILE = mordord 
+OBJECTS = main.o global.o command1.o command2.o command3.o command4.o \
+          command5.o command6.o command7.o command8.o command9.o \
+          command10.o command11.o command12.o command13.o access.o \
           magic1.o magic2.o magic3.o magic4.o magic5.o magic6.o \
-          magic7.o magic8.o magic9.o dm7.o command13.o screen.o \
-          dm1.o dm2.o dm3.o dm4.o dm5.o dm6.o io.o files4.o \
+          magic7.o magic8.o magic9.o io.o screen.o errhandl.o \
+          dm1.o dm2.o dm3.o dm4.o dm5.o dm6.o dm7.o dm8.o  readcf.o \
           player.o creature.o room.o object.o update.o post.o action.o \
-          misc.o special1.o compress.o memory.o combat.o logic.o talk.o \
-          errhandl.o readini.o 
+          misc.o special1.o memory.o combat.o logic.o talk.o bank.o \
+	  msp.o guild.o room2.o player2.o command14.o dm9.o
+            
 
 
-OBJECTS2 = files1.o global.o
+all:
+	@touch io.o main.o command2.o
+	@rm -f io.o main.o command2.o;make full
 
-$(OUTFILE): $(OBJECTS) main.o
-	$(CC) $(CFLAGS) $(OFLAGS) $(OBJECTS) main.o -o $(OUTFILE) $(LIBS)
+full $(OUTFILE): $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(OUTFILE) $(LIBS)
+	@touch *.o
 	chmod 700 $(OUTFILE)
 #	strip $(OUTFILE)
 
-auth: auth.o
-	$(CC) auth.o -o auth
-	mv auth ../bin
+revision:
+	@ci -l ../include/version.h
+	@ci -l *.[ch]
+	@ci -l Makefile
 
 clean: 
-	rm main.o $(OBJECTS) 
+	rm -f $(OBJECTS) $(OUTFILE) out
 
 port:
-	rm -f io.o main.o;
-	make
-
-fing: finger.o
-	$(CC) finger.o -o fing
-	mv fing ../bin
-
-plist: plist.o $(OBJECTS) 
-	$(CC) $(CFLAGS) $(OFLAGS) $(OBJECTS) plist.o -o plist $(LIBS)
-	mv plist ../bin
-
-gstat: gstat.o $(OBJECTS) 
-	$(CC) $(CFLAGS) $(OFLAGS) $(OBJECTS) gstat.o -o gstat $(LIBS)
-	mv gstat ../bin
-
-psearch: psearch.o $(OBJECTS)
-	$(CC) $(CFLAGS) $(OFLAGS) $(OBJECTS) psearch.o -o psearch $(LIBS)
-	mv psearch ../bin
+	rm -f io.o main.o;make
 
 version:
-	rm -f io.o main.o;
-	make
+	@touch command2.c io.c main.c
+	make full

@@ -1,0 +1,20 @@
+
+
+Help on command:
+
+	*JAIL <player> [# days]
+
+	Jails the specified player and logs it.  # days is optional but highly recommended.
+	Number of days defaults to 1 if not specified.
+	Jails are logged, and may be accessed with '*log j'
+	Please refer to the log when considering releasing people from jail.
+
+example:
+:*jail gonzo 3
+Gonzo jailed for 3 days
+
+:*log j
+Wed Feb  2 22:32:36 2000: Erech jailed Gonzo for 3 days.
+
+
+

@@ -2,16 +2,75 @@
  *
  *	Global variables.
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: global.c,v 6.30 2001/07/29 22:11:02 develop Exp $
+ *
+ * $Log: global.c,v $
+ * Revision 6.30  2001/07/29 22:11:02  develop
+ * added shop_cost
+ *
+ * Revision 6.29  2001/07/25 02:55:04  develop
+ * fixes for thieves dropping stolen items
+ * fixes for gold dropping by pkills
+ *
+ * Revision 6.29  2001/07/23 04:04:09  develop
+ * added alias to *st for dm_status
+ *
+ * Revision 6.28  2001/07/22 20:42:54  develop
+ * added dm_stolen
+ *
+ * Revision 6.27  2001/07/18 01:43:24  develop
+ * changed cost of stores
+ *
+ * Revision 6.26  2001/07/17 19:39:49  develop
+ * re-arranged some help file numbers
+ *
+ * Revision 6.25  2001/07/17 19:28:44  develop
+ * *** empty log message ***
+ *
+ * Revision 6.25  2001/07/15 05:42:50  develop
+ * set_rom_owner setup_shop created
+ *
+ * Revision 6.24  2001/07/03 22:03:38  develop
+ * testing intelligent monsters
+ *
+ * Revision 6.23  2001/07/03 22:00:22  develop
+ * *** empty log message ***
+ *
+ * Revision 6.22  2001/07/03 21:52:28  develop
+ * *** empty log message ***
+ *
+ * Revision 6.21  2001/06/30 01:58:34  develop
+ * added ENMLIST
+ *
+ * Revision 6.20  2001/06/30 01:50:30  develop
+ * removed experience loss when conjured creature kills a player
+ *
+ * Revision 6.19  2001/06/29 03:22:12  develop
+ * added struct for default enemy lists
+ *
+ * Revision 6.18  2001/06/10 13:25:38  develop
+ * set bonus table back to original
+ *
+ * Revision 6.17  2001/04/30 19:55:02  develop
+ * renumbered a couple of help files
+ *
+ * Revision 6.16  2001/04/23 03:52:29  develop
+ * added NOCREATE flag to toggle character creation
+ *
+ * Revision 6.15  2001/04/12 05:00:57  develop
+ * STRMOR <-> SEQUAK (named wrong)
+ *
+ * Revision 6.14  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
+#include <stdio.h>
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #define MIGNORE
 #include "mextern.h"
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
 
 /*****************************************************************
 *
@@ -22,7 +81,7 @@
 
 /* DM's name */
 	char dmname[][20] = {
-		"Sorahl", "China", "Sandman", "Ugluk", "Darwin", "Tesseract", "Erech"
+		"Morgoth", "Sorahl", "China", "Sandman", "Ugluk", "Darwin", "Tesseract", "Erech", 
 	};
 	char title[80]="Mordor MUD Server";
 	char auth_questions_email[80]="";
@@ -62,6 +121,8 @@
 	char full_moon[80]="The full moon shines across the land.";
 
 
+
+
 	int		ANSILINE=0;
 	int		AUTOSHUTDOWN=0;
 	int		CHECKDOUBLE=0;
@@ -76,43 +137,138 @@
 	int		SECURE=0;
 	int		SCHED=0;
 	int		SUICIDE=0;
+	int		NOCREATE=0;
 
-	int		PORTNUM=4040;
+	unsigned short	PORTNUM=4040;
 	int		CRASHTRAP=0;
-	int		HASHROOMS=0;
-	int		NICEEXP=0;
+	int		GUILDEXP=0;
 	int		SAVEONDROP=0;
+	int		NOBULLYS=0;
+	int		MSP=0;
 
 
-/*	char	ROOMPATH, MONPATH, OBJPATH, PLAYERPATH;
-	char	DOCPATH, POSTPATH, BINPATH, LOGPATH; */
+    int    PROMPTCOLOR = AFC_MAGENTA;
+    int    CREATURECOLOR = AFC_WHITE;
+    int    BROADCASTCOLOR = AFC_YELLOW;
+    int    MAINTEXTCOLOR = AFC_WHITE;
+    int    PLAYERCOLOR = AFC_CYAN;
+    int    ITEMCOLOR = AFC_WHITE;
+    int    EXITCOLOR = AFC_GREEN;
+	int	   ROOMNAMECOLOR = AFC_CYAN;
+    int    ECHOCOLOR = AFC_CYAN;
+    int    WEATHERCOLOR = AFC_WHITE;
+
+
+    int    ATTACKCOLOR = AFC_RED;
+    int    MISSEDCOLOR = AFC_CYAN;
+    int    TRAPCOLOR = AFC_MAGENTA;
+    int    POISONCOLOR = AFC_RED;
+    int    DISEASECOLOR = AFC_RED;
+    int    BLINDCOLOR = AFC_RED;
+	int	   SILENCECOLOR = AFC_YELLOW;	
+	int	   ERRORCOLOR = AFC_RED;
+
+	/* not used yet */
+    int    LOGONOFFCOLOR = AFC_WHITE;
+    int    TITLECOLOR = AFC_WHITE;
+    int    TALKCOLOR = AFC_WHITE;
+    int    FROSTCOLOR = AFC_YELLOW;
+
+	int	start_room_num = 1;
+	int	death_room_num = 50;
+	int	jail_room_num = 6972;
+	int 	pkill_in_battle = 1;
+	int 	init_eq[9] = { 1505, 1502, 1503, 1504, 1, 3, 2, 5, 6 };
+	int 	trophy_num = 1500;
+	long	shop_cost = 1000000;
+
+	time_t	dm_timeout = 0;
+	time_t	ct_timeout = 1200;
+	time_t	bld_timeout = 1200;
+	time_t	ply_timeout = 300;
+
+#ifdef TODO
+
+	make these configurable flags in mordor.cf
+	that then control whether that command is logged or not.
+
+	*teleport
+	*rm
+	*reload
+	*save
+	*create
+	*perm
+	*invis
+	*send
+	*purge
+	*ac
+	*users
+	*echo
+	*flushrooms
+	*shutdown
+	*force
+	*flushcrtobj
+	*monster
+	*status
+	*add
+	*set
+	*log
+	*spy
+	*lock
+	*finger
+	*list
+	*info
+	*parameter
+	*silence
+	*broad
+ 	*replace
+	*name
+   	*append
+   	*prepend
+   	*gcast
+	*group
+	*notepad
+ 	*delete
+	*oname
+	*cname
+	*active
+	*dust
+	*dmhelp
+	*attack
+	*enemy
+	*charm
+	*auth
+	*possess
+	*tell
+	*memory
+	*find
+	*clear
+	*talk
+	*gamestat
+	*advance
+	*dmallocstats
+	*war
+#endif
+
 /* end configurable settings */
 
+char	g_buffer[4096];
 int		Tablesize;
 int		Cmdnum;
 long	Time;
-long	StartTime;
+time_t	StartTime;
 struct	lasttime	Shutdown;
+struct	lasttime	Guildwar;
 struct	lasttime	Weather[5];
-int		Spy[PMAX];
 int		Numlockedout;
 lockout	*Lockout;
 
-struct {
-	creature	*ply;
-	iobuf		*io;
-	extra		*extr;
-} Ply[PMAX];
+int	bHavePort;
+short	Random_update_interval = 13;
 
-struct {
-	short		hpstart;
-	short		mpstart;
-	short		hp;
-	short		mp;
-	short		ndice;
-	short		sdice;
-	short		pdice;
-} class_stats[15] = {
+plystruct Ply[PMAX];
+
+class_stats_struct class_stats[CLASS_COUNT] = {
 	{  0,  0,  0,  0,  0,  0,  0},
 	{ 19,  2,  6,  2,  1,  6,  0},	/* assassin */
 	{ 24,  1,  8,  1,  1,  3,  1},	/* barbarian */
@@ -126,6 +282,7 @@ struct {
 	{ 17,  3,  6,  2,  1,  3,  0},  /* monk */
 	{ 15,  4,  5,  3,  1,  4,  0},  /* druid */
 	{ 15,  4,  4,  4,  1,  3,  0},	/* alchemist */
+	{ 30, 30, 10, 10,  5,  5,  5},	/* builder */
 	{ 30, 30, 10, 10,  5,  5,  5},	/* caretaker */
 	{ 30, 30, 10, 10,  5,  5,  5}	/* DM */
 };
@@ -133,35 +290,50 @@ struct {
 int bonus[35] = { -4, -4, -4, -3, -3, -2, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 		  2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
 
-char class_str[][15] = { "None", "Assassin", "Barbarian", "Cleric",
-	"Fighter", "Mage", "Paladin", "Ranger", "Thief", "Bard", "Monk",
-	"Druid", "Alchemist", "Caretaker","Dungeonmaster" };
+/* int bonus[35] = { -4, -4, -3,-3,-3,-2, -2, -1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+                  2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 }; */
 
-char race_str[][15] = { "Unknown", "Dwarf", "Elf", "Half-elf", "Halfling",
-	"Human", "Orc", "Half-giant", "Gnome", "Troll", "Half-orc", "Ogre","Dark-elf", "Goblin" };
 
-char race_adj[][15] = { "Unknown", "Dwarven", "Elven", "Half-elven",
-	"Halfling", "Mannish", "Orcish", "Half-giant", "Gnomish", "Trollkin",
-	"Half-orc", "Ogre", "Dark-elf", "Goblin" };
+/* INT is a data type on some platforms so I had to change it */
+/* but I did not want to mess up this nicely arranged array */
+#define INT INTELLIGENCE
+
+/*
+
+The level_cycle has been severely tweaked, with this idea in mind:
+P = Primary Requisite
+S = Secondary Requisite
+M = Important but not a requisite
+N = Not a requisite
+Z = Unneeded/unwanted stat
+
+The core structure is this for all classes:
+Level:  2   3   4   5   6   7   8   9   10  11
+Stat:   S   M   N   Z   P   S   P   M   N   P
+
+*/
 
 short level_cycle[][10] = {
    /* 2    3    4    5    6    7    8    9    10   11 */
-	{ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0   },
-	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },  /* assassin */
-	{ INT, DEX, PTY, CON, STR, CON, DEX, STR, PTY, STR },  /* barbarian */
-	{ STR, DEX, CON, PTY, INT, PTY, INT, DEX, CON, INT },  /* cleric */
-	{ PTY, INT, DEX, CON, STR, CON, INT, STR, DEX, STR },  /* fighter */
-	{ STR, DEX, PTY, CON, INT, CON, INT, DEX, PTY, INT },  /* mage */
-	{ DEX, INT, CON, STR, PTY, STR, INT, PTY, CON, PTY },  /* paladin */
-	{ PTY, STR, INT, CON, DEX, CON, DEX, STR, INT, DEX },  /* ranger */
-	{ INT, CON, PTY, STR, DEX, STR, CON, DEX, PTY, DEX },  /* thief */
-	{ CON, PTY, STR, INT, DEX, INT, DEX, PTY, STR, DEX },  /* bard */
-	{ PTY, CON, STR, DEX, INT, CON, INT, PTY, CON, STR },  /* monk */
-	{ STR, DEX, CON, PTY, INT, CON, INT, DEX, CON, INT },  /* druid */
-	{ STR, DEX, PTY, CON, INT, CON, INT, CON, PTY, INT },  /* alchemist */
-	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY },  /* caretaker */
-	{ STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY }   /* DM */
+    { 0,   0,   0,   0,   0,   0,   0,   0,   0,   0   },
+    { STR, CON, INT, PTY, DEX, STR, DEX, CON, INT, DEX },  /* assassin */
+    { CON, DEX, PTY, INT, STR, CON, STR, DEX, PTY, STR },  /* barbarian */
+    { INT, DEX, CON, STR, PTY, INT, PTY, DEX, CON, PTY },  /* cleric */
+    { DEX, CON, PTY, INT, STR, DEX, STR, CON, PTY, STR },  /* fighter */
+    { PTY, DEX, CON, STR, INT, PTY, INT, DEX, CON, INT },  /* mage */
+    { STR, CON, DEX, INT, PTY, STR, PTY, CON, DEX, PTY },  /* paladin */
+    { STR, CON, PTY, INT, DEX, STR, DEX, CON, PTY, DEX },  /* ranger */
+    { INT, STR, CON, PTY, DEX, INT, DEX, STR, CON, DEX },  /* thief */
+    { DEX, STR, PTY, CON, INT, DEX, INT, STR, PTY, INT },  /* bard */
+    { DEX, PTY, INT, STR, CON, DEX, CON, PTY, INT, CON },  /* monk */
+    { PTY, CON, INT, STR, DEX, PTY, DEX, CON, INT, DEX },  /* druid */
+    { INT, PTY, DEX, STR, CON, INT, CON, PTY, DEX, CON },  /* alchemist */
+    { STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY },  /* builder */
+    { STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY },  /* caretaker */
+    { STR, DEX, INT, CON, PTY, STR, DEX, INT, CON, PTY }   /* DM */
 };
+
+#undef INT
 
 short thaco_list[][20] = { 
 		{ 20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20 }, 
@@ -177,72 +349,73 @@ short thaco_list[][20] = {
 /*mn*/  { 18,18,17,17,16,16,15,15,14,14,13,12,11,11,10,10, 9, 8, 7, 6 },	
 /*dr*/  { 20,19,19,18,18,17,17,16,15,14,14,13,13,12,12,11,10,10, 9, 8 },
 /*al*/  { 20,20,19,19,18,18,17,17,16,16,15,15,15,14,14,13,13,12,11,10 },
-		{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-		{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+/*bu*/	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+/*ct*/	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+/*dm*/	{  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 };
 
-long quest_exp[] = {
-	120, 500, 1000, 1000, 1000, 1000, 125, 125,
-	1000, 1000, 125, 125, 125, 1000, 2500, 2500,
-	2500, 5, 5, 5, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125,
-	125, 125, 125, 125, 125, 125, 125, 125
-};
+
  
 long needed_exp[] = {
     /*2   3     4     5     6     7      8      9      10 */
     512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 100000,
     166410, 277360, 394171, 560992, 757125, 1087504, 1402815,
     1739616, 2203457, 2799000, 3505139, 4465120, 5792661, 7319072,
-    8874375, 15000000};   
+    8874375, 15000000};
 
-char lev_title[][8][20] = {
-	{ "", "", "", "", "", "", "", "" },
-	{ "Minor Assassin", "Rutterkin", "Killer", "Cutthroat",
-	  "Murderer", "Executioner", "Expert Assassin", "Master Assassin" },
-	{ "Grunt", "Tribesman", "Savage", "Brutalizer", 
-	  "Dragon-slayer", "Barbarian Chief", "Destroyer", "Master Barbarian" },
-	{ "Acolyte", "Healer", "Adept", "Priest",
-	  "Cardinal", "Lama", "Patriarch", "High Priest" },
-	{ "Veteran", "Warrior", "Punisher", "Pugilist",
-	  "Myrmidon", "Hero", "Champion", "Lord" },
-	{ "Apprentice", "Prestidigitator", "Necromancer", "Occultate",
-	  "Thaumaturgist", "Enchanter", "Sorcerer", "Wizard" },
-	{ "Gallant", "Protector", "Warder", "Guardian",
-	  "Ordained Paladin", "Chevalier", "Justiciar", "Holy Warrior" },
-	{ "Searcher", "Scout", "Tracker", "Underhillsman", 
-	  "Royal Guide", "Pathfinder", "Ranger Knight", "Ranger Lord" },
-	{ "Rogue", "Footpad", "Dervish", "Burglar",
-	  "Sharper", "Magsman", "High Thief", "Master Thief" },
-	{ "Jongleur", "Lyrist", "Sonneteer", "Skald",
-	  "Minstrel", "Muse", "Bard", "Master Bard" },
-	{ "Novice", "Initiate", "Brother", "Disciple", "Immaculate",  
-	  "Master", "Superior Master", "Grand Master" },
-	{ "Aspiriant", "Ovate", "Initiate", "Master Initiate",
-	  "Druid", "Master Druid", "Archdruid", "Great Druid" },
-	{ "Scholar", "Sage", "Artificer", "Runemaster",
-	  "Alchemist", "Mechanician", "Archeus", "Master Archeus" },
-	{ "Builder", "Creator", "Slave", "Daemon",
-	  "Addict", "Hero", "Dungeonmaster", "Caretaker" },
-	{ "Builder", "Creator", "Programmer", "Dungeon Lord", 
-	  "Immortal", "Divine Entity", "Addict", "Dungeonmaster"  }
-};
+guild cur_guilds[10];
+
+char ply_cond_desc[][50] = {
+        {" is in excellent condition.\n"},
+        {" has a few small scratches.\n"},
+        {" is wincing in pain.\n"},
+        {" is slightly bruised and battered.\n"},
+        {" has some minor wounds.\n"},
+        {" is bleeding profusely.\n"},
+        {" has a nasty and gaping wound.\n"},
+        {" has many grevious wounds.\n"},
+        {" is mortally wounded.\n"},
+        {" is barely clinging to life.\n"}
+        };
+
+char obj_cond_desc[][60] = {
+        {"It is in pristine condition.\n"},
+        {"It is in excellent condition.\n"},
+        {"It is in good condition.\n"},
+        {"It has a few scratches.\n"},
+        {"It is showing some wear.\n"},
+        {"It has many scratches and dents.\n"},
+        {"It is worn from heavy use.\n"},
+        {"It is in bad condition.\n"},
+        {"It is nearly broken.\n"},
+        {"It looks like it could fall apart any moment now.\n"},
+        {"It is broken and utterly useless.\n"}
+	};
+
+char dam_desc[][20] = {
+	{"barely nicks"},
+	{"scratches"},
+	{"bruises"},
+	{"hurts"},
+	{"wounds"},
+	{"smites"},
+	{"maims"},
+	{"pulverizes"},
+	{"devestates"},
+	{"mangles"},
+	{"obliterates"},
+	{"annihilates"},
+	{"ferociously rends"}
+	};
+
+
+
+typedef int (* PFN_COMMAND ) (creature *, cmd * );
 
 struct {
 	char	*cmdstr;
 	int	cmdno;
-	int	(*cmdfn)();
+	PFN_COMMAND cmdfn;
 } cmdlist[] = {
 	{ "n", 1, move },
 	{ "north", 1, move },
@@ -275,7 +448,7 @@ struct {
 	{ "goodbye", 3, quit },
 	{ "goodbye", 3, quit },
 	{ "say", 4, say },
-	{ "\"", 4, say },
+/*	{ "\"", 4, say }, */
 	{ "'", 4, say },
 	{ "get", 5, get },
 	{ "take", 5, get },
@@ -337,8 +510,9 @@ struct {
 	{ "list", 41, list },
 	{ "buy", 42, buy },
 	{ "sell", 43, sell },
-	{ "value", 44, value },
-	{ "cost", 44, value },
+	{ "appraise", 44, appraise },
+	{ "cost", 44, appraise },
+	{ "value", 44, appraise },
 	{ "bs", 45, backstab },
 	{ "backstab", 45, backstab },
 	{ "train", 46, train },
@@ -348,7 +522,7 @@ struct {
 	{ "time", 49, prt_time },
 	{ "circle", 50, circle },
 	{ "bash", 51, bash },
-	{ "save", 52, savegame },
+	{ "save", 52, save_ply_cmd },
 	{ "sendmail", 53, postsend },
 	{ "readmail", 54, postread },
 	{ "deletemail", 55, postdelete },
@@ -384,14 +558,20 @@ struct {
 	{ "charm", 81, bard_song2},
 	{ "meditate", 82, meditate},
 	{ "touch", 83, touch_of_death},
-	{ "prep",84,prep_herb },
+	{ "transform",84,transform },
 	{ "apply",85,apply_herb },
 	{ "ingest",86,ingest_herb },
 	{ "eat",87,eat },
 	{ "paste",88,paste_herb },
-	{ "transmute", 89, recharge_wand },
+	{ "recharge", 89, recharge_wand },
 	{ "description", 90, describe_me },
 	{ "enchant", 91, tmp_enchant },
+	{ "version", 92, about },
+	{ "scout", 93, scout },
+	{ "transmute", 94, transmute },
+	{ "berserk", 95, berserk },
+	{ "uptime", 96, uptime},
+	{ "barkskin", 97, barkskin },
 /*
 	{ "channelemote", 97, channelemote},
 	{ "chemote", 97, channelemote},
@@ -401,6 +581,16 @@ struct {
 	{ "clemote", 98, classemote},
 	{ "classsend", 99, class_send},
 	{ "clsend", 99, class_send},
+	/* help 101-399 reserved for DM commands */
+	{ "guildtalk", 401, guild_send},
+	{ "gls", 401, guild_send},
+	{ "guilds", 402, guilds_list},
+	{ "offer", 403, offer},	
+	{ "shop", 404, setup_shop },
+	{ "balance", 405, bank_balance },
+	{ "withdraw", 405, bank_withdrawl },
+	{ "deposit", 405, bank_deposit },
+	{ "transfer", 405, transfer_balance },
 	
 	{ "nod", 100, action },
 	{ "sleep", 100, action },
@@ -421,7 +611,6 @@ struct {
 	{ "laugh", 100, action },
 	{ "burp", 100, action },
 	{ "frustrate", 100, action },
-	{ "warm", 100, action},
 	{ "kick", 100, action },
 	{ "tackle", 100, action },
 	{ "knee", 100, action },
@@ -480,6 +669,7 @@ struct {
 	{ "fart", 100, action },
 	{ "comfort", 100, action },
 	{ "pat", 100, action },
+	{ "pet", 100, action },
 	{ "kiss", 100, action },
 	{ "glare", 100, action },
 	{ "slap", 100, action },
@@ -494,25 +684,66 @@ struct {
 	{ "scratch", 100, action },
 	{ "strut", 100, action },
 	{ "sulk", 100, action },
-	{ "satisfied", 100, action },
 	{ "wince", 100, action },
 	{ "roll", 100, action },
 	{ "raise", 100, action },
 	{ "whine", 100, action },
 	{ "growl", 100, action },
+	{ "grr", 100, action },
 	{ "high5", 100, action },
 	{ "moon", 100, action },
 	{ "purr", 100, action },
 	{ "taunt", 100, action },
 	{ "eye", 100, action },
+	{ "msmile", 100, action },
 	{ "worship", 100, action },
 	{ "flip", 100, action },
 	{ "groan", 100, action },
+	{ "salute", 100, action },
+	{ "sneer", 100, action },
+	{ "grovel", 100, action },
+	{ "nose", 100, action },
+	{ "cuddle", 100, action },
+	{ "wsmile", 100, action },
+	{ "ssmile", 100, action },
+	{ "twirl", 100, action },
+	{ "flaugh", 100, action },
+	{ "rlaugh", 100, action },
+	{ "hlaugh", 100, action },
+	{ "snivel", 100, action },
+	{ "smell", 100, action },
+	{ "pace", 100, action },
+	{ "sneeze", 100, action },
+	{ "lick", 100, action },
+	{ "snort", 100, action },
+	{ "grind", 100, action },
+	{ "kisshand", 100, action },
+	{ "sneer", 100, action },
+	{ "point", 100, action },
+	{ "imitate", 100, action },
+	{ "thumb", 100, action },
+	{ "punch", 100, action },
+	{ "plead", 100, action },
+	{ "grovel", 100, action },
+	{ "cower", 100, action },
+	{ "cuddle", 100, action },
+	{ "shush", 100, action },
+	{ "beckon", 100, action },
+	{ "greet", 100, action },
+	{ "squirm", 100, action },
+	{ "idea", 100, action },
+	{ "collapse", 100, action },
+	{ "sweat", 100, action },
+	{ "attention", 100, action },
+	{ "squirm", 100, action },
+	{ "nosepick", 100, action },
+	{ "blah", 100, action },
+	/* help 101-399 reserved for DM commands */
 	{ "*teleport", 101, dm_teleport },
 	{ "*t", 101, dm_teleport },
 	{ "*rm", 102, dm_rmstat },
 	{ "*reload", 103, dm_reload_rom },
-	{ "*save", 104, dm_resave },
+	{ "*save", 104, dm_save },
 	{ "*create", 105, dm_create_obj },
 	{ "*c", 105, dm_create_obj },
 	{ "*perm", 106, dm_perm },
@@ -525,12 +756,19 @@ struct {
 	{ "*users", 111, dm_users },
 	{ "*echo", 112, dm_echo },
 	{ "*flushrooms", 113, dm_flushsave },
+	{ "*sh", 114, shutdown_catch},
+	{ "*shu", 114, shutdown_catch},
+	{ "*shut", 114, dm_shutdown},
+	{ "*shutd", 114, shutdown_catch},
+	{ "*shutdo", 114, shutdown_catch},
+	{ "*shutdow", 114, shutdown_catch},
 	{ "*shutdown", 114, dm_shutdown },
 	{ "*f", 115, dm_force },
 	{ "*force", 115, dm_force },
 	{ "*flushcrtobj", 116, dm_flush_crtobj },
 	{ "*monster", 117, dm_create_crt },
 	{ "*status", 118, dm_stat },
+	{ "*st", 118, dm_stat },
 	{ "*add", 119, dm_add_rom },
 	{ "*set", 120, dm_set },
 	{ "*log", 121, dm_log },
@@ -567,6 +805,19 @@ struct {
 	{ "*talk", 152, dm_talk },
 	{ "*gamestat", 153, dm_game_status },
 	{ "*advance", 154, dm_advance },
+	{ "*mallocstats", 155, dm_dmalloc_stats },
+	{ "*builderhelp", 160, builder_help },
+	{ "*own", 161, dm_own_ply },
+	{ "*dumpio", 162, dm_dump_io },
+	{ "*jail", 163, dm_jail },
+	{ "*afk", 164, dm_afk },
+	{ "*mstat", 165, dm_mstat },
+	{ "*ostat", 166, dm_ostat },
+	{ "*tdump", 167, dm_dump_db },
+	{ "*war", 168, guild_war },
+	{ "*welcome", 169, welcome_edit },
+	{ "*shop", 170, dm_reset_shop },
+	{ "*stolen", 171, dm_stolen },
 	{ "push", -2, 0 },
 	{ "press", -2, 0 },
 	{ "@", 0, 0 }
@@ -583,71 +834,8 @@ char article[][10] = {
 	"@"
 };
 
-struct {
-	char 	*splstr;
-	int	splno;
-	int	(*splfn)();
-} spllist[] = {
-	{ "vigor", SVIGOR, vigor },
-	{ "hurt", SHURTS, offensive_spell },
-	{ "light", SLIGHT, light },
-	{ "curepoison", SCUREP, curepoison },
-	{ "bless", SBLESS, bless },
-	{ "protection", SPROTE, protection },
-	{ "fireball", SFIREB, offensive_spell },
-	{ "invisibility", SINVIS, invisibility },
-	{ "restore", SRESTO, restore },
-	{ "detect-invisible", SDINVI, detectinvis },
-	{ "detect-magic", SDMAGI, detectmagic },
-	{ "teleport", STELEP, teleport },
-	{ "stun", SBEFUD, befuddle },
-	{ "lightning", SLGHTN, offensive_spell },
-	{ "iceblade", SICEBL, offensive_spell },
-	{ "enchant", SENCHA, enchant },
-	{ "word-of-recall", SRECAL, recall },
-	{ "summon", SSUMMO, summon },
-	{ "mend-wounds", SMENDW, mend },
-	{ "heal", SFHEAL, heal },
-	{ "track", STRACK, magictrack },
-	{ "levitate", SLEVIT, levitate },
-	{ "resist-fire", SRFIRE, resist_fire },
-	{ "fly", SFLYSP, fly },
-	{ "resist-magic", SRMAGI, resist_magic },
-	{ "shockbolt", SSHOCK, offensive_spell },
-	{ "rumble", SRUMBL, offensive_spell },
-	{ "burn", SBURNS, offensive_spell },
-	{ "blister", SBLIST, offensive_spell },
-	{ "dustgust", SDUSTG, offensive_spell },
-	{ "waterbolt", SWBOLT, offensive_spell },
-	{ "crush", SCRUSH, offensive_spell },
-	{ "shatterstone", SENGUL, offensive_spell },
-	{ "burstflame", SBURST, offensive_spell },
-	{ "steamblast", SSTEAM, offensive_spell },
-	{ "engulf", SSHATT, offensive_spell },
-	{ "immolate", SIMMOL, offensive_spell },
-	{ "bloodboil", SBLOOD, offensive_spell },
-	{ "thunderbolt", STHUND, offensive_spell },
-	{ "earthquake", SEQUAK, offensive_spell },
-	{ "flamefill", SFLFIL, offensive_spell },
-	{ "know-aura", SKNOWA, know_alignment },
-	{ "remove-curse", SREMOV, remove_curse },
-	{ "resist-cold", SRCOLD, resist_cold },
-	{ "breathe-water", SBRWAT, breathe_water },
-	{ "earth-shield", SSSHLD, earth_shield },
-	{ "clairvoyance", SLOCAT, locate_player },
-	{ "drain-exp", SDREXP, drain_exp },
-	{ "remove-disease", SRMDIS, rm_disease },
-	{ "cure-blindness", SRMBLD, rm_blind },
-	{ "fear", SFEARS, fear }, 
-	{ "room-vigor", SRVIGO, room_vigor }, 
-	{ "transport", STRANO, object_send },
-	{ "blind", SBLIND, blind },
-	{ "silence", SSILNC, silence },
-	{ "fortune", SFORTU, fortune },
-	{ "@", -1,0 }
-};
 
-int spllist_size = sizeof(spllist)/sizeof(*spllist);
+
 
 struct osp_t ospell[] = {
 	/*
@@ -658,54 +846,169 @@ struct osp_t ospell[] = {
 	int	sdice;
 	int	pdice;
 	char	bonus_type;
+	int	intcast;
 	*/
-	{ SHURTS,  WIND,  3, 1, 8,  0, 1 },	/* hurt */
-	{ SRUMBL, EARTH,  3, 1, 8,  0, 1 },	/* rumble */
-	{ SBURNS,  FIRE,  3, 1, 7,  1, 1 },	/* burn */
-	{ SBLIST, WATER,  3, 1, 8,  0, 1 },	/* blister */
+	{ SHURTS,  WIND,  3, 1, 8,  0, 1, 1},	/* hurt */
+	{ SRUMBL, EARTH,  3, 1, 8,  0, 1, 1},	/* rumble */
+	{ SBURNS,  FIRE,  3, 1, 7,  1, 1, 1},	/* burn */
+	{ SBLIST, WATER,  3, 1, 8,  0, 1, 1},	/* blister */
 
-	{ SDUSTG,  WIND,  7, 2, 5,  7, 2 },	/* dustgust */
-	{ SCRUSH, EARTH,  7, 2, 5,  7, 2 },	/* stonecrush */
-	{ SFIREB,  FIRE,  7, 2, 5,  8, 2 },	/* fireball */
-	{ SWBOLT, WATER,  7, 2, 5,  8, 2 },	/* waterbolt */
+	{ SDUSTG,  WIND,  7, 2, 5,  7, 2, 4},	/* dustgust */
+	{ SCRUSH, EARTH,  7, 2, 5,  7, 2, 4},	/* stonecrush */
+	{ SFIREB,  FIRE,  7, 2, 5,  8, 2, 4},	/* fireball */
+	{ SWBOLT, WATER,  7, 2, 5,  8, 2, 4},	/* waterbolt */
 
-	{ SSHOCK,  WIND, 10, 2, 5, 13, 2 },	/* shockbolt */
-	{ SENGUL, EARTH, 10, 2, 5, 13, 2 },	/* engulf */
-	{ SBURST,  FIRE, 10, 2, 5, 13, 2 },	/* burstflame */
-	{ SSTEAM, WATER, 10, 2, 5, 13, 2 },	/* steamblast */
+	{ SSHOCK,  WIND, 10, 2, 5, 13, 2, 7},	/* shockbolt */
+	{ SENGUL, EARTH, 10, 2, 5, 13, 2, 7},	/* engulf */
+	{ SBURST,  FIRE, 10, 2, 5, 13, 2, 7},	/* burstflame */
+	{ SSTEAM, WATER, 10, 2, 5, 13, 2, 7},	/* steamblast */
 
-	{ SLGHTN,  WIND, 15, 3, 4, 18, 3 },	/* lightning */
-	{ SSHATT, EARTH, 15, 3, 4, 19, 3 },	/* shatterstone */
-	{ SIMMOL,  FIRE, 15, 3, 4, 18, 3 },	/* immolate */
-	{ SBLOOD, WATER, 15, 3, 4, 18, 3 },	/* bloodboil */
+	{ SLGHTN,  WIND, 15, 3, 4, 18, 3, 10},	/* lightning */
+	{ SSHATT, EARTH, 15, 3, 4, 19, 3, 10},	/* shatterstone */
+	{ SIMMOL,  FIRE, 15, 3, 4, 18, 3, 10},	/* immolate */
+	{ SBLOOD, WATER, 15, 3, 4, 18, 3, 10},	/* bloodboil */
 
-	{ STHUND,  WIND, 25, 4, 5, 30, 3 },	/* thuderbolt */
-	{ SEQUAK, EARTH, 25, 4, 5, 30, 3 }, 	/* earthquake */
-	{ SFLFIL,  FIRE, 25, 4, 5, 30, 3 },	/* flamefill */
-	{ SICEBL, WATER, 25, 4, 5, 30, 3 },	/* iceblade */
-	{ -1, 0, 0, 0, 0, 0, 0 }
+	{ STHUND,  WIND, 25, 4, 5, 30, 3, 13},	/* thuderbolt */
+	{ SEQUAK, EARTH, 25, 4, 5, 30, 3, 13}, 	/* tremor */
+	{ SFLFIL,  FIRE, 25, 4, 5, 30, 3, 13},	/* flamefill */
+	{ SICEBL, WATER, 25, 4, 5, 30, 3, 13},	/* iceblade */
+
+	{ STORNA,  WIND, 25, 4, 5, 30, 3, 16},	/* tornado */
+	{ STRMOR, EARTH, 25, 4, 5, 30, 3, 16}, 	/* tremor */
+	{ SINCIN,  FIRE, 25, 4, 5, 30, 3, 16},	/* incinerate */
+	{ SFLOOD, WATER, 25, 4, 5, 30, 3, 16},	/* flood */
+
+	{ -1, 0, 0, 0, 0, 0, 0, 0}
 };
 
-char number[][10] = {
-	"zero",
-	"one",
-	"two",
-	"three",
-	"four",
-	"five",
-	"six",
-	"seven",
-	"eight",
-	"nine",
-	"ten",
-	"eleven",
-	"twelve",
-	"thirteen",
-	"fourteen",
-	"fifteen",
-	"sixteen",
-	"seventeen",
-	"eighteen",
-	"nineteen",
-	"twenty"
+/*
+	*** IMPORTANT NOTE REGARDING MONK HITTING ***
+	These monk dice arrays are obsoleted by the new hitting formula
+	in command5.c.
+*/
+#ifdef OLD_MONK_DICE
+
+/* monk leveling code */
+DICE monk_dice[26] = 
+{
+	{ 1, 3, 0 },
+	{ 1, 3, 0 },
+	{ 1, 5, 0 },
+	{ 1, 5, 1 },
+	{ 1, 6, 0 },
+	{ 1, 6, 1 },
+	{ 1, 6, 2 },
+	{ 2, 3, 1 },
+	{ 2, 4, 0 },
+	{ 2, 4, 1 },
+	{ 2, 5, 0 },
+	{ 2, 5, 2 },
+	{ 2, 6, 1 },
+	{ 2, 6, 2 },
+	{ 3, 6, 1 },
+	{ 3, 7, 1 },
+	{ 4, 7, 1 },
+	{ 5, 7, 0 },
+	{ 5, 8, 1 },
+	{ 6, 7, 0 },
+	{ 6, 7, 2 },
+	{ 6, 8, 0 },
+	{ 6, 8, 2 },
+	{ 6, 9, 0 },
+	{ 6, 9, 2 },
+	{ 6, 10, 0 }
+};
+
+/* the original code had a 6, 8, 2 for level 24 */
+/* it appears that it should be 6, 9, 2 so I changed it */
+
+#else
+
+DICE monk_dice[26] = 
+{
+	{ 1, 3, 0 },
+	{ 1, 3, 0 },
+	{ 1, 5, 0 },
+	{ 2, 3, 0 },
+	{ 1, 6, 1 },
+	{ 2, 3, 1 },
+	{ 1, 6, 2 },
+	{ 2, 4, 1 },
+	{ 1, 8, 2 },
+	{ 2, 5, 1 },
+	{ 4, 3, 0 },
+	{ 3, 4, 1 },
+	{ 2, 6, 2 },
+	{ 1, 12, 3 },
+	{ 3, 5, 1 },
+	{ 3, 5, 2 },
+	{ 4, 5, 1 },
+	{ 4, 5, 2 },
+	{ 4, 5, 3 },
+	{ 5, 5, 1 },
+	{ 5, 5, 2 },
+	{ 5, 5, 3 },
+	{ 6, 5, 1 },
+	{ 6, 5, 2 },
+	{ 6, 5, 3 },
+	{ 6, 6, 2 }
+};
+
+
+#endif
+
+/* This is for creating monster accoding to the monster guide */
+struct {
+	int 	stats;
+	short 	hp;
+	char	armor;
+	char	thaco;
+	long	experience;
+	short	ndice;
+	short	sdice;
+	short	pdice;
+} monster_guide[]= {
+{55,10,90,19,10,1,4,1},
+{58,20,80,18,15,1,4,2},
+{61,30,70,17,35,2,3,1},
+{65,45,60,16,50,2,4,0},
+{68,60,50,15,65,2,4,2},
+{71,75,40,14,100,2,6,0},
+{75,90,30,13,140,2,6,2},
+{78,105,20,12,200,2,7,2},
+{81,120,10,11,250,2,8,2},
+{85,135,0,10,350,3,6,2},
+{88,150,-5,9,450,2,10,2},
+{91,165,-10,8,550,3,8,0},
+{95,180,-15,7,700,3,8,2},
+{98,195,-20,6,850,3,9,1},
+{101,210,-25,5,1000,3,9,3},
+{105,225,-30,4,1150,3,10,3},
+{108,240,-35,3,1300,6,6,0},
+{111,255,-40,2,1450,6,6,4},
+{115,270,-45,1,1600,8,5,5},
+{118,285,-50,0,1800,9,5,5},
+{121,300,-60,-2,2200,10,5,4},
+{122,350,-70,-4,2600,11,5,3},
+{123,400,-80,-6,3200,12,5,3},
+{124,450,-90,-8,4000,13,5,3},
+{125,500,-100,-10,5000,14,6,3}
+};
+
+
+/* This is to set default enemylists for monters */
+
+int ENMLIST=7; /* set this to length of monster_enmlist array */
+
+struct {
+	char *attacker;
+	char *target;
+} monster_enmlist[] = {
+{ "orc", "militiaman" },
+{ "thief", "merchant" },
+{ "thief", "nobleman" },
+{ "goblin", "militiaman" },
+{ "large goblin", "militiaman" },
+{ "goblin warrior", "militiaman" },
+{ "drunk", "hobbit" }
 };

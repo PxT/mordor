@@ -6,9 +6,93 @@ Help on:
 player, monster, or object.  The syntax is different for each class of
 thing.  This file will discuss each class beginning with exits. 
 
-	Making & Deleting EXITS:
+        OBJECTS
+	*set o <name> [<crt>] <ad|ar|dn|ds|dp|f|m|sm|s|v|wg|wr> [<val>]
+        
+        The variables you can set are:
+        ad              adjustment
+        ar              armor
+        dn              number of dice
+        ds              sides of dice
+        dp              bonus/plus
+        f <val>         toggles flag #<val>  
+        m               magic power
+        s               shots current
+        sm              shots max
+        v               value
+        wg              weight
+        wr              wear location flag
 
-	*set [rm #] x [exit name] [link to rm #]
+	PLAYERS:
+	*set c <name> <a|con|c|dex|e|f|g|hm|h|int|l|mm|m|pie|p#|r#|str> [<val>]
+
+        The variables you can set are:
+        a               alignment
+        con             constitution
+        c               class
+        dex             dexterity
+        e               experience
+        f               flag toggle
+        g               gold
+        h               current hp
+        hm              max hp
+        i               intellegence
+        l               level
+        m               current mp
+        mm              max mp
+        p# <val>        gives <val> hits to proficiency #
+        pie             piety
+        r               race
+        r# <val>        gives <val> hits to realm #
+        s               strength
+        roo <val>       room number
+
+
+        MONSTERS:               *set c <name> <ar|dn|ds|dp|thac> <val>
+        
+        The variables you can set are:
+        ar              set armor
+        dn              set number of dice
+        ds              set sides per dice
+        thac            set thac0
+        inv <val>       inventory slot #<val>
+
+        EXITS:		*set r [trfbx] [<value>]
+        
+        The variables you can set are:
+        t <val>         traffic in percent(%)   (*set r t 100)
+        f <val>         toggle room flag <val>  (*set r f 10)
+        r1 <val>        places monster <val>    (*set r r10 324)
+                        in random slot r1
+        bh <va>         set high lvl boundary   (*set r bh 10)
+        bl <val>        set low lvl boundary    (*set r bl 3)
+        x <val>         set trap to <val>       (*set r x 3)
+ 
+        ROOMS:		*set r [trfbx] [<value>]
+        
+        The variables you can set are:
+        t <val>         traffic in percent(%)   (*set r t 100)
+        f <val>         toggle room flag <val>  (*set r f 10)
+        r1 <val>        places monster <val>    (*set r r10 324)
+                        in random slot r1
+        bh <va>         set high lvl boundary   (*set r bh 10)
+        bl <val>        set low lvl boundary    (*set r bl 3)
+        x <val>         set trap to <val>       (*set r x 3)
+
+
+-------------------
+
+        To set up EXIT:
+        
+	*set [rm #] [x/xf] [exit name] [link to rm #]
+        
+        The variables you can set are:
+        <name> <#>       creates exit <name> to room <#>
+	<#> <name> <#2>	 creates exit <name> from room <#> to room <#2>
+	<name> 0	 deletes exit <name> in current room
+	<name> <#> .	 creates exits <name> in both rooms
+	xf <name> <val>	 toggles exit flag <va> on exit <name>
+
 
 	If you omit the [rm #] section, it will assume that you mean the 
 parent room (the one you are in).  
@@ -35,9 +119,19 @@ with the same [exit name] in each room.
 	This will toggle the flag named in [flag number] on the 
 exit [exit name].
 
-	Setting up ROOMS:
+	To set up ROOMS:
 
 	*set r [trfbx] [<value>]
+
+        The variables you can set are:
+	t <val>		traffic in percent(%)	(*set r t 100)
+	f <val>		toggle room flag <val>	(*set r f 10)
+	r1 <val>	places monster <val> 	(*set r r10 324)
+			in random slot r1
+	bh <va>		set high lvl boundary	(*set r bh 10)
+	bl <val>	set low lvl boundary	(*set r bl 3)	
+	x <val>		set trap to <val>	(*set r x 3)
+
 
 	To set the traffic on a room use the 't' case and the value 
 following it will be taken as the new traffic value.
@@ -104,6 +198,8 @@ Room has trap #3 set.
 	r		race
 	r# <val>	gives <val> hits to realm #
 	s		strength
+	roo <val>	room number	
+	pas <text>	password
 	
 example:
 :*set c joe h 20
@@ -119,7 +215,7 @@ example:
 	dn		set number of dice
 	ds		set sides per dice
 	thac		set thac0
-
+	inv <val>	inventory slot #<val>
 
 example:
 :*set m grendel dn 4
@@ -144,4 +240,3 @@ example:
 	v		value
 	wg		weight
 	wr		wear location flag
-	

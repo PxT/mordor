@@ -3,17 +3,25 @@
  *
  *  DM functions
  *
- *  Copyright (C) 1994, 1997 Brooke Paul 
+ *  Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: dm5.c,v 6.16 2001/07/05 14:22:23 develop Exp $
+ *
+ * $Log: dm5.c,v $
+ * Revision 6.16  2001/07/05 14:22:23  develop
+ * added immortals only access to dm_memory
+ * OLD bug
+ *
+ * Revision 6.15  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
 
 #include <ctype.h>
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 
 /*******************************************************************/
 /*                             dm_replace                          */
@@ -26,9 +34,7 @@
  * number of characters, spaces, symbols. The line which the        *
  * repalcement occurs, wil not be reformated. */
 
-int dm_replace(ply_ptr, cmnd)
-creature        *ply_ptr;
-cmd             *cmnd;
+int dm_replace(creature *ply_ptr, cmd *cmnd )
 {
     room    *rom_ptr;
     int     fd, i;
@@ -40,15 +46,15 @@ cmd             *cmnd;
     rom_ptr = ply_ptr->parent_rom;
     fd = ply_ptr->fd;
 
-    if(ply_ptr->class < CARETAKER)
+    if(ply_ptr->class < BUILDER)
         return(PROMPT);
 
     txt_parse(cmnd->fullstr,&pattern,&value,&replace);
 
 
     if (!pattern || !replace) {
-        print(fd,"syntax:*replace <pattern> <replacement>\n");
-        return(0);
+        output(fd,"syntax:*replace <pattern> <replacement>\n");
+        return(PROMPT);
     }
     domain = 0;
     desc =  rom_ptr->short_desc;
@@ -70,8 +76,8 @@ cmd             *cmnd;
     }
 
     if(i<0){
-        print(fd, "Pattern not found.\n");
-        return(0);
+        output(fd, "Pattern not found.\n");
+        return(PROMPT);
     }
 
     tmp = (char *)malloc(len4+1);
@@ -91,7 +97,7 @@ cmd             *cmnd;
     else
         rom_ptr->long_desc = tmp; 
     
-    return(0);
+    return(PROMPT);
 }
 /*******************************************************************/
 /*                             dm_delete                           */
@@ -104,9 +110,7 @@ cmd             *cmnd;
  * number of characters, spaces, symbols. The line which the        *
  * repalcement occurs, wil not be reformated. */
 
-int dm_delete(ply_ptr, cmnd)
-creature        *ply_ptr;
-cmd             *cmnd;
+int dm_delete(creature *ply_ptr, cmd *cmnd )
 {
     room    *rom_ptr;
     int     fd, i;
@@ -118,13 +122,13 @@ cmd             *cmnd;
     rom_ptr = ply_ptr->parent_rom;
     fd = ply_ptr->fd;
 
-    if(ply_ptr->class < CARETAKER)
+    if(ply_ptr->class < BUILDER)
         return(PROMPT);
 
     txt_parse(cmnd->fullstr,&flag,&value,&pattern);
 
     if (!flag) {
-        print(fd,"syntax:*delete [-PESLA] <delete_word>\n");
+        output(fd,"syntax:*delete [-PESLA] <delete_word>\n");
         return(0);
     }
 
@@ -132,19 +136,32 @@ cmd             *cmnd;
         if (strlen(flag) > 1)
         switch(flag[1]) {
         case 'S':
-        free(rom_ptr->short_desc);
-        rom_ptr->short_desc = NULL;
-        return (0);
+			if( rom_ptr->short_desc != NULL )
+			{
+				free(rom_ptr->short_desc);
+			}
+			rom_ptr->short_desc = NULL;
+			return (0);
             break;
         case 'L':
-        free(rom_ptr->long_desc);
-        rom_ptr->long_desc = NULL;
-        return (0);
+			if ( rom_ptr->long_desc != NULL )
+			{
+				free(rom_ptr->long_desc);
+			}
+			rom_ptr->long_desc = NULL;
+			return (0);
             break;
        case 'A':
-        free(rom_ptr->short_desc);
-        free(rom_ptr->long_desc);
-        rom_ptr->short_desc = rom_ptr->long_desc = NULL;
+		   if ( rom_ptr->short_desc != NULL )
+		   {
+				free(rom_ptr->short_desc);
+		   }
+		   if ( rom_ptr->long_desc != NULL)
+		   {
+			   free(rom_ptr->long_desc);
+		   }
+			rom_ptr->short_desc = NULL;
+			rom_ptr->long_desc = NULL;
         return (0);
             break;
        case 'E':
@@ -153,17 +170,17 @@ cmd             *cmnd;
        case 'P': case 'D':
         dcase = 0;
 		if (!pattern){
-            print(fd,"syntax:*delete [-PESLA] <delete_word>\n");
+            output(fd,"syntax:*delete [-PESLA] <delete_word>\n");
             return(0);
 		}
         break;
        default:
-            print(fd,"syntax:*delete [-PESLA] <delete_word>\n");
+            output(fd,"syntax:*delete [-PESLA] <delete_word>\n");
             return(0);
         break;
     }
     else {
-           print(fd,"syntax:*delete [-PESLA] <delete_word>\n");
+           output(fd,"syntax:*delete [-PESLA] <delete_word>\n");
            return(0);
     }
     }
@@ -191,7 +208,7 @@ cmd             *cmnd;
         }
 
         if(i<0){
-            print(fd, "Pattern not found.\n");
+            output(fd, "Pattern not found.\n");
             return(0);
         }
 
@@ -235,13 +252,10 @@ cmd             *cmnd;
  * This is done to allow to search several realted, but not    *
  * conencted strings for the pattern as if searching 1 string  */
  
-int desc_search(desc,pattern,val)
-char    *desc;
-char    *pattern;
-int *val;
+int desc_search(char *desc, char *pattern, int *val )
 {
     int		i, len, len2;
-    char    match = 0, found= 0;
+    char        found= 0;
  
     if(!desc || !pattern)
         return (-1);
@@ -277,12 +291,7 @@ int *val;
  * the char parameters, (due to lack of words), the parameters will *
  * be assigned the null value.*/
 
-void txt_parse(str,pattern,val,replace)
-        char    *str;
-        char    **pattern;
-        int     *val;
-        char    **replace;
- 
+void txt_parse(char *str, char **pattern, int *val, char **replace )
 {
         int     i,j, index, len;
         char    *tmp;
@@ -327,10 +336,10 @@ void txt_parse(str,pattern,val,replace)
 
 
 /* check number place of pattern */
-    if(isdigit(str[index])){
+    if(isdigit((int)str[index])){
         *val = atoi(&str[index]);
         if(*val < 1) *val = 1;
-        while(isdigit(str[++index]));
+        while(isdigit((int)str[++index]));
         while (str[index] == ' ')
             index++;
         }
@@ -356,16 +365,14 @@ void txt_parse(str,pattern,val,replace)
 /*==================================================================*/
 /*                          dm_nameroom                             */
 /*==================================================================*/
-int dm_nameroom(ply_ptr, cmnd)
-creature        *ply_ptr;
-cmd             *cmnd;
+int dm_nameroom(creature *ply_ptr, cmd *cmnd )
 {
     int     len,i=0;
     room    *rom_ptr;
 
     rom_ptr = ply_ptr->parent_rom;
 
-    if(ply_ptr->class < CARETAKER)
+    if(ply_ptr->class < BUILDER)
         return(PROMPT);
 
  
@@ -379,12 +386,12 @@ cmd             *cmnd;
     
     len = strlen(&cmnd->fullstr[i+1]); 
     if (!len) {
-                print(ply_ptr->fd, "Rename room to what?\n");
+                output(ply_ptr->fd, "Rename room to what?\n");
                 return(0);
     }
 
     if (len>79) {
-                print(ply_ptr->fd, "Room name too long.\n");
+                output(ply_ptr->fd, "Room name too long.\n");
                 return(0);
     }
         
@@ -404,9 +411,7 @@ cmd             *cmnd;
  * to append to the short descroption (-s) or the end of the      *
  * with no new line (-n) or both (-ns) */
 
-int dm_append(ply_ptr, cmnd)
-creature        *ply_ptr;
-cmd             *cmnd;
+int dm_append(creature *ply_ptr, cmd *cmnd )
 {
     int    len, len2, i =0;
     int    fd;
@@ -416,7 +421,7 @@ cmd             *cmnd;
     rom_ptr = ply_ptr->parent_rom;
     fd = ply_ptr->fd;
 
-    if(ply_ptr->class < CARETAKER)
+    if(ply_ptr->class < BUILDER)
         return(PROMPT);
 
     len = strlen(cmnd->fullstr);
@@ -428,14 +433,15 @@ cmd             *cmnd;
     i++;
 
    if (i >= len){
-        print(fd,"syntax: *append [-sn] <text>\n");
+        output(fd,"syntax: *append [-sn] <text>\n");
 	return(0);
     }
 
     if (cmnd->fullstr[i]  == '-'){
         if (strlen(&cmnd->fullstr[i]) < 4){
-            print(fd,"syntax: *append [-sn] <text>\n");
-            return(0);
+            output(fd,"syntax: *append [-sn] <text>\n");
+            return(PROMPT);
+
         }
         i++;
 
@@ -459,8 +465,8 @@ cmd             *cmnd;
        }
        i++;
        if (i >= len){
-           print(fd,"syntax: *append [-sn] <text>\n");
-           return(0);
+           output(fd,"syntax: *append [-sn] <text>\n");
+		   return(PROMPT);
        }
     }
 
@@ -499,6 +505,7 @@ cmd             *cmnd;
     else
         rom_ptr->long_desc = buf;
     return(0);
+
 }
 /*==================================================================*/
 
@@ -509,9 +516,7 @@ cmd             *cmnd;
  * to prepend to the short descroption (-s) or the end of the      *
  * with no new line (-n) or both (-ns) */
 
-int dm_prepend(ply_ptr, cmnd)
-creature        *ply_ptr;
-cmd             *cmnd;
+int dm_prepend(creature *ply_ptr, cmd *cmnd )
 {
     int    len, len2, i =0;
     int    fd;
@@ -521,7 +526,7 @@ cmd             *cmnd;
     rom_ptr = ply_ptr->parent_rom;
     fd = ply_ptr->fd;
 
-    if(ply_ptr->class < CARETAKER)
+    if(ply_ptr->class < BUILDER)
         return(PROMPT);
 
     len = strlen(cmnd->fullstr);
@@ -533,13 +538,13 @@ cmd             *cmnd;
     i++;
 
    if (i >= len){
-        print(fd,"syntax: *prepend [-sn] <text>\n");
+        output(fd,"syntax: *prepend [-sn] <text>\n");
 	return(0);
     }
 
     if (cmnd->fullstr[i]  == '-'){
         if (strlen(&cmnd->fullstr[i]) < 4){
-            print(fd,"syntax: *prepend [-sn] <text>\n");
+            output(fd,"syntax: *prepend [-sn] <text>\n");
             return(0);
         }
         i++;
@@ -562,7 +567,7 @@ cmd             *cmnd;
        }
        i++;
        if (i >= len){
-           print(fd,"syntax: *prepend [-sn] <text>\n");
+           output(fd,"syntax: *prepend [-sn] <text>\n");
            return(0);
        }
     }
@@ -611,139 +616,122 @@ cmd             *cmnd;
 /* This function allows a DM to obtain a list of flags for rooms, exits, */
 /* monsters, players and objects.                                        */
 
-int dm_help(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_help(creature *ply_ptr, cmd *cmnd )
 {
 	char 	file[80];
-	int	fd, c=0, match=0, num=0;
+	int	fd;
+#ifndef WIN32
+	int a = '/';
+#else
+	int a = '\\';
+#endif
 	
 	fd = ply_ptr->fd;
 
-	if (ply_ptr->class < CARETAKER){
+	if (ply_ptr->class < IMMORTAL ){
 		return(0);
 	}
-
-	strcpy(file, DOCPATH);
 
 	if(cmnd->num < 2) {
-		strcat(file, "/dm_helpfile");
+		sprintf(file, "%s/dm_helpfile", get_doc_path());
 		view_file(fd, 1, file);
 		return(DOPROMPT);
 	}
 
-	if(!strcmp(cmnd->str[1], "mflags")) {
-		strcat(file, "/mflags");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "oflags")) {
-		strcat(file, "/oflags");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "pflags")) {
-		strcat(file, "/pflags");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
+	/* the strrchr call here strips out everything up to the final *
+	 * '/' so that we can't read files outside the help dir        */
 	
-	else if(!strcmp(cmnd->str[1], "rflags")) {
-		strcat(file, "/rflags");
+	if(strrchr(cmnd->str[1], a) == '\0')
+		sprintf(file, "%s/%s.imm", get_doc_path(), cmnd->str[1]);
+	else
+		sprintf(file, "%s/%s.imm", get_doc_path(), strrchr(cmnd->str[1],a));
+
+
+	if(file_exists(file)) {
 		view_file(fd, 1, file);
 		return(DOPROMPT);
 	}
-
-	else if(!strcmp(cmnd->str[1], "xflags")) {
-		strcat(file, "/xflags");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "sflags")) {
-		strcat(file, "/sflags");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "titles")) {          
-		strcat(file, "/titles");                   
-		view_file(fd, 1, file);                    
-		return(DOPROMPT);                          
-	}                                                  
-
-	else if(!strcmp(cmnd->str[1], "oset")) {
-		strcat(file, "/oset");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "pset")) {
-		strcat(file, "/pset");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "char")) {
-		strcat(file, "/char");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "wear")) {
-		strcat(file, "/wear");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "otypes")) {
-		strcat(file, "/otypes");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "realms")) {
-		strcat(file, "/realms");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "exp")) {
-		strcat(file, "/exp");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "scrolls")) {
-		strcat(file, "/scrolls");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-
-	else if(!strcmp(cmnd->str[1], "star")) {
-		strcat(file, "/star");
-		view_file(fd, 1, file);
-		return(DOPROMPT);
-	}
-	else if(!strcmp(cmnd->str[1], "pers")) {
-                strcat(file, "/pers");
-                view_file(fd, 1, file);
-                return(DOPROMPT);
-        }
-	else if(!strcmp(cmnd->str[1], "quest")) {
-                strcat(file, "/quest");
-                view_file(fd, 1, file);
-                return(DOPROMPT);
-        }
-	else if(!strcmp(cmnd->str[1], "pot")) {
-                strcat(file, "/pot");
-                view_file(fd, 1, file);
-                return(DOPROMPT);
-        }
 	else {
-		print(fd,"That dm help file does not exist.\n");
+		output(fd,"That dm help file does not exist.\n");
 		return(0);
 	}
+}
+
+
+
+/**********************************************************************/
+/*				builder_help			      */
+/**********************************************************************/
+/* This function allows a BUILDER to obtain help */
+int builder_help(creature *ply_ptr, cmd *cmnd )
+{
+	char 	file[80];
+	int	fd;
+	
+	fd = ply_ptr->fd;
+
+	if (ply_ptr->class < BUILDER ){
+		return(0);
+	}
+
+	strcpy(file, get_doc_path());
+
+	strcat(file, "/builder_helpfile");
+	view_file(fd, 1, file);
+	return(DOPROMPT);
+}
+
+
+
+/************************************************************************/
+/* dm_memory()								*/
+/************************************************************************/
+/* This function allows a DM to obtain a basic printout of memory used 	*/
+/* in use in the game.  Adapted from code written by Charles Merchant	*/
+/* by JPF															   */
+int dm_memory( creature *ply_ptr, cmd *cmnd )
+{
+	char	buf[256];
+	MEM_USAGE	mu;
+	int	fd;
+
+	fd = ply_ptr->fd;
+
+	if(ply_ptr->class < IMMORTAL)
+			return(0);
+
+	get_memory_usage( &mu );
+
+	output(fd,"Memory Status:\n");
+	sprintf(buf,"Total Rooms  :   %-5d",mu.rooms.count);
+	output(fd,buf);
+	sprintf(buf,"  %ld -> Total memory\n",mu.rooms.mem_used);
+	output(fd,buf);
+	sprintf(buf,"Total Objects:   %-5d",mu.objects.count);
+	output(fd,buf);
+	sprintf(buf,"  %ld -> Total memory\n",mu.objects.mem_used);
+	output(fd,buf);
+	sprintf(buf,"Total Creatures: %-5d",mu.creatures.count);
+	output(fd,buf);
+	sprintf(buf,"  %ld -> Total memory\n",mu.creatures.mem_used);
+	output(fd,buf);
+	sprintf(buf,"Total Actions:   %-5d",mu.actions.count);
+	output(fd,buf);
+	sprintf(buf,"  %ld -> Total memory\n",mu.actions.mem_used);
+	output(fd,buf);
+	sprintf(buf,"Total Bad Talks: %-5d",mu.bad_talks.count);
+	output(fd,buf);
+	sprintf(buf,"  %ld -> Total memory\n",mu.bad_talks.mem_used);
+	output(fd,buf);
+	sprintf(buf,"Total Talks:     %-5d", mu.talks.count);
+	output(fd,buf);
+	sprintf(buf,"  %ld -> Total memory\n",mu.talks.mem_used);
+	output(fd,buf);
+	sprintf(buf,"Total Memory:    %ld\n\n",
+		mu.bad_talks.mem_used + mu.rooms.mem_used + mu.objects.mem_used + 
+		mu.creatures.mem_used + mu.actions.mem_used + mu.talks.mem_used);
+	output(fd,buf);
+
+
+	return(PROMPT);
 }

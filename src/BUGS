@@ -1,0 +1,41 @@
+druids have to wait 7s between attacks
+===
+If a
+DMINVIS attacks a player, the other player in the room can see who they
+are:
+
+(75 H 16 M): Testfour tried to steal gold from you.
+(75 H 16 M): Testfour tried to steal gold from you.
+(75 H 16 M): Someone attacked Testfour!
+Tesseract scratches Testfour!
+===
+why does password puke if we allow accept_input to take chars > 253 ?
+===
+monster v monste combat doesnt set perm timeouts properly when a perm is killed
+===
+Conjure problems:
+-----------------
+monsters are left behind if player logs out with conjure attached. (Flags are cleared:
+
+Name: harmonic dragon
+Desc: A creature conjured by the power of Silvara.
+Talk: Hi.
+Keys: harmonic               dragon
+
+Index: 1855
+Level: 5                          Race: Unknown
+Class: None                  Alignment: Lawful 0
+Guild: None (0,0,0)
+Exp: 1   Gold: 0
+HP: 54/60   MP: 7/15
+AC: 50   THAC0: 15
+Hit: 2d4+2
+Str[ 5]  Dex[ 5]  Con[ 5]  Int[ 5]  Pty[ 5]
+Earth: 0    Wind: 0   Fire: 0  Water: 0
+Flags set: None.
+Magic set: vigor(1), mend-wounds(19).
+
+Random items dropped:
+     0     0     0     0     0     0     0     0     0 
+
+==================

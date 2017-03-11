@@ -1,18 +1,22 @@
 /*
- *  Logic Creature Script added by Charles Marchant for 
- *  Mordor 3.x
+ *  Action scripting for Mordor 3.x+
+ *  Copyright 1995, 1999 Brooke Paul
+ *
+ * $Id: logic.c,v 6.13 2001/03/08 16:09:09 develop Exp $
+ *
+ * $Log: logic.c,v $
+ * Revision 6.13  2001/03/08 16:09:09  develop
+ * *** empty log message ***
+ *
  * 
  */
 
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
 
-int load_crt_actions(crt_ptr)
-creature    *crt_ptr;
+
+int load_crt_actions( creature *crt_ptr )
 {
   ttag        *act,*a;
   char        crt_name[80];
@@ -37,7 +41,7 @@ creature    *crt_ptr;
         crt_name[i] = '_';
    
    
-  sprintf(filename,"%s/talk/%s-%d-act",MONPATH,crt_name,crt_ptr->level);
+  sprintf(filename,"%s/talk/%s-%d-act",get_monster_path(),crt_name,crt_ptr->level);
   
   fp = fopen(filename,"r");
   if(!fp)
@@ -55,7 +59,7 @@ creature    *crt_ptr;
        act->next_tag = 0;
 	
        if(!act)
-	  merror("load_crt_actions",FATAL);
+		  merror("load_crt_actions",FATAL);
        ptr = cmdstr;
        act->type = count;      
        while(*ptr)
@@ -93,8 +97,8 @@ creature    *crt_ptr;
 	       act->arg1 = atoi(++ptr);
 	     break;
 	   default:
-	     merror("ERROR - logic command", NONFATAL);
-	     logn("Errors", "UNKOWN LOGIC COMMAND [%s] in %s\n",cmdstr,filename);
+	     sprintf(g_buffer, "UNKOWN LOGIC COMMAND [%s] in %s",cmdstr,filename);
+	     elog_broad( g_buffer);
 	     act->do_act = 0;
 	     act->goto_cmd = 1;
              for(;*ptr;ptr++);
@@ -136,5 +140,7 @@ creature    *crt_ptr;
 	  break;
      } 
   fclose(fp);  
+
+  return(0);
 }
 

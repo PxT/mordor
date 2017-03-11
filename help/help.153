@@ -1,12 +1,11 @@
-Help on DM command:
+HELP ON:
+	*gamestat [r]
 
-        *gamestat [r]
+The gamestat command allows DM's to display or reload the current
+game parameters.  These are stored in the mud.ini file, and may be
+adjusted and reloaded as necessary, without shutting down the game.
+*EXCEPTION*:  Do NOT change the port number, and then reload the
+file.  You must shutdown the game using *shutdown if you wish to 
+change the port number.
 
-  This will display the current status of all configurable settings.
 
-example:
-:*gamestat
-bunch of settings
-
-:*gamestat r
-INI reloaded.

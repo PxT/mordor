@@ -1,0 +1,97 @@
+--------------------Configuration: port - Win32 Release--------------------
+Begining build with project "d:\mordor5\src\port\port.dsp", at root.
+Active configuration is Win32 (x86) Static Library (based on Win32 (x86) Static Library)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "WIN32" /D "COMPRESS" /Fo"Release/" /Fd"Release/" /FD /c "
+			"Browser Database Maker" with flags "/nologo /o"Release/port.bsc" "
+			"Library Manager" with flags "/nologo /out:"Release\port.lib" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "C:\TEMP\RSP62E3.TMP" with contents </nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "WIN32" /D "COMPRESS" /Fo"Release/" /Fd"Release/" /FD /c 
+"d:\mordor5\src\port\port.c"
+>
+Creating command line "cl.exe @C:\TEMP\RSP62E3.TMP" 
+Creating command line "link.exe -lib /nologo /out:"Release\port.lib"  .\Release\port.obj" 
+Compiling...
+port.c
+Creating library...
+Creating temp file "C:\TEMP\RSP6331.BAT" with contents <@echo off
+copy release\port.lib ..\lib
+copy port.h ..\include
+>
+Creating command line "C:\TEMP\RSP6331.BAT" 
+Copying Exterals
+        1 file(s) copied
+        1 file(s) copied
+--------------------Configuration: morutil - Win32 Release--------------------
+Begining build with project "d:\mordor5\src\morutil\morutil.dsp", at root.
+Active configuration is Win32 (x86) Static Library (based on Win32 (x86) Static Library)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "WIN32" /D "COMPRESS" /Fo"Release/" /Fd"Release/" /FD /c "
+			"Browser Database Maker" with flags "/nologo /o"Release/morutil.bsc" "
+			"Library Manager" with flags "/nologo /out:"Release\morutil.lib" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating command line "link.exe -lib /nologo /out:"Release\morutil.lib"  .\Release\log.obj .\Release\utils.obj \mordor5\src\port\Release\port.lib" 
+Creating library...
+Creating temp file "C:\TEMP\RSP6344.BAT" with contents <@echo off
+copy release\morutil.lib ..\lib
+copy morutil.h ..\include
+>
+Creating command line "C:\TEMP\RSP6344.BAT" 
+Copying Externals
+        1 file(s) copied
+        1 file(s) copied
+--------------------Configuration: mordb - Win32 Release--------------------
+Begining build with project "d:\mordor5\src\mordb\mordb.dsp", at root.
+Active configuration is Win32 (x86) Static Library (based on Win32 (x86) Static Library)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "WIN32" /D "COMPRESS" /Fo"Release/" /Fd"Release/" /FD /c "
+			"Browser Database Maker" with flags "/nologo /o"Release/mordb.bsc" "
+			"Library Manager" with flags "/nologo /out:"Release\mordb.lib" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating command line "link.exe -lib /nologo /out:"Release\mordb.lib"  .\Release\access.obj .\Release\compress.obj .\Release\files1.obj .\Release\files2.obj .\Release\files3.obj .\Release\files4.obj \mordor5\src\morutil\Release\morutil.lib" 
+Creating library...
+Creating temp file "C:\TEMP\RSP6354.BAT" with contents <@echo off
+copy release\mordb.lib ..\lib
+copy mordb.h ..\include
+>
+Creating command line "C:\TEMP\RSP6354.BAT" 
+Copying Extarnals
+        1 file(s) copied
+        1 file(s) copied
+--------------------Configuration: list - Win32 Release--------------------
+Begining build with project "d:\mordor5\src\list\list.dsp", at root.
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+Project's tools are:
+			"32-bit C/C++ Compiler for 80x86" with flags "/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c "
+			"Win32 Resource Compiler" with flags "/l 0x409 /d "NDEBUG" "
+			"Browser Database Maker" with flags "/nologo /o"Release/list.bsc" "
+			"COFF Linker for 80x86" with flags "port.lib morutil.lib mordb.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/list.pdb" /machine:I386 /out:"Release/list.exe" "
+			"Custom Build" with flags ""
+			"<Component 0xa>" with flags ""
+
+Creating temp file "C:\TEMP\RSP6361.TMP" with contents <port.lib morutil.lib mordb.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/list.pdb" /machine:I386 /out:"Release/list.exe" 
+.\Release\list.obj
+\mordor5\src\mordb\Release\mordb.lib>
+Creating command line "link.exe @C:\TEMP\RSP6361.TMP" 
+Linking...
+Creating temp file "C:\TEMP\RSP6396.BAT" with contents <@echo off
+xcopy release\list.exe ..\..\bin
+>
+Creating command line "C:\TEMP\RSP6396.BAT" 
+Copying Externals
+list.exe
+        1 File(s) copied
+
+
+
+list.exe - 0 error(s), 0 warning(s)

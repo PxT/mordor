@@ -45,4 +45,19 @@ PBLIND          43       Player is blind
 PFEARS          44       Player is fearful 
 PSILNC          45       Player is silenced 
 PCHARM		46	 Player is charmed
-
+PNLOGN		47	 No login messages
+PLECHO		48	 Communications local echo
+PSECOK		49	 Passed security check
+PAUTHD		50	 Manual authorization
+PALIAS		51	 Possessing a creature
+PPREPN		52	 Player is preparing an item
+PNSUSN		53	 Player needs sustenance
+PIGCLA          54       Player is ignoring class comms. */
+PIGGLD          55       Player is ignoring guild comms. */
+PDMOWN          56       player is a trouble maker */
+PAFK            57       player is afk */
+PBRIEF          58       player is using brief combat mode*/
+PBARKS          59       player has barkskin*/
+PGILDA          60         GUILD   100 Circle    010 Masters  001 Brotherhood */     
+PGILDB          61         FLAGS   110 Clan      101  Company 011  Guard */                    
+PGILDC          62                 111 Champions 000  White Council */  

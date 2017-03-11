@@ -1,13 +1,12 @@
-Help on:
-	*perm [o|c|t] [name|d|exit] [timeout|slot]
+Help on DM Command:
 
-This command allows DMs to make a monster or an item permanent in the
+	*perm [o|c] [name|d] [timeout|slot]
+
+  This command allows DMs to make a monster or an item permanent in the
 parent room.  You may also use this command to delete objects or creatures
 from the perm list for a room, as well as set the timeout value.  
 The timeout value is the time in seconds that it will take before the permed
 object or creature will return after leaving the room. 
-  In addition, you can use this command to place permanent tracks leading 
-out a specified exit
 
 examples
 :*perm o d 1
@@ -16,5 +15,3 @@ Perm object slot #1 cleared.
 leather armor permed with timeout of 1300.  
 :*perm c wiz 19900
 wizard's apprentice permed with timeout of 19900.
-"*perm t north
-Perm tracks added leading north.

@@ -1,0 +1,14 @@
+
+Help on command:
+
+	BERSERK
+
+  This skill is only available to Barbarians.  It allows a warrior to
+enter a fighting rage that improves combat ability and the
+ability to sustain more damage.  After the berserker rage is complete,
+the barbarian returns to normal. 
+
+example:
+
+:berserk
+You work yourself into a berserker rage!

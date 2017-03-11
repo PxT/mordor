@@ -1,0 +1,47 @@
+/******************************************************************************/
+Mordor Conversion Utility
+Copyright (c) 2000 by Paul Telford
+
+        The author of this work allows its usage as long as its use is
+free of charge, the credits remain unaltered, and this README file is
+included. If you plan on using this work for commercial purposes you must
+first obtain a license for that purpose from the author.  If any portion
+of this work is used, this copyright must be followed and included in any
+subsequent or derivative works.  This includes any routines or utility
+programs.
+        Questions concerning the copyright and use license may be 
+directed to paul@droflet.net
+
+/******************************************************************************/
+
+NOTE: Before you can use this, you _must_ copy the libs from your original 
+structures (the ones you are converting from) into ./lib
+Something like "cp ~/src/lib/* ./lib"  might work.  
+You also need to edit convert.c so the first three #includes point to 
+your original (converting from) header files.  Do this now if you want to 
+use this program!  Ok, thanks.
+
+
+This program will (hopefully) convert binary mordor files between 
+struct versions.  You should first edit convert.h and apply any 
+necessary changes to the structures contained there.  These represent 
+the structures that will be written to the new files.  The old 
+structures are read from ../include/mordb.h, but you can of course 
+change that too (in convert.c).  If you want some default values assigned to 
+the new areas in your structures, either do it here in convert.c or from 
+within Mordor itself (most likely in init_ply).
+
+It will read either a player, monster, object or room file as specified
+on the command line and write out a new version.  The file names do get
+changed long the way so that your originals dont get overwritten.  File
+names change as follows:
+players:  plyname ->  plyname.new
+objects:  o##  ->  new.o##
+monsters: m##  ->  new.m##
+rooms:    r##### -> r#####.new
+
+Paths for the files come from your mordor.cf
+
+This program is neither fully tested, nor guaranteed to work.  YMMV.
+
+Questions or problems: paul@droflet.net

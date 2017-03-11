@@ -1,17 +1,14 @@
-Help on:
-	*dmhelp <topic>
 
-This provides a wide variety of information on the DM commands.  Just
-typing *dmhelp will provide a list of current help topics.  Following it
-with a topic will provide information on that topic.
+Help on command:
 
-example:
-: *dmhelp otypes
-Object types
+	*CFOLLOW <name>
 
-Sharp            0
-Thrust           1
-Blunt            2
-Pole             3
-Missle           4
+	This causes the named monster to follow you.  This command is 
+intended for use with custom monsters (created with *CNAME), so that you 
+can move them around or drop them in a location you want them at.  They 
+will follow normal movements as well as *teleports.
+
+:*cfol nobleman
+nobleman starts following you.
+
 

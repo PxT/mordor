@@ -1,0 +1,19 @@
+BARD
+
+	The bard is a very clever and resourceful character class.  Bards can
+be expected to spend their lives in search of knowledge of the arts and
+sciences.  The young bard is usually quite foolish.  The more scholarly bards
+can entertain an entire room with a song which will envigorate all.  Also,
+bards have been known to charm friends and foes so completely that they are
+beyond harm.  Bards also have a limited ability to read a person's aura and
+get a glimpse of their future. This skill is not inherent, and requires the
+memorization of the spell or acquisition of the proper components.  Bards
+also have above average ability to cast healing spells.
+
+Skills:
+Charm, fortune, sing.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	DEX STR PTY CON INT DEX INT STR PTY INT

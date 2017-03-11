@@ -1,26 +1,36 @@
-
-Help on Social Commands:
-
-	These commands enable you to role-play your character
-much more effectively.  Many can take a monster or another
-player as an object, and they allow you to interact in a
-non-combat mode.  However, you should be careful using
-some of them as a few of the commands can be seen as
-offensive.  Improper use may result in an an upset fellow
-player, or even a monster in some rare cases.
-	For social commands that do not appear on this
-list you may use the EMOTE command.  This will allow
-you to customize your character's behavior.
-
 List of available social commands: 
 
-nod laugh smile shake cackle chuckle wave poke yawn sigh
-bounce shrug twiddle grin frown giggle sing hum snap jump
-skip dance cry bleed sniff whimper cringe whistle smirk
-gasp hug comfort pat suck kiss blush faint grunt flex
-stomp glare slap spit fart fume rage pout drool copulate
-goose expose wink bow defecate clap cough confused grumble
-hiccup mutter scratch strut sulk satisfied wince roll raise 
-whine growl high5 moon purr taunt worship flip groan eye
-grab beam nervous shove bird ogle sleep sit stand relax
+attention frown     nod 	smirk
+beam 	  fume 	    nose 	snap 
+beckon	  gasp 	    ogle 	sneer
+bird 	  giggle    pace	sneeze
+bleed 	  glare     pat 	sniff 
+blush 	  goose     plead	snivel
+bounce 	  grab 	    point	snort
+bow 	  greet	    poke 	spit 
+cackle 	  grin 	    pout 	squirm
+chuckle   grind	    punch	ssmile
+clap 	  groan     purr 	stand 
+collapse  grovel    rage 	stomp 
+comfort   growl     raise	strut 
+confused  grumble   relax	suck 
+copulate  grunt     roll 	sulk 
+cough 	  hiccup    salute	sweat
+cower	  high5     scowl	taunt 
+cringe 	  hug 	    scratch 	twiddle 
+cry 	  hum 	    shake 	twirl
+cuddle	  idea	    shove 	wave 
+dance 	  imitate   shrug 	whimper 
+defecate  jump	    shush	whine 
+drool 	  kiss 	    sigh	whistle 
+expose 	  kisshand  sing 	wince 
+eye	  laugh     sit 	wink 
+faint 	  lick	    skip 	worship 
+fart 	  moon 	    slap 	wsmile
+flaugh	  msmile    sleep 	yawn 
+flex	  mutter    smell	hlaugh  
+flip 	  nervous   smile 	warm  
 
+OR USE THE EMOTE COMMAND to describe an action not on the list:
+
+"emote jumps in the air"

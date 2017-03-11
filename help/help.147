@@ -1,0 +1,17 @@
+Help on command:
+
+	*POSSESS
+
+Syntax:
+
+	*POSSESS <creature>
+
+	This command allows a DM to take control over a non-player creature.  All actions of 
+the DM are aliased to the creature possessed.
+
+Example:
+:*pos nobleman
+You possess a nobleman.
+(8 H 0 M):
+:*pos nobleman
+You release a nobleman's body.

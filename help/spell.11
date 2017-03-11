@@ -1,5 +1,5 @@
 Teleport:
 This spell randomly places its target anywhere in the realm
-MP cost: 20
+MP cost: 30
 Syntax:
 cast teleport <target>

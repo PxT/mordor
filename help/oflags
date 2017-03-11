@@ -1,57 +1,62 @@
 /* Object flags */
-OPERMT          1       /* Permanent item (not yet taken) */
-OHIDDN          2       /* Hidden */
-OINVIS          3       /* Invisible */
-OSOMEA          4       /* "some" prefix */
-ODROPS          5       /* Don't add s on plural */
-ONOPRE          6       /* No prefix */
-OCONTN          7       /* Container object */
-OWTLES          8       /* Container of weightless holding */
-OTEMPP          9       /* Temporarily permanent */
-OPERM2          10      /* Permanent INVENTORY item */
-ONOMAG          11      /* Mages cannot wear/use it */
-OLIGHT          12      /* Object serves as a light */
-OGOODO          13      /* Usable only by good players */
-OEVILO          14      /* Usable only by evil players */
-OENCHA          15      /* Object enchanted */
-ONOFIX          16      /* Cannot be repaired */
-OCLIMB          17      /* Climbing gear */
-ONOTAK          18      /* Cannot be taken */
-OSCENE          19      /* Part of room description/scenery */
-OSIZE1          20      /* OSIZE: 00=all wear, 01=small wear, */
-OSIZE2          21      /* 10=medium wear, 11=large wear */
-ORENCH          22      /* Random enchantment flag */
-OCURSE          23      /* The item is cursed */
-OWEARS          24      /* The item is being worn */
-OUSEFL          25      /* Can be used from the floor */
-OCNDES          26      /* Container devours items */
-ONOMAL          27      /* Usable by only females */
-ONOFEM          28      /* Usable by only males */
-ODDICE          29      /* damage based on object nds */
-OPLDGK          30      /* pledge players may only use */
-OKNGDM          31      /* object belongs to kingdom 0/1 */
-OCLSEL          32      /* class selective weapon */
-OASSNO          33      /* class selective: assassin */
-OBARBO          34      /* class selective: barbarian */
-OCLERO          35      /* class selective: cleric */
-OFIGHO          36      /* class selective: fighter */
-OMAGEO          37      /* class selective: mage */
-OPALAO          38      /* class selective: paladin */
-ORNGRO          39      /* class selective: ranger */
-OTHIEO          40      /* class selective: thief */
-OBARDO          41      /* class selective: bard */
-OMONKO          42      /* class selective: monk */
-ONSHAT          43      /* weapon will never shatter */
-OALCRT          44      /* weapon will always critical */
-OLUCKY          45      /* Item is a luck charm */
-OCURSW          46      /* Item is cursed & worn */
-OHBREW          47      /* Herb brew */
-OHNGST          48      /* Herb ingest */
-OHPAST          49      /* Herb paste */
-OHAPLY          50      /* Herb apply */
-ONPREP          51      /* Object is being prepared */
-ODPREP          52      /* Object preparation is complete */
-OTMPEN          53      /* Object is temporarily enchanted */
-ODRUDO          54      /* class selective: druid */
-OALCHO          55      /* class selective: alchemist */
-OIREGP          56      /* Irregualr plural name */
+OPERMT          1        Permanent item (not yet taken) 
+OHIDDN          2        Hidden 
+OINVIS          3        Invisible 
+OSOMEA          4        "some" prefix 
+ODROPS          5        Don't add s on plural 
+ONOPRE          6        No prefix 
+OCONTN          7        Container object 
+OWTLES          8        Container of weightless holding 
+OTEMPP          9        Temporarily permanent 
+OPERM2          10       Permanent INVENTORY item 
+ONOMAG          11       Mages cannot wear/use it 
+OLIGHT          12       Object serves as a light 
+OGOODO          13       Usable only by good players 
+OEVILO          14       Usable only by evil players 
+OENCHA          15       Object is enchanted 
+ONOFIX          16       Cannot be repaired 
+OCLIMB          17       Climbing gear 
+ONOTAK          18       Cannot be taken 
+OSCENE          19       Part of room description/scenery 
+OSIZE1          20       OSIZE: 00=all wear, 01=medium wear, 
+OSIZE2          21       10=small wear, 11=large wear 
+ORENCH          22       Random enchantment flag 
+OCURSE          23       The item is cursed 
+OWEARS          24       The item is being worn 
+OUSEFL          25       Can be used from the floor 
+OCNDES          26       Container devours items 
+ONOMAL          27       Usable only by females 
+ONOFEM          28       Usable only by males 
+ODDICE          29       Damage based on object nds 
+OPLDGK          30       GUILD object
+OKNGDM          31       Backstab weapon 
+OCLSEL          32       Class selective weapon 
+OASSNO          33       Class selective: assassin 
+OBARBO          34       Class selective: barbarian 
+OCLERO          35       Class selective: cleric 
+OFIGHO          36       Class selective: fighter 
+OMAGEO          37       Class selective: mage 
+OPALAO          38       Class selective: paladin 
+ORNGRO          39       Class selective: ranger 
+OTHIEO          40       Class selective: thief 
+OBARDO		41	 Class selective: bard
+OMONKO		42	 Class selective: monk
+ONSHAT		43	 Weapon will never shatter
+OALCRT		44	 Weapon will always critical
+OLUCKY		45	 Object is a lucky charm
+OCURSW		46	 Object is cursed & worn
+OHBREW		47	 Herb Brew
+OHNGST		48	 Herb Ingest
+OHPAST		49	 Herb Paste
+OHAPLY		50	 Herb Apply
+ODRUDT          51       Druid Item 
+OALCHT          52       Alchemist Item 
+OTMPEN		53	 Object is temporarily enchanted
+ODRUDO		54	 class selective: druid
+OALCHO		55	 class selective: alchemist
+OIREGP		56	 Irregualr plural name 
+RGILDA          57         GUILD   100 Circle    010 Masters  001 Brotherhood 
+RGILDB          58         FLAGS   110 Clan      101  Company 011  Guard 
+RGILDC          59                 111 Champions 000  White Council 
+RSTEAL          60       Stolen Item 
+

@@ -1,0 +1,15 @@
+Help on spell:
+
+	FORTUNE <creature> [#]
+
+  This spell will provide information about the possible future of 
+the target creature.  Fortune may only be cast by bards who have 
+learned the spell, or have obtained an item to use that casts the
+spell.
+
+Example:
+: c fortune tesseract
+Fortune spell cast on Tesseract.
+The fates smile upon Tesseract.
+
+

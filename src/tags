@@ -1,0 +1,970 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/darren@hiebert.com/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	4.0.3	//
+ANSI	screen.c	/^void ANSI( int fd, int color )$/;"	f
+ANSICOLOR	mstruct.h	/^} ANSICOLOR, *PANSICOLOR;$/;"	t
+ANSILINE	global.c	/^	int		ANSILINE=0;$/;"	v
+ARMORY	mtype.h	64;"	d
+ATTACKCOLOR	global.c	/^    int    ATTACKCOLOR = AFC_RED;$/;"	v
+AT_WAR	mtype.h	59;"	d
+AUTOSHUTDOWN	global.c	/^	int		AUTOSHUTDOWN=0;$/;"	v
+Action_update_interval	update.c	/^short       Action_update_interval = 8;$/;"	v
+BLINDCOLOR	global.c	/^    int    BLINDCOLOR = AFC_RED;$/;"	v
+BROADCASTCOLOR	global.c	/^    int    BROADCASTCOLOR = AFC_YELLOW;$/;"	v
+C	io.c	1243;"	d	file:
+CAP	mtype.h	171;"	d
+CAST	mtype.h	157;"	d
+CHECKDOUBLE	global.c	/^	int		CHECKDOUBLE=0;$/;"	v
+CHEST	mtype.h	75;"	d
+COMMANDMAX	mtype.h	45;"	d
+CRASHTRAP	global.c	/^	int		CRASHTRAP=0;$/;"	v
+CREATURECOLOR	global.c	/^    int    CREATURECOLOR = AFC_WHITE;$/;"	v
+Cmdnum	global.c	/^int		Cmdnum;$/;"	v
+DAYSEC	main.c	262;"	d	file:
+DICE	mstruct.h	/^} DICE, *PDICE;$/;"	t
+DISCONNECT	mtype.h	54;"	d
+DISEASECOLOR	global.c	/^    int    DISEASECOLOR = AFC_RED;$/;"	v
+DOPROMPT	mtype.h	56;"	d
+Deadchildren	io.c	/^int				Deadchildren;$/;"	v
+EATNDRINK	global.c	/^	int		EATNDRINK=0;$/;"	v
+ECHOCOLOR	global.c	/^    int    ECHOCOLOR = AFC_CYAN;$/;"	v
+EMPORIUM	mtype.h	66;"	d
+ENMLIST	global.c	/^int ENMLIST=7; \/* set this to length of monster_enmlist array *\/$/;"	v
+EQUAL	mtype.h	185;"	d
+ERRORCOLOR	global.c	/^	int	   ERRORCOLOR = AFC_RED;$/;"	v
+EXITCOLOR	global.c	/^    int    EXITCOLOR = AFC_GREEN;$/;"	v
+FBUF	misc.c	419;"	d	file:
+FROSTCOLOR	global.c	/^    int    FROSTCOLOR = AFC_YELLOW;$/;"	v
+First_wait	io.c	/^static wq_tag			*First_wait;$/;"	v	file:
+GENERALSTORE	mtype.h	65;"	d
+GETHOSTBYNAME	global.c	/^	int		GETHOSTBYNAME=0;$/;"	v
+GUILDEXP	global.c	/^	int		GUILDEXP=0;$/;"	v
+GetLastErrorText	ntservic.c	/^LPTSTR GetLastErrorText( LPTSTR lpszBuf, DWORD dwSize )$/;"	f
+Guildwar	global.c	/^struct	lasttime	Guildwar;$/;"	v
+HEAVEN	global.c	/^	int		HEAVEN=0;$/;"	v
+HandleError	errhandl.c	/^void HandleError(char *pcMsg, int iErr)$/;"	f
+IBUFSIZE	mtype.h	40;"	d
+INT	global.c	295;"	d	file:
+INT	global.c	332;"	d	file:
+INTERVAL	command4.c	318;"	d	file:
+INTERVAL	dm2.c	575;"	d	file:
+INTRATE	mtype.h	79;"	d
+INV	mtype.h	172;"	d
+ISCT	mtype.h	175;"	d
+ISDM	mtype.h	176;"	d
+ISENGARD	global.c	/^	int		ISENGARD=0;$/;"	v
+ISIM	mtype.h	174;"	d
+ITEMCOLOR	global.c	/^    int    ITEMCOLOR = AFC_WHITE;$/;"	v
+InstallService	ntservic.c	/^void InstallService()$/;"	f
+KillService	ntservic.c	/^void KillService(void)$/;"	f
+LASTCOMMAND	global.c	/^	int		LASTCOMMAND=0;$/;"	v
+LOGONOFFCOLOR	global.c	/^    int    LOGONOFFCOLOR = AFC_WHITE;$/;"	v
+LT	mtype.h	191;"	d
+Lockout	global.c	/^lockout	*Lockout;$/;"	v
+MAG	mtype.h	173;"	d
+MAINTEXTCOLOR	global.c	/^    int    MAINTEXTCOLOR = AFC_WHITE;$/;"	v
+MARKETPLACE	mtype.h	69;"	d
+MAXALVL	mtype.h	61;"	d
+MAXLINE	misc.c	376;"	d	file:
+MAXPLAYERS	io.c	68;"	d	file:
+MAX_TEXIT	update.h	9;"	d
+MAX_TOKEN_SIZE	mtype.h	44;"	d
+MIDSEC	main.c	264;"	d	file:
+MIGNORE	global.c	69;"	d	file:
+MISSEDCOLOR	global.c	/^    int    MISSEDCOLOR = AFC_CYAN;$/;"	v
+MON_FIRST	mtype.h	36;"	d
+MORNT	main.c	263;"	d	file:
+MSP	global.c	/^	int		MSP=0;$/;"	v
+Mobilechance	update.c	/^int	    Mobilechance = 30;$/;"	v
+NETWORTH	bank.c	47;"	d	file:
+NOBULLYS	global.c	/^	int		NOBULLYS=0;$/;"	v
+NOCREATE	global.c	/^	int		NOCREATE=0;$/;"	v
+Numlockedout	global.c	/^int		Numlockedout;$/;"	v
+Numplayers	io.c	/^int				Numplayers;$/;"	v
+Numwaiting	io.c	/^int				Numwaiting;$/;"	v
+OBUFSIZE	mtype.h	41;"	d
+OUT	action.c	33;"	d	file:
+OUT	action.c	36;"	d	file:
+OUT2	action.c	39;"	d	file:
+OUT3	action.c	44;"	d	file:
+OUT4	action.c	48;"	d	file:
+OUT5	action.c	53;"	d	file:
+OUTFITTER	mtype.h	67;"	d
+PANSICOLOR	mstruct.h	/^} ANSICOLOR, *PANSICOLOR;$/;"	t
+PARANOID	global.c	/^	int		PARANOID=0;$/;"	v
+PAWNSHOP	mtype.h	68;"	d
+PDICE	mstruct.h	/^} DICE, *PDICE;$/;"	t
+PFNCOMPARE	mstruct.h	/^typedef int (*PFNCOMPARE)(const void *, const void *);$/;"	t
+PFN_COMMAND	global.c	/^typedef int (* PFN_COMMAND ) (creature *, cmd * );$/;"	t	file:
+PLAYERCOLOR	global.c	/^    int    PLAYERCOLOR = AFC_CYAN;$/;"	v
+PLY_FIRST	mtype.h	37;"	d
+POISONCOLOR	global.c	/^    int    POISONCOLOR = AFC_RED;$/;"	v
+PORTNUM	global.c	/^	unsigned short	PORTNUM=4040;$/;"	v
+PROMPT	mtype.h	55;"	d
+PROMPTCOLOR	global.c	/^    int    PROMPTCOLOR = AFC_MAGENTA;$/;"	v
+Ply	global.c	/^plystruct Ply[PMAX];$/;"	v
+RECORD_ALL	global.c	/^	int		RECORD_ALL=0;$/;"	v
+RETURN	mtype.h	179;"	d
+RETURNV	mtype.h	180;"	d
+REWARD	mtype.h	60;"	d
+RFC1413	global.c	/^	int		RFC1413=0;$/;"	v
+ROOMNAMECOLOR	global.c	/^	int	   ROOMNAMECOLOR = AFC_CYAN;$/;"	v
+Random_update_interval	global.c	/^short	Random_update_interval = 13;$/;"	v
+RemoveService	ntservic.c	/^void RemoveService()$/;"	f
+SAVEINTERVAL	mtype.h	50;"	d
+SAVEONDROP	global.c	/^	int		SAVEONDROP=0;$/;"	v
+SBEFUD	mtype.h	94;"	d
+SBLESS	mtype.h	86;"	d
+SBLIND	mtype.h	135;"	d
+SBLIST	mtype.h	110;"	d
+SBLOOD	mtype.h	119;"	d
+SBRWAT	mtype.h	126;"	d
+SBURNS	mtype.h	109;"	d
+SBURST	mtype.h	115;"	d
+SCHED	global.c	/^	int		SCHED=0;$/;"	v
+SCHEDPORT	main.c	31;"	d	file:
+SCONJU	mtype.h	138;"	d
+SCRUSH	mtype.h	113;"	d
+SCUREP	mtype.h	85;"	d
+SCURSE	mtype.h	139;"	d
+SDINVI	mtype.h	91;"	d
+SDISPL	mtype.h	140;"	d
+SDMAGI	mtype.h	92;"	d
+SDREXP	mtype.h	129;"	d
+SDUSTG	mtype.h	111;"	d
+SECURE	global.c	/^	int		SECURE=0;$/;"	v
+SENCHA	mtype.h	97;"	d
+SENGUL	mtype.h	114;"	d
+SEQUAK	mtype.h	121;"	d
+SFEARS	mtype.h	132;"	d
+SFHEAL	mtype.h	101;"	d
+SFIREB	mtype.h	88;"	d
+SFLFIL	mtype.h	122;"	d
+SFLOOD	mtype.h	144;"	d
+SFLYSP	mtype.h	105;"	d
+SFORTU	mtype.h	137;"	d
+SHIT	mtype.h	72;"	d
+SHURTS	mtype.h	83;"	d
+SICEBL	mtype.h	96;"	d
+SILENCECOLOR	global.c	/^	int	   SILENCECOLOR = AFC_YELLOW;	$/;"	v
+SIMMOL	mtype.h	118;"	d
+SINCIN	mtype.h	142;"	d
+SINVIS	mtype.h	89;"	d
+SKNOWA	mtype.h	123;"	d
+SLEVIT	mtype.h	103;"	d
+SLGHTN	mtype.h	95;"	d
+SLIGHT	mtype.h	84;"	d
+SLOCAT	mtype.h	128;"	d
+SMENDW	mtype.h	100;"	d
+SPELLFN	mextern.h	/^typedef int (*SPELLFN)();$/;"	t
+SPROTE	mtype.h	87;"	d
+SP_COMBO	mtype.h	162;"	d
+SP_EQUIPMENT	special1.c	25;"	d	file:
+SP_HERB_CURE_DISEASE	mtype.h	168;"	d
+SP_HERB_CURE_POISON	mtype.h	167;"	d
+SP_HERB_DISEASE	mtype.h	166;"	d
+SP_HERB_HARM	mtype.h	164;"	d
+SP_HERB_HEAL	mtype.h	163;"	d
+SP_HERB_POISON	mtype.h	165;"	d
+SP_INVENTORY	special1.c	24;"	d	file:
+SP_MAPSC	mtype.h	161;"	d
+SP_ROOM	special1.c	26;"	d	file:
+SRCOLD	mtype.h	125;"	d
+SRECAL	mtype.h	98;"	d
+SREMOV	mtype.h	124;"	d
+SRESTO	mtype.h	90;"	d
+SRFIRE	mtype.h	104;"	d
+SRMAGI	mtype.h	106;"	d
+SRMBLD	mtype.h	131;"	d
+SRMDIS	mtype.h	130;"	d
+SRUMBL	mtype.h	108;"	d
+SRVIGO	mtype.h	133;"	d
+SSHATT	mtype.h	117;"	d
+SSHOCK	mtype.h	107;"	d
+SSILNC	mtype.h	136;"	d
+SSSHLD	mtype.h	127;"	d
+SSTEAM	mtype.h	116;"	d
+SSUMMO	mtype.h	99;"	d
+STELEP	mtype.h	93;"	d
+STHUND	mtype.h	120;"	d
+STORNA	mtype.h	141;"	d
+STRACK	mtype.h	102;"	d
+STRANO	mtype.h	134;"	d
+STRMOR	mtype.h	143;"	d
+SUICIDE	global.c	/^	int		SUICIDE=0;$/;"	v
+SVIGOR	mtype.h	82;"	d
+SWBOLT	mtype.h	112;"	d
+ServiceCtrlHandler	ntservic.c	/^void ServiceCtrlHandler (DWORD controlCode)$/;"	f
+ServiceExecutionThread	ntservic.c	/^DWORD ServiceExecutionThread(LPDWORD param)$/;"	f
+ServiceMain	ntservic.c	/^void ServiceMain(DWORD argc, LPSTR *argv)$/;"	f
+Shutdown	global.c	/^struct	lasttime	Shutdown;$/;"	v
+Sockets	io.c	/^static fd_set			Sockets;$/;"	v	file:
+Spy	access.c	/^int		Spy[PMAX];$/;"	v
+StartServiceThread	ntservic.c	/^BOOL StartServiceThread()$/;"	f
+StartTime	global.c	/^time_t	StartTime;$/;"	v
+TACBUF	misc.c	928;"	d	file:
+TALKCOLOR	global.c	/^    int    TALKCOLOR = AFC_WHITE;$/;"	v
+TAXRATE	mtype.h	78;"	d
+TITLECOLOR	global.c	/^    int    TITLECOLOR = AFC_WHITE;$/;"	v
+TRAPCOLOR	global.c	/^    int    TRAPCOLOR = AFC_MAGENTA;$/;"	v
+TRAP_ALARM	mtype.h	154;"	d
+TRAP_BLOCK	mtype.h	150;"	d
+TRAP_DART	mtype.h	149;"	d
+TRAP_MPDAM	mtype.h	151;"	d
+TRAP_NAKED	mtype.h	153;"	d
+TRAP_PIT	mtype.h	148;"	d
+TRAP_RMSPL	mtype.h	152;"	d
+TX_interval	update.c	/^long        TX_interval = 4200;$/;"	v
+Tablesize	global.c	/^int		Tablesize;$/;"	v
+Time	global.c	/^long	Time;$/;"	v
+UpdateSCMStatus	ntservic.c	/^int UpdateSCMStatus (DWORD dwCurrentState, DWORD dwWin32ExitCode,$/;"	f
+WEATHERCOLOR	global.c	/^    int    WEATHERCOLOR = AFC_WHITE;$/;"	v
+Waitsock	io.c	/^static int			Waitsock;$/;"	v	file:
+Weather	global.c	/^struct	lasttime	Weather[5];$/;"	v
+_BSD_COMPAT	misc.c	21;"	d	file:
+about	command2.c	/^int about( creature *ply_ptr, cmd *cmnd )$/;"	f
+accept_connect	io.c	/^void accept_connect()$/;"	f
+accept_input	io.c	/^int accept_input( int fd )$/;"	f
+account_exists	global.c	/^	char account_exists[80]="You already have an account here.";$/;"	v
+action	action.c	/^int action(creature *ply_ptr, cmd *cmnd )$/;"	f
+add_charm_crt	creature.c	/^int add_charm_crt(creature *crt_ptr, creature *ply_ptr )$/;"	f
+add_crt_rom	room.c	/^void add_crt_rom(creature *crt_ptr, room *rom_ptr, int num )$/;"	f
+add_enm_crt	creature.c	/^int add_enm_crt(char *enemy, creature *crt_ptr )$/;"	f
+add_enm_dmg	creature.c	/^void add_enm_dmg(char *enemy, creature *crt_ptr, int dmg )$/;"	f
+add_obj_crt	player.c	/^void add_obj_crt(object	*obj_ptr, creature *ply_ptr )$/;"	f
+add_obj_obj	object.c	/^void add_obj_obj(object	*obj_ptr1, object *obj_ptr2 )$/;"	f
+add_obj_rom	room.c	/^void add_obj_rom(object	*obj_ptr, room *rom_ptr )$/;"	f
+add_obj_to_list	object.c	/^void add_obj_to_list(object	*obj_ptr, otag *obj_list )$/;"	f
+add_permcrt_rom	room.c	/^void add_permcrt_rom(room *rom_ptr )$/;"	f
+add_permobj_rom	room.c	/^void add_permobj_rom(room *rom_ptr )$/;"	f
+add_ply_rom	room.c	/^void add_ply_rom(creature *ply_ptr, room *rom_ptr )$/;"	f
+add_prof	command10.c	/^void add_prof( creature *ply_ptr, long exp )$/;"	f
+add_stolen_crt	creature.c	/^int add_stolen_crt(creature *crt_ptr, creature *ply_ptr )$/;"	f
+add_wait	io.c	/^void add_wait(int fd )$/;"	f
+addr_equal	io.c	/^int addr_equal(char	*str1, char *str2 )$/;"	f
+address	mstruct.h	/^	char		address[40];$/;"	m	struct:iobuf
+address	mstruct.h	/^	char		address[80];$/;"	m	struct:lockout
+alias_crt	mstruct.h	/^	struct creature	*alias_crt;$/;"	m	struct:extra
+apply_herb	command13.c	/^int apply_herb( creature *ply_ptr, cmd *cmnd )$/;"	f
+appraise	command7.c	/^int appraise( creature *ply_ptr, cmd *cmnd )$/;"	f
+armor	global.c	/^	char	armor;$/;"	m	struct:
+armor	mstruct.h	/^        char    armor;$/;"	m	struct:creature_template
+article	global.c	/^char article[][10] = {$/;"	v
+ask_for	io.c	/^void ask_for(int fd, char *str)$/;"	f
+attack	command5.c	/^int attack(creature *ply_ptr, cmd *cmnd )$/;"	f
+attack_crt	command5.c	/^int attack_crt(creature *ply_ptr, creature *crt_ptr )$/;"	f
+attack_mon	creature.c	/^int attack_mon(creature	*att_ptr, creature *atd_ptr )$/;"	f
+attack_with_weapon	combat.c	/^void attack_with_weapon( creature * ply_ptr )$/;"	f
+attacker	global.c	/^	char *attacker;$/;"	m	struct:
+attacker	mstruct.h	/^        char *attacker;$/;"	m	struct:enemy_list
+attribute	mstruct.h	/^	short	attribute;$/;"	m	struct:tagAnsiColor
+auth_questions_email	global.c	/^	char auth_questions_email[80]="";$/;"	v
+bHavePort	global.c	/^int	bHavePort;$/;"	v
+background	mstruct.h	/^	short	background;$/;"	m	struct:tagAnsiColor
+backstab	command7.c	/^int backstab( creature *ply_ptr, cmd *cmnd )$/;"	f
+bank_account_modify	bank.c	/^int bank_account_modify(creature *ply_ptr, long amount)$/;"	f
+bank_balance	bank.c	/^int bank_balance(creature *ply_ptr, cmd *cmnd)$/;"	f
+bank_deposit	bank.c	/^int bank_deposit(creature *ply_ptr, cmd *cmnd)$/;"	f
+bank_withdrawl	bank.c	/^int bank_withdrawl(creature *ply_ptr, cmd *cmnd)$/;"	f
+bard_song	command12.c	/^int bard_song( creature *ply_ptr, cmd *cmnd )$/;"	f
+bard_song2	command12.c	/^int bard_song2( creature *ply_ptr, cmd *cmnd )$/;"	f
+barkskin	command9.c	/^int barkskin( creature *ply_ptr, cmd *cmnd )$/;"	f
+bash	command8.c	/^int bash( creature *ply_ptr, cmd *cmnd )$/;"	f
+beautiful_day	global.c	/^	char beautiful_day[80]="It's a beautiful day today.";$/;"	v
+befuddle	magic3.c	/^int befuddle(creature *ply_ptr, cmd	*cmnd, int how )$/;"	f
+berserk	command9.c	/^int berserk( creature *ply_ptr, cmd *cmnd )$/;"	f
+bld_timeout	global.c	/^	time_t	bld_timeout = 1200;$/;"	v
+bless	magic3.c	/^int bless(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+blind	magic8.c	/^int blind(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+bonus	global.c	/^int bonus[35] = { -4, -4, -4, -3, -3, -2, -2, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1,$/;"	v
+bonus_type	mstruct.h	/^	char		bonus_type;$/;"	m	struct:osp_t
+break_weapon	combat.c	/^void break_weapon(creature *ply_ptr)$/;"	f
+breathe_water	magic7.c	/^int breathe_water(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+bribe	command9.c	/^int bribe(creature *ply_ptr, cmd *cmnd )$/;"	f
+bright_sun	global.c	/^	char bright_sun[80]="The sun shines brightly across the land.";$/;"	v
+broadcast	io.c	/^void broadcast(char	*msg )$/;"	f
+broadcast_c	io.c	/^void broadcast_c(char *msg, creature *crt_ptr )$/;"	f
+broadcast_class	io.c	/^void broadcast_class(creature *ply_ptr, char *str)$/;"	f
+broadcast_dam	io.c	/^void broadcast_dam(int ignore1, int ignore2, int rm, char *fmt, void *args[] )$/;"	f
+broadcast_eaves	io.c	/^void broadcast_eaves(char *str)$/;"	f
+broadcast_guild	io.c	/^void broadcast_guild(creature *ply_ptr, char *str)$/;"	f
+broadcast_login	io.c	/^void broadcast_login( creature *ply_ptr, int login )$/;"	f
+broadcast_rom	io.c	/^void broadcast_rom(int ignore, int rm, char *fmt, void *args[] )$/;"	f
+broadcast_rom2	io.c	/^void broadcast_rom2(int	ignore1, int ignore2, int rm, char *fmt, void *args[] )$/;"	f
+broadcast_wc	io.c	/^void broadcast_wc(int color, char *msg)$/;"	f
+broadcast_wiz	io.c	/^void broadcast_wiz(creature *ply_ptr, char *str )$/;"	f
+broadsend	command4.c	/^int broadsend(creature *ply_ptr, cmd *cmnd )$/;"	f
+buflen	io.c	66;"	d	file:
+builder_help	dm5.c	/^int builder_help(creature *ply_ptr, cmd *cmnd )$/;"	f
+buy	command7.c	/^int buy(creature *ply_ptr, cmd *cmnd )$/;"	f
+bw_cone_fire	combat.c	/^int bw_cone_fire( creature *crt_ptr, creature *vic_ptr )$/;"	f
+bw_cone_frost	combat.c	/^int bw_cone_frost( creature *crt_ptr, creature *vic_ptr )$/;"	f
+bw_poison	combat.c	/^int bw_poison(creature *crt_ptr, creature *vic_ptr )$/;"	f
+bw_spit_acid	combat.c	/^int bw_spit_acid(creature *crt_ptr, creature *vic_ptr )$/;"	f
+cast	magic1.c	/^int cast(creature *ply_ptr, cmd *cmnd )$/;"	f
+channelemote	command13.c	/^int channelemote( creature *ply_ptr, cmd *cmnd )$/;"	f
+check_conjure_vigor	update.c	/^int check_conjure_vigor(creature *crt_ptr)$/;"	f
+check_dos	io.c	/^int check_dos(int fd )$/;"	f
+check_double_login	command1.c	/^void check_double_login(int fd)$/;"	f
+check_exits	room.c	/^void check_exits(room *rom_ptr )$/;"	f
+check_for_flee	creature.c	/^void check_for_flee( creature *crt_ptr )$/;"	f
+check_for_ply_flee	combat.c	/^int check_for_ply_flee(creature *ply_ptr)$/;"	f
+check_for_spam	player.c	/^int check_for_spam( creature *ply_ptr )$/;"	f
+check_guild	guild.c	/^int check_guild(creature * ply_ptr)$/;"	f
+check_illegal_stats	player2.c	/^int check_illegal_stats(creature *ply_ptr, object *obj_ptr)$/;"	f
+check_ply_ext	player2.c	/^int check_ply_ext(char *name, exit_ *ext_ptr)$/;"	f
+check_random_exits	room2.c	/^void check_random_exits(room *rom_ptr)$/;"	f
+check_traps	room.c	/^void check_traps(creature *ply_ptr, room *rom_ptr )$/;"	f
+checkdouble	command1.c	/^int checkdouble( char *name )$/;"	f
+child_died	io.c	/^void child_died()$/;"	f
+choose_item	update.c	/^int choose_item(creature *ply_ptr )$/;"	f
+chpasswd	command11.c	/^void chpasswd(int fd, int param, char *str )$/;"	f
+circle	command8.c	/^int circle( creature *ply_ptr, cmd *cmnd )$/;"	f
+class_send	command13.c	/^int class_send( creature *ply_ptr, cmd *cmnd )$/;"	f
+class_stats	global.c	/^class_stats_struct class_stats[CLASS_COUNT] = {$/;"	v
+class_stats_struct	mstruct.h	/^} class_stats_struct;$/;"	t
+classemote	command13.c	/^int classemote(creature	*ply_ptr, cmd *cmnd )$/;"	f
+clean_str	misc.c	/^void clean_str(char *str, int strip_count )$/;"	f
+clear	command5.c	/^int clear(creature *ply_ptr, cmd *cmnd )$/;"	f
+clear_enchant	object.c	/^void clear_enchant( object *obj_ptr )$/;"	f
+clear_skies	global.c	/^	char clear_skies[80]="Clear, blue skies cover the land.";$/;"	v
+clear_spy	access.c	/^void clear_spy()$/;"	f
+closeexit	command6.c	/^	int closeexit( creature *ply_ptr, cmd *cmnd )$/;"	f
+clrscr	screen.c	/^void clrscr(int fd )$/;"	f
+cmd	mstruct.h	/^typedef struct cmd {$/;"	s
+cmd	mstruct.h	/^} cmd;$/;"	t
+cmdfn	global.c	/^	PFN_COMMAND cmdfn;$/;"	m	struct:
+cmdfn	mstruct.h	/^	int		(*cmdfn)();$/;"	m	struct:cmdstruct
+cmdlist	global.c	/^} cmdlist[] = {$/;"	v
+cmdno	global.c	/^	int	cmdno;$/;"	m	struct:
+cmdno	mstruct.h	/^	int		cmdno;$/;"	m	struct:cmdstruct
+cmdstr	global.c	/^	char	*cmdstr;$/;"	m	struct:
+cmdstr	mstruct.h	/^	char		*cmdstr;$/;"	m	struct:cmdstruct
+cmdstruct	mstruct.h	/^struct cmdstruct {$/;"	s
+combo_box	special1.c	/^int combo_box(creature *ply_ptr, object *obj_ptr )$/;"	f
+command	command1.c	/^void command(int fd, int param, char *str )$/;"	f
+commands	mstruct.h	/^	char		commands;$/;"	m	struct:iobuf
+compute_ac	player.c	/^void compute_ac(creature *ply_ptr )$/;"	f
+compute_thaco	player.c	/^void compute_thaco( creature *ply_ptr )$/;"	f
+conjure	magic9.c	/^int conjure(creature *ply_ptr, cmd *cmnd, int how)$/;"	f
+consider	creature.c	/^void consider(creature *ply_ptr, creature *crt_ptr )$/;"	f
+contains_bad_word	command1.c	/^int contains_bad_word(char *str)$/;"	f
+convert_seconds_to_str	misc.c	/^int convert_seconds_to_str(long interval, char *str )$/;"	f
+count_vis_mon	room.c	/^int count_vis_mon(room *rom_ptr )$/;"	f
+count_vis_ply	room.c	/^int count_vis_ply(room *rom_ptr )$/;"	f
+count_vis_ply_and_cnj	room.c	/^int count_vis_ply_and_cnj(room *rom_ptr )$/;"	f
+courageous	command7.c	/^void courageous( creature *ply_ptr )$/;"	f
+crash	update.c	/^void crash( int sig )$/;"	f
+create_a_room	room2.c	/^int create_a_room(int num, room *rom_ptr)$/;"	f
+create_ply	command1.c	/^void create_ply(int	fd, int	param, char	*str )$/;"	f
+creature_template	mstruct.h	/^struct creature_template {$/;"	s
+crt_condition	command2.c	/^char *crt_condition(creature *crt_ptr)$/;"	f
+crt_spell	update.c	/^int crt_spell(creature *crt_ptr, creature *att_ptr)$/;"	f
+crt_str	misc.c	/^char *crt_str(creature *viewpoint, creature	*crt, int num, int flags )$/;"	f
+ct_timeout	global.c	/^	time_t	ct_timeout = 1200;$/;"	v
+cur_guilds	global.c	/^guild cur_guilds[10];$/;"	v
+curepoison	magic2.c	/^int curepoison(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+curse	magic9.c	/^int curse(creature *ply_ptr, cmd *cmnd, int how, object *obj_ptr )$/;"	f
+dam_desc	global.c	/^char dam_desc[][20] = {$/;"	v
+death_room_num	global.c	/^	int	death_room_num = 50;$/;"	v
+dec_daily	misc.c	/^int dec_daily( struct daily *dly_ptr )$/;"	f
+del_charm_crt	creature.c	/^int del_charm_crt(creature *crt_ptr, creature *ply_ptr )$/;"	f
+del_conjured	magic9.c	/^int del_conjured(creature *crt_ptr)$/;"	f
+del_crt_rom	room.c	/^void del_crt_rom(creature *crt_ptr, room *rom_ptr )$/;"	f
+del_enm_crt	creature.c	/^int del_enm_crt(char *enemy, creature *crt_ptr )$/;"	f
+del_exit	dm3.c	/^int del_exit(room **rom_ptr, char *dir )$/;"	f
+del_obj_crt	player.c	/^void del_obj_crt(object *obj_ptr, creature *ply_ptr )$/;"	f
+del_obj_from_list	object.c	/^void del_obj_from_list(object *obj_ptr, otag *obj_list )$/;"	f
+del_obj_obj	object.c	/^void del_obj_obj(object	*obj_ptr1, object *obj_ptr2 )$/;"	f
+del_obj_rom	room.c	/^void del_obj_rom(object	*obj_ptr, room *rom_ptr )$/;"	f
+del_ply_rom	room.c	/^void del_ply_rom(creature *ply_ptr, room *rom_ptr )$/;"	f
+del_stolen_crt	creature.c	/^int del_stolen_crt(creature *crt_ptr, creature *ply_ptr )$/;"	f
+delete_talk	talk.c	/^int delete_talk(creature *ply_ptr, cmd *cmnd)$/;"	f
+delimit	misc.c	/^void delimit( char *str )$/;"	f
+delline	screen.c	/^void delline(int fd )$/;"	f
+dequip	player2.c	/^int dequip(creature *ply_ptr,object *obj_ptr)$/;"	f
+desc_search	dm5.c	/^int desc_search(char *desc, char *pattern, int *val )$/;"	f
+describe_me	command13.c	/^int describe_me( creature *ply_ptr, cmd *cmnd )$/;"	f
+detectinvis	magic4.c	/^int detectinvis(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+detectmagic	magic4.c	/^int detectmagic(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+dice	misc.c	/^int dice(int n, int s, int p)$/;"	f
+die	creature.c	/^void die(creature *crt_ptr, creature *att_ptr ) $/;"	f
+die_perm_crt	creature.c	/^void die_perm_crt(creature *crt_ptr )$/;"	f
+disconnect	io.c	/^void disconnect(int fd )$/;"	f
+disconnect_all_ply	io.c	/^void disconnect_all_ply()$/;"	f
+dispel	magic9.c	/^int dispel(creature *ply_ptr, cmd *cmnd, int how, object *obj_ptr )$/;"	f
+display_credits	main.c	/^void display_credits(int fd)$/;"	f
+display_rom	room.c	/^void display_rom(creature *ply_ptr, room *rom_ptr )$/;"	f
+dissolve_item	command10.c	/^void dissolve_item (creature *ply_ptr, creature *crt_ptr)$/;"	f
+dm_ac	dm1.c	/^int dm_ac(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_crt	dm7.c	/^int dm_add_crt(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_add_lockout	dm3.c	/^int dm_add_lockout(creature *ply_ptr, cmd *cmnd)$/;"	f
+dm_add_obj	dm7.c	/^int dm_add_obj( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_rom	dm2.c	/^int dm_add_rom(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_talk	dm7.c	/^int dm_add_talk(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_talk_key	dm7.c	/^int dm_add_talk_key(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_talk_resp	dm7.c	/^int dm_add_talk_resp(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_talk_save	dm7.c	/^int dm_add_talk_save(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_add_talk_show	dm7.c	/^int dm_add_talk_show(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_advance	dm7.c	/^int dm_advance(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_afk	dm8.c	/^int dm_afk(creature *ply_ptr, cmd *cmnd)$/;"	f
+dm_alias	dm6.c	/^int dm_alias (creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_append	dm5.c	/^int dm_append(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_attack	dm6.c	/^int dm_attack (creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_auth	dm6.c	/^int dm_auth(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_broadecho	dm4.c	/^int dm_broadecho(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_cast	dm4.c	/^int dm_cast(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_create_crt	dm1.c	/^int dm_create_crt( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_create_obj	dm1.c	/^int dm_create_obj(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_crt_name	dm4.c	/^int dm_crt_name(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_delete	dm5.c	/^int dm_delete(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_delete_db	dm7.c	/^int dm_delete_db(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_dmalloc_stats	dm7.c	/^int dm_dmalloc_stats(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_dump_crt	dm8.c	/^int dm_dump_crt(creature *ply_ptr) {$/;"	f
+dm_dump_db	dm8.c	/^int dm_dump_db ( creature *ply_ptr, cmd *cmnd ) {$/;"	f
+dm_dump_io	dm8.c	/^ int dm_dump_io(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_dump_obj	dm8.c	/^int dm_dump_obj(creature *ply_ptr) {$/;"	f
+dm_dump_rom	dm8.c	/^int dm_dump_rom(creature *ply_ptr) {$/;"	f
+dm_dust	dm6.c	/^int dm_dust(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_echo	dm1.c	/^int dm_echo(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_familiar	dm8.c	/^int dm_familiar(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_find_db	dm7.c	/^int dm_find_db(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_finger	dm3.c	/^int dm_finger( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_flash	dm6.c	/^int dm_flash(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_flush_crtobj	dm1.c	/^int dm_flush_crtobj(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_flushsave	dm1.c	/^int dm_flushsave( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_force	dm1.c	/^int dm_force(creature *ply_ptr, cmd	*cmnd )$/;"	f
+dm_game_status	dm7.c	/^int dm_game_status(creature *ply_ptr, cmd *cmnd)$/;"	f
+dm_group	dm4.c	/^int dm_group(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_gspells	dm4.c	/^static int	dm_gspells(creature	*ply_ptr, int splno )$/;"	f	file:
+dm_help	dm5.c	/^int dm_help(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_info	dm3.c	/^int dm_info(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_invis	dm1.c	/^int dm_invis(creature *ply_ptr, cmd	*cmnd )$/;"	f
+dm_jail	dm8.c	/^int dm_jail(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_list	dm3.c	/^int dm_list(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_loadlockout	dm3.c	/^int dm_loadlockout(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_log	dm3.c	/^int dm_log(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_memory	dm5.c	/^int dm_memory( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_mstat	dm2.c	/^int dm_mstat(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_nameroom	dm5.c	/^int dm_nameroom(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_obj_name	dm4.c	/^int dm_obj_name(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_ostat	dm2.c	/^int dm_ostat(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_own_ply	dm8.c	/^int dm_own_ply(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_param	dm4.c	/^int dm_param(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_pass	global.c	/^	char dm_pass[20]="";  \/* No DM creation by default *\/$/;"	v
+dm_perm	dm1.c	/^int dm_perm(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_prepend	dm5.c	/^int dm_prepend(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_purge	dm1.c	/^int dm_purge(creature *ply_ptr, cmd	*cmnd )$/;"	f
+dm_reload_rom	dm1.c	/^int dm_reload_rom( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_replace	dm5.c	/^int dm_replace(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_reset_shop	dm9.c	/^int dm_reset_shop(creature *ply_ptr, cmd *cmnd)$/;"	f
+dm_rmstat	dm1.c	/^int dm_rmstat( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_save	dm1.c	/^int dm_save(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_save_crt	dm7.c	/^int dm_save_crt(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_save_obj	dm7.c	/^int dm_save_obj(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_send	dm1.c	/^int dm_send(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_set	dm3.c	/^int dm_set(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_set_crt	dm3.c	/^int dm_set_crt(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_set_ext	dm3.c	/^int dm_set_ext(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_set_obj	dm3.c	/^int dm_set_obj( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_set_rom	dm3.c	/^int dm_set_rom(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_set_xflg	dm3.c	/^int dm_set_xflg( creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_set_xkey	dm3.c	/^int dm_set_xkey(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_shutdown	dm1.c	/^int dm_shutdown(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_silence	dm4.c	/^int dm_silence(creature *ply_ptr, cmd *cmnd)$/;"	f
+dm_spy	dm2.c	/^int dm_spy(creature	*ply_ptr, cmd *cmnd )$/;"	f
+dm_stat	dm2.c	/^int dm_stat(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_stolen	dm9.c	/^int dm_stolen(creature *ply_ptr, cmd *cmnd)$/;"	f
+dm_talk	talk.c	/^int dm_talk(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_teleport	dm1.c	/^int dm_teleport(creature *ply_ptr, cmd *cmnd )$/;"	f
+dm_timeout	global.c	/^	time_t	dm_timeout = 0;$/;"	v
+dm_users	dm1.c	/^int dm_users(creature *ply_ptr, cmd	*cmnd )$/;"	f
+dm_view	dm4.c	/^int dm_view(creature *ply_ptr, cmd *cmnd )$/;"	f
+dmname	global.c	/^	char dmname[][20] = {$/;"	v
+do_damage	combat.c	/^int do_damage(creature *vic_ptr, creature *att_ptr, int dmg)$/;"	f
+down_level	player.c	/^void down_level( creature *ply_ptr )$/;"	f
+drain_exp	magic7.c	/^int drain_exp(creature *ply_ptr, cmd *cmnd, int how, object *obj_ptr )$/;"	f
+drink	magic1.c	/^int drink(creature *ply_ptr, cmd *cmnd )$/;"	f
+drop	command2.c	/^int drop(creature *ply_ptr, cmd	*cmnd )$/;"	f
+drop_all_obj	command2.c	/^void drop_all_obj(creature *ply_ptr, object	*cnt_ptr )$/;"	f
+drop_all_rom	command2.c	/^void drop_all_rom( creature	*ply_ptr )$/;"	f
+duplicate_object	object.c	/^object *duplicate_object(object *old_obj)$/;"	f
+earth_shield	magic7.c	/^int earth_shield(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+earth_trembles	global.c	/^	char earth_trembles[80]="The earth trembles under your feet.";$/;"	v
+eat	command13.c	/^int eat( creature *ply_ptr, cmd	*cmnd )$/;"	f
+eat_herb	command13.c	/^int eat_herb( creature *ply_ptr, cmd *cmnd )$/;"	f
+elog_broad	io.c	/^void elog_broad( char *str )$/;"	f
+emote	command11.c	/^int emote( creature *ply_ptr, cmd *cmnd )$/;"	f
+enchant	magic4.c	/^int enchant(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+enchant_obj	object.c	/^void enchant_obj( object *obj_ptr, int value )$/;"	f
+end_enm_crt	creature.c	/^void end_enm_crt(char *enemy, creature *crt_ptr )$/;"	f
+enemy_list	mstruct.h	/^struct enemy_list {$/;"	s
+equip	player2.c	/^int equip(creature *ply_ptr, object *obj_ptr)$/;"	f
+equip_list	command3.c	/^void equip_list(int	fd, creature *crt_ptr )$/;"	f
+equipment	command3.c	/^int equipment(creature *crt_ptr, cmd *cmnd )$/;"	f
+equipment_sets	player2.c	/^int equipment_sets(object *obj_ptr, int flag)$/;"	f
+exit1	update.h	/^	int	exit1,exit2;$/;"	m	struct:
+exit2	update.h	/^	int	exit1,exit2;$/;"	m	struct:
+exitcheck_guild	guild.c	/^int exitcheck_guild(exit_ * ext_ptr)$/;"	f
+exp_to_lev	misc.c	/^int exp_to_lev(long	exp )$/;"	f
+expand_exit_name	dm3.c	/^void expand_exit_name( char *name )$/;"	f
+experience	global.c	/^	long	experience;$/;"	m	struct:
+experience	mstruct.h	/^        long    experience;$/;"	m	struct:creature_template
+extr	mstruct.h	/^	extra		*extr;$/;"	m	struct:tagPlayer
+extra	mstruct.h	/^typedef struct extra {			\/* Extra (non-saved) player fields *\/$/;"	s
+extra	mstruct.h	/^} extra;$/;"	t
+fall_ply	player.c	/^int fall_ply( creature *ply_ptr )$/;"	f
+fd	io.c	/^	int		fd;$/;"	m	struct:wq_tag
+fear	magic8.c	/^int fear(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+find_all_ext	room2.c	/^exit_ *find_all_ext(xtag *first_xt, char *str)$/;"	f
+find_crt	creature.c	/^creature *find_crt( creature *ply_ptr, ctag *first_ct, char *str, int val )$/;"	f
+find_crt_in_rom	creature.c	/^creature *find_crt_in_rom( creature *ply_ptr, room *rom_ptr, const char *str, int val, int flag )$/;"	f
+find_exact_crt	creature.c	/^creature *find_exact_crt( creature *ply_ptr, ctag *first_ct, char *str, int val )$/;"	f
+find_ext	room.c	/^exit_ *find_ext(creature *ply_ptr, xtag *first_xt, char *str, int val )$/;"	f
+find_obj	object.c	/^object *find_obj(creature *ply_ptr, otag *first_ot, char *str, int val )$/;"	f
+find_obj_value	object.c	/^long find_obj_value(object *obj_ptr)$/;"	f
+find_rom_owner	room.c	/^creature *find_rom_owner(room *rom_ptr)$/;"	f
+find_who	player.c	/^creature *find_who( char *name )$/;"	f
+first_charm	mstruct.h	/^	ctag		*first_charm;$/;"	m	struct:extra
+first_ignore	mstruct.h	/^	etag		*first_ignore;$/;"	m	struct:extra
+first_stolen	mstruct.h	/^	ctag		*first_stolen;$/;"	m	struct:extra
+flag_list	command5.c	/^int flag_list(creature *ply_ptr, cmd *cmnd )$/;"	f
+flee	command7.c	/^int flee( creature *ply_ptr, cmd *cmnd )$/;"	f
+flush_crier	room2.c	/^void flush_crier()$/;"	f
+fly	magic5.c	/^int fly(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+fn	mstruct.h	/^	void		(*fn)();$/;"	m	struct:iobuf
+fnparam	mstruct.h	/^	char		fnparam;$/;"	m	struct:iobuf
+follow	command4.c	/^int follow( creature *ply_ptr, cmd *cmnd )$/;"	f
+forground	mstruct.h	/^	short	forground;$/;"	m	struct:tagAnsiColor
+fortune	magic8.c	/^int fortune(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+full_moon	global.c	/^	char full_moon[80]="The full moon shines across the land.";$/;"	v
+fullstr	mstruct.h	/^	char		fullstr[256];$/;"	m	struct:cmd
+g_buffer	global.c	/^char	g_buffer[4096];$/;"	v
+gale_force	global.c	/^	char gale_force[80]="Gale force winds blow in from the sea.";$/;"	v
+gamestat2	dm7.c	/^void gamestat2(int fd, int param,char *instr)$/;"	f
+get	command2.c	/^int get(creature *ply_ptr, cmd *cmnd )$/;"	f
+get_all_obj	command2.c	/^void get_all_obj(creature *ply_ptr, object *cnt_ptr )$/;"	f
+get_all_rom	command2.c	/^void get_all_rom( creature *ply_ptr )$/;"	f
+get_perm_obj	command2.c	/^void get_perm_obj( object *obj_ptr )$/;"	f
+get_ply_flags	misc.c	/^int get_ply_flags(creature * ply_ptr )$/;"	f
+get_quest_exp	access.c	/^long get_quest_exp( int nQuest )$/;"	f
+get_spell_function	access.c	/^SPELLFN get_spell_function( int nIndex )$/;"	f
+get_spell_list_size	access.c	/^int get_spell_list_size()$/;"	f
+get_spell_name	access.c	/^char *get_spell_name( int nIndex )$/;"	f
+get_spell_num	access.c	/^int get_spell_num( int nIndex )$/;"	f
+get_spy	access.c	/^int get_spy( int id )$/;"	f
+give	command8.c	/^int give( creature *ply_ptr, cmd *cmnd )$/;"	f
+give_money	command8.c	/^void give_money( creature *ply_ptr, cmd *cmnd )$/;"	f
+glaring_sun	global.c	/^	char glaring_sun[80]="The glaring sun beats down upon the inhabitants of the world.";$/;"	v
+go	command6.c	/^	int go( creature *ply_ptr, cmd *cmnd)$/;"	f
+gotoxy	screen.c	/^void gotoxy(int fd, int x, int y )$/;"	f
+group	command4.c	/^int group( creature	*ply_ptr, cmd *cmnd )$/;"	f
+gtalk	command10.c	/^int gtalk(creature *ply_ptr, cmd *cmnd )$/;"	f
+guild_score	guild.c	/^int guild_score(creature * ply_ptr, creature * crt_ptr)$/;"	f
+guild_send	guild.c	/^int guild_send( creature *ply_ptr, cmd *cmnd )$/;"	f
+guild_war	guild.c	/^int guild_war(creature *ply_ptr, cmd *cmnd )$/;"	f
+guilds_list	guild.c	/^int guilds_list( creature *ply_ptr, cmd *cmnd )$/;"	f
+half_moon	global.c	/^	char half_moon[80]="Half a moon lights the evening skies.";$/;"	v
+handle_args	main.c	/^void handle_args( int argc, char *argv[] )$/;"	f
+handle_commands	io.c	/^void handle_commands()$/;"	f
+has_light	player.c	/^int has_light( creature *crt_ptr )$/;"	f
+haste	command9.c	/^int haste( creature *ply_ptr, cmd *cmnd )$/;"	f
+heal	magic5.c	/^int heal(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+heal_crt	update.c	/^void heal_crt( creature * crt_ptr )$/;"	f
+health	command4.c	/^int health( creature *ply_ptr, cmd *cmnd )$/;"	f
+heat	global.c	/^	char heat[80]="The heat today is unbearable.";$/;"	v
+heavy_fog	global.c	/^	char heavy_fog[80]="A heavy fog blankets the earth.";$/;"	v
+heavy_rain	global.c	/^	char heavy_rain[80]="A heavy rain begins to fall.";$/;"	v
+help	command4.c	/^int help( creature *ply_ptr, cmd *cmnd )$/;"	f
+hide	command5.c	/^int hide(creature *ply_ptr, cmd *cmnd )$/;"	f
+hit_description	combat.c	/^char *hit_description(int damage)$/;"	f
+hold	command3.c	/^int hold(creature *ply_ptr, cmd	*cmnd )$/;"	f
+hp	global.c	/^	short 	hp;$/;"	m	struct:
+hp	mstruct.h	/^	short		hp;$/;"	m	struct:
+hp	mstruct.h	/^        short   hp;$/;"	m	struct:creature_template
+hpstart	mstruct.h	/^	short		hpstart;$/;"	m	struct:
+ignore	command9.c	/^int ignore( creature *ply_ptr, cmd *cmnd )$/;"	f
+ihead	mstruct.h	/^	short		ihead, itail;$/;"	m	struct:iobuf
+in_group	misc.c	/^int in_group(creature *crt_ptr, creature *ply_ptr)$/;"	f
+inetname	io.c	/^char *inetname(struct in_addr in )$/;"	f
+info	command4.c	/^int info( creature *ply_ptr, cmd *cmnd )$/;"	f
+info_2	command4.c	/^void info_2(int	fd, int param, char *instr )$/;"	f
+ingest_herb	command13.c	/^int ingest_herb( creature *ply_ptr, cmd *cmnd )$/;"	f
+init_connect	io.c	/^void init_connect( int fd )$/;"	f
+init_eq	global.c	/^	int init_eq[9] = { 1505, 1502, 1503, 1504, 1, 3, 2, 5, 6 };$/;"	v
+init_guild	guild.c	/^int init_guild()$/;"	f
+init_ply	player.c	/^void init_ply( creature	*ply_ptr )$/;"	f
+init_talk	talk.c	/^int init_talk(creature *ply_ptr)$/;"	f
+input	mstruct.h	/^	char		input[IBUFSIZE];$/;"	m	struct:iobuf
+int_to_text	access.c	/^char *int_to_text( int nNumber )$/;"	f
+intcast	mstruct.h	/^	int		intcast;$/;"	m	struct:osp_t
+intrpt	mstruct.h	/^	char		intrpt;$/;"	m	struct:iobuf
+inventory	command2.c	/^int inventory( creature *ply_ptr, cmd *cmnd )$/;"	f
+invisibility	magic3.c	/^int invisibility(creature *ply_ptr, cmd *cmnd, int how)$/;"	f
+io	mstruct.h	/^	iobuf		*io;$/;"	m	struct:tagPlayer
+io_check	io.c	/^int io_check()$/;"	f
+iobuf	mstruct.h	/^typedef struct iobuf {			\/* I\/O buffers for players *\/$/;"	s
+iobuf	mstruct.h	/^} iobuf;$/;"	t
+is_charm_crt	creature.c	/^int is_charm_crt(char *charmed, creature *crt_ptr )$/;"	f
+is_crt_killable	creature.c	/^int is_crt_killable( creature *crt_ptr, creature *att_ptr )$/;"	f
+is_enm_crt	creature.c	/^int is_enm_crt(char *enemy, creature *crt_ptr )$/;"	f
+is_num	misc.c	/^int is_num(char *str )$/;"	f
+is_stolen_crt	creature.c	/^int is_stolen_crt(char *stolen, creature *crt_ptr )$/;"	f
+itail	mstruct.h	/^	short		ihead, itail;$/;"	m	struct:iobuf
+jail_room_num	global.c	/^	int	jail_room_num = 6972;$/;"	v
+killServiceEvent	ntservic.c	/^HANDLE	killServiceEvent;$/;"	v
+know_alignment	magic6.c	/^int know_alignment(creature	*ply_ptr, cmd *cmnd, int how )$/;"	f
+l_ltime	player2.c	127;"	d	file:
+l_ltime	player2.c	197;"	d	file:
+l_ltime	player2.c	281;"	d	file:
+l_ltime	player2.c	63;"	d	file:
+l_time	player2.c	126;"	d	file:
+l_time	player2.c	196;"	d	file:
+l_time	player2.c	280;"	d	file:
+l_time	player2.c	62;"	d	file:
+last_action_update	update.c	/^static long last_action_update;$/;"	v	file:
+last_active_update	update.c	/^static long last_active_update;$/;"	v	file:
+last_allcmd	update.c	/^static long last_allcmd;$/;"	v	file:
+last_dust_output	main.c	/^time_t last_dust_output;$/;"	v
+last_exit_update	update.c	/^long        last_exit_update;$/;"	v
+last_guildwar_update	update.c	/^static long last_guildwar_update;$/;"	v	file:
+last_random_exit_update	update.c	/^static long last_random_exit_update;$/;"	v	file:
+last_random_update	update.c	/^static long last_random_update;$/;"	v	file:
+last_security_update	update.c	/^static long last_security_update;$/;"	v	file:
+last_shutdown_update	update.c	/^static long last_shutdown_update;$/;"	v	file:
+last_time_update	update.c	/^static long last_time_update;$/;"	v	file:
+last_update	update.c	/^static long last_update;$/;"	v	file:
+last_user_update	update.c	/^static long last_user_update;$/;"	v	file:
+last_weather_update	update.c	/^static long last_weather_update;$/;"	v	file:
+lastcommand	mstruct.h	/^	char		lastcommand[80];$/;"	m	struct:extra
+level_cycle	global.c	/^short level_cycle[][10] = {$/;"	v
+levitate	magic5.c	/^int levitate(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+light	magic2.c	/^int light(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+light_breeze	global.c	/^	char light_breeze[80]="A light breeze blows from the south.";$/;"	v
+light_clouds	global.c	/^	char light_clouds[80]="Light clouds appear over the mountains.";$/;"	v
+light_rain	global.c	/^	char light_rain[80]="A light rain falls quietly.";$/;"	v
+link_rom	dm3.c	/^void link_rom(room	**rom_ptr, short tonum, char *dir )$/;"	f
+list	command7.c	/^int list( creature *ply_ptr, cmd *cmnd )$/;"	f
+list_act	update.c	/^int list_act(creature *ply_ptr, cmd	*cmnd )$/;"	f
+list_charm	dm6.c	/^int list_charm (creature *ply_ptr, cmd *cmnd )$/;"	f
+list_enm	dm6.c	/^int list_enm(creature *ply_ptr, cmd *cmnd )$/;"	f
+list_obj	object.c	/^int list_obj(char *str, creature *ply_ptr, otag	*first_otag ) $/;"	f
+list_talk	talk.c	/^int list_talk(creature *ply_ptr)$/;"	f
+load_crt_actions	logic.c	/^int load_crt_actions( creature *crt_ptr )$/;"	f
+load_cursor	screen.c	/^void load_cursor( int fd )$/;"	f
+load_lockouts	misc.c	/^void load_lockouts()$/;"	f
+locate_player	magic7.c	/^int locate_player(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+lock	command6.c	/^	int lock( creature *ply_ptr, cmd *cmnd )$/;"	f
+locked_out	io.c	/^int locked_out( int fd )$/;"	f
+lockout	mstruct.h	/^typedef struct lockout {$/;"	s
+lockout	mstruct.h	/^} lockout;$/;"	t
+log_exit	main.c	/^void log_exit()$/;"	f
+login	command1.c	/^void login(int 	fd, int	param, char	*str )$/;"	f
+loginattempts	mstruct.h	/^	int			loginattempts;$/;"	m	struct:iobuf
+loginattempts	mstruct.h	/^	int		loginattempts;$/;"	m	struct:extra
+look	command2.c	/^int look(creature *ply_ptr, cmd	*cmnd )$/;"	f
+lookup_pid	mstruct.h	/^	int			lookup_pid;$/;"	m	struct:iobuf
+lose	command4.c	/^int lose( creature *ply_ptr, cmd *cmnd )$/;"	f
+lose_all	command10.c	/^void lose_all( creature *ply_ptr )$/;"	f
+low_piety_alg	player.c	/^creature *low_piety_alg(room *rom_ptr, int invis, int alg, int lvl )$/;"	f
+lower_prof	command10.c	/^void lower_prof( creature *ply_ptr, long exp )$/;"	f
+lowest_piety	player.c	/^creature *lowest_piety(room	*rom_ptr, int invis )$/;"	f
+ltime	mstruct.h	/^	time_t		ltime;$/;"	m	struct:iobuf
+luck	mstruct.h	/^	int		luck;$/;"	m	struct:extra
+luck	player.c	/^int luck( creature *ply_ptr )$/;"	f
+m1arg	misc.c	/^void **m1arg(void *arg1)$/;"	f
+m2args	misc.c	/^void **m2args(void *arg1, void *arg2)$/;"	f
+m3args	misc.c	/^void **m3args(void *arg1, void *arg2, void *arg3)$/;"	f
+magictrack	magic5.c	/^int magictrack(creature	*ply_ptr, cmd *cmnd, int how )$/;"	f
+main	main.c	/^int main(int argc,char *argv[])$/;"	f
+main	main.c	/^void main(void)$/;"	f
+max_weight	player.c	/^int max_weight( creature *ply_ptr )$/;"	f
+mdice	mtype.h	193;"	d
+meditate	command12.c	/^int meditate( creature	*ply_ptr, cmd *cmnd )$/;"	f
+mend	magic2.c	/^int mend(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+mess1	update.h	/^	char	*mess1, *mess2;$/;"	m	struct:
+mess2	update.h	/^	char	*mess1, *mess2;$/;"	m	struct:
+mobile_crt	creature.c	/^int mobile_crt(creature	*crt_ptr )$/;"	f
+mod_profic	player.c	/^int mod_profic( creature *ply_ptr )$/;"	f
+monk_dice	global.c	/^DICE monk_dice[26] = $/;"	v
+monster_enmlist	global.c	/^} monster_enmlist[] = {$/;"	v
+monster_guide	global.c	/^} monster_guide[]= {$/;"	v
+monstercheck_guild	guild.c	/^int monstercheck_guild(creature * ply_ptr)$/;"	f
+move	command2.c	/^int move(creature *ply_ptr, cmd *cmnd )$/;"	f
+mp	mstruct.h	/^	int		mp;$/;"	m	struct:osp_t
+mp	mstruct.h	/^	short		mp;$/;"	m	struct:
+mprint	io.c	/^void mprint(int fd, char *fmt, void *args[] )$/;"	f
+mprofic	player.c	/^int mprofic( creature *ply_ptr, int	index )$/;"	f
+mpstart	mstruct.h	/^	short		mpstart;$/;"	m	struct:
+msprint	io.c	/^void msprint(creature *viewpoint, char *buffer, char *fmt, void *args[] )$/;"	f
+mvc_log	main.c	/^void mvc_log(){$/;"	f
+nDice	mstruct.h	/^	int	nDice;$/;"	m	struct:tagDice
+nPlus	mstruct.h	/^	int	nPlus;$/;"	m	struct:tagDice
+nSides	mstruct.h	/^	int	nSides;$/;"	m	struct:tagDice
+name1	update.h	/^	char    *name1, *name2;$/;"	m	struct:
+name2	update.h	/^	char    *name1, *name2;$/;"	m	struct:
+ndice	global.c	/^	short	ndice;$/;"	m	struct:
+ndice	mstruct.h	/^	int		ndice;$/;"	m	struct:osp_t
+ndice	mstruct.h	/^	short		ndice;$/;"	m	struct:
+ndice	mstruct.h	/^        short   ndice;$/;"	m	struct:creature_template
+needed_exp	global.c	/^long needed_exp[] = {$/;"	v
+net_worth	bank.c	/^long net_worth(creature *ply_ptr)$/;"	f
+next_available_key	dm3.c	/^int next_available_key(void)$/;"	f
+next_tag	io.c	/^	struct wq_tag	*next_tag;$/;"	m	struct:wq_tag
+nirvana	dm4.c	/^int nirvana(creature *ply_ptr, cmd *cmnd )$/;"	f
+no_moon	global.c	/^	char no_moon[80]="The sky is dark as pitch.";$/;"	v
+noteedit	post.c	/^void noteedit(int fd, int param, char *str )$/;"	f
+notepad	post.c	/^int notepad( creature *ply_ptr, cmd *cmnd )$/;"	f
+num	mstruct.h	/^	int		num;$/;"	m	struct:cmd
+number	access.c	/^static char number[][10] = {$/;"	v	file:
+obj_cond_desc	global.c	/^char obj_cond_desc[][60] = {$/;"	v
+obj_condition	command2.c	/^char *obj_condition(object *obj_ptr)$/;"	f
+obj_str	misc.c	/^char *obj_str(creature *viewpoint, object *obj, int num, int flags )$/;"	f
+object_send	magic7.c	/^int object_send(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+objectcheck_guild	guild.c	/^int objectcheck_guild(object * ply_ptr)$/;"	f
+offensive_spell	magic1.c	/^int offensive_spell(creature *ply_ptr, cmd *cmnd, int how, char *spellname, osp_t *osp )$/;"	f
+offer	guild.c	/^int offer(creature *ply_ptr, cmd *cmnd)$/;"	f
+ohead	mstruct.h	/^	short		ohead, otail;$/;"	m	struct:iobuf
+openexit	command6.c	/^	int openexit( creature *ply_ptr, cmd *cmnd )$/;"	f
+opposite_exit_name	dm3.c	/^int opposite_exit_name(char *name, char *name2 )$/;"	f
+osp_t	mstruct.h	/^typedef struct osp_t {$/;"	s
+osp_t	mstruct.h	/^} osp_t;$/;"	t
+ospell	global.c	/^struct osp_t ospell[] = {$/;"	v
+otail	mstruct.h	/^	short		ohead, otail;$/;"	m	struct:iobuf
+output	io.c	/^void output(int fd, char *str )$/;"	f
+output	mstruct.h	/^	char		output[OBUFSIZE];$/;"	m	struct:iobuf
+output_buf	io.c	/^void output_buf()$/;"	f
+output_nl	io.c	/^void output_nl(int fd, char *str )$/;"	f
+output_ply_buf	io.c	/^void output_ply_buf(int fd)$/;"	f
+output_wc	io.c	/^void output_wc(int fd, char *str, int color )$/;"	f
+parse	command1.c	/^void parse(char	*str, cmd *cmnd )$/;"	f
+passwd	command11.c	/^int passwd (creature *ply_ptr, cmd *cmnd )   $/;"	f
+password	mstruct.h	/^	char		password[20];$/;"	m	struct:lockout
+paste_herb	command13.c	/^int paste_herb( creature *ply_ptr, cmd *cmnd )$/;"	f
+pdice	global.c	/^	short	pdice;$/;"	m	struct:
+pdice	mstruct.h	/^	int		pdice;$/;"	m	struct:osp_t
+pdice	mstruct.h	/^	short		pdice;$/;"	m	struct:
+pdice	mstruct.h	/^	short	pdice;$/;"	m	struct:creature_template
+peek	command4.c	/^int peek( creature *ply_ptr, cmd *cmnd )$/;"	f
+pfinger	command11.c	/^int pfinger(creature *ply_ptr, cmd *cmnd )$/;"	f
+picklock	command6.c	/^	int picklock(creature *ply_ptr, cmd *cmnd )$/;"	f
+pk_exp	guild.c	/^int pk_exp(creature *ply_ptr, creature *crt_ptr)$/;"	f
+pkill_allowed	combat.c	/^int pkill_allowed(creature *ply_ptr, creature *crt_ptr )$/;"	f
+pkill_in_battle	global.c	/^	int pkill_in_battle = 1;$/;"	v
+play_music	msp.c	/^void play_music(int fd, char *fname, int vol, int repeat, int cont, char *type, char *url)$/;"	f
+play_sound	msp.c	/^void play_sound(int fd, char *fname, int vol, int repeat, int priority, char *type, char *url)$/;"	f
+please_wait	misc.c	/^void please_wait(int fd, time_t duration )$/;"	f
+pledge	guild.c	/^int pledge(creature *ply_ptr, cmd *cmnd)$/;"	f
+ply	mstruct.h	/^	creature	*ply;$/;"	m	struct:tagPlayer
+ply_cond_desc	global.c	/^char ply_cond_desc[][50] = {$/;"	v
+ply_prompt	player.c	/^void ply_prompt( creature *ply_ptr )$/;"	f
+ply_suicide	command5.c	/^int ply_suicide(creature *ply_ptr, cmd *cmnd )$/;"	f
+ply_timeout	global.c	/^	time_t	ply_timeout = 300;$/;"	v
+plystruct	mstruct.h	/^} plystruct;$/;"	t
+postdelete	post.c	/^int postdelete( creature *ply_ptr, cmd *cmnd )$/;"	f
+postedit	post.c	/^void postedit(int fd, int param, char *str )$/;"	f
+postread	post.c	/^int postread(creature *ply_ptr, cmd	*cmnd )$/;"	f
+postsend	post.c	/^int postsend( creature *ply_ptr, cmd *cmnd )$/;"	f
+power_energy_drain	combat.c	/^int power_energy_drain( creature *crt_ptr, creature *vic_ptr)$/;"	f
+pray	command9.c	/^int pray( creature *ply_ptr, cmd *cmnd )$/;"	f
+prepare	command9.c	/^int prepare( creature *ply_ptr, cmd	*cmnd )$/;"	f
+print	io.c	/^void print(int fd, char *fmt, int i1, int i2, int i3, int i4, int i5, int i6 )$/;"	f
+process_cmd	command1.c	/^int process_cmd(int	fd, cmd	*cmnd )$/;"	f
+profic	player.c	/^int profic( creature *ply_ptr, int index )$/;"	f
+protection	magic2.c	/^int protection(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+prt_time	command8.c	/^int prt_time( creature *ply_ptr, cmd *cmnd  )$/;"	f
+psend	command4.c	/^int psend( creature	*ply_ptr, cmd *cmnd )$/;"	f
+purchase	command10.c	/^int purchase(creature *ply_ptr, cmd *cmnd )$/;"	f
+quest_exp	access.c	/^static long quest_exp[] = {$/;"	v	file:
+questions_to_email	global.c	/^	char questions_to_email[80]="";$/;"	v
+quick_readini	io.c	/^void quick_readini()$/;"	f
+quick_shutdown	io.c	/^void quick_shutdown()$/;"	f
+quit	command5.c	/^int quit(creature *ply_ptr, cmd *cmnd )$/;"	f
+rand_enchant	object.c	/^void rand_enchant(object *obj_ptr )$/;"	f
+readini	readini.c	/^int readini(void)$/;"	f
+readscroll	magic1.c	/^int readscroll(creature *ply_ptr, cmd *cmnd )$/;"	f
+ready	command3.c	/^int ready(creature *ply_ptr, cmd *cmnd )$/;"	f
+realm	mstruct.h	/^	char		realm;$/;"	m	struct:osp_t
+reap_children	io.c	/^void reap_children()$/;"	f
+recall	magic5.c	/^int recall(creature	*ply_ptr, cmd *cmnd, int how )$/;"	f
+recharge_wand	magic9.c	/^int recharge_wand(creature *ply_ptr, cmd *cmnd )$/;"	f
+register_questions_email	global.c	/^	char register_questions_email[80]="";$/;"	v
+remove_all	command3.c	/^void remove_all( creature *ply_ptr )$/;"	f
+remove_conjure_enemy	creature.c	/^void remove_conjure_enemy(char *enemy)$/;"	f
+remove_curse	magic6.c	/^int remove_curse(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+remove_obj	command3.c	/^int remove_obj( creature *ply_ptr, cmd *cmnd )$/;"	f
+remove_wait	io.c	/^int remove_wait( int i )$/;"	f
+repair	command8.c	/^int repair( creature *ply_ptr, cmd *cmnd )$/;"	f
+report	main.c	/^char report =0;$/;"	v
+rescind	guild.c	/^int rescind( creature *ply_ptr, cmd *cmnd )$/;"	f
+resist_cold	magic7.c	/^int resist_cold(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+resist_fire	magic5.c	/^int resist_fire(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+resist_magic	magic6.c	/^int resist_magic(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+restore	magic3.c	/^int restore(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+rm_blind	magic8.c	/^int rm_blind(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+rm_blindness	magic8.c	/^int rm_blindness(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+rm_disease	magic7.c	/^int rm_disease(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+room	update.h	/^	int	room;$/;"	m	struct:
+room_damage	magic8.c	/^int room_damage(creature *ply_ptr, cmd *cmnd, int how, char *spellname, osp_t *osp)$/;"	f
+room_obj_count	command10.c	/^int room_obj_count( otag *first_obj )$/;"	f
+room_vigor	magic8.c	/^int room_vigor(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+roomcheck_guild	guild.c	/^int roomcheck_guild(room * ply_ptr)$/;"	f
+saddr	io.c	67;"	d	file:
+save_all_ply	player.c	/^void save_all_ply()$/;"	f
+save_cursor	screen.c	/^void save_cursor(int fd )$/;"	f
+save_ply	command8.c	/^int save_ply( creature *ply_ptr )$/;"	f
+save_ply_cmd	command8.c	/^int save_ply_cmd( creature *ply_ptr, cmd *cmnd )$/;"	f
+save_talk	talk.c	/^int save_talk(creature *ply_ptr, cmd *cmnd)$/;"	f
+say	command2.c	/^int say( creature *ply_ptr, cmd *cmnd )$/;"	f
+scared_of	mstruct.h	/^	int		*scared_of;	$/;"	m	struct:extra
+schedule_g	main.c	/^unsigned short schedule_g()$/;"	f
+scout	command13.c	/^int scout(creature *ply_ptr, cmd *cmnd)$/;"	f
+scroll	screen.c	/^void scroll(int fd, int y1, int y2 )$/;"	f
+sdice	global.c	/^	short	sdice;$/;"	m	struct:
+sdice	mstruct.h	/^	int		sdice;$/;"	m	struct:osp_t
+sdice	mstruct.h	/^	short		sdice;$/;"	m	struct:
+sdice	mstruct.h	/^	short	sdice;$/;"	m	struct:creature_template
+search	command5.c	/^int search(creature *ply_ptr, cmd *cmnd )$/;"	f
+selection	command10.c	/^int selection(creature *ply_ptr, cmd *cmnd)$/;"	f
+sell	command7.c	/^int sell( creature *ply_ptr, cmd *cmnd )$/;"	f
+serviceCurrentStatus	ntservic.c	/^DWORD	serviceCurrentStatus;$/;"	v
+servicePaused	ntservic.c	/^DWORD	servicePaused;$/;"	v
+serviceRunning	ntservic.c	/^DWORD	serviceRunning;$/;"	v
+serviceStatusHandle	ntservic.c	/^SERVICE_STATUS_HANDLE serviceStatusHandle;$/;"	v
+set	command5.c	/^int set( creature *ply_ptr, cmd *cmnd )$/;"	f
+set_keys_talk	talk.c	/^int set_keys_talk(creature *ply_ptr, cmd *cmnd)$/;"	f
+set_monk_dice	player.c	/^void set_monk_dice(creature *ply_ptr)$/;"	f
+set_response_talk	talk.c	/^int set_response_talk(creature *ply_ptr, cmd *cmnd)$/;"	f
+set_rom_owner	room.c	/^int set_rom_owner(creature *ply_ptr, int type)$/;"	f
+set_spy	access.c	/^void set_spy( int id, int fd )$/;"	f
+setup_shop	command14.c	/^int setup_shop( creature *ply_ptr, cmd *cmnd )$/;"	f
+sheets_rain	global.c	/^	char sheets_rain[80]="Sheets of rain pour down from the skies.";$/;"	v
+show_spells	command4.c	/^void show_spells( int fd, creature *ply_ptr )$/;"	f
+shutdown_catch	dm1.c	/^int shutdown_catch(creature *ply_ptr, cmd *cmnd)$/;"	f
+silence	magic8.c	/^int silence(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+silence_spammer	player.c	/^void silence_spammer( creature *ply_ptr )$/;"	f
+sliver_moon	global.c	/^	char sliver_moon[80]="A sliver of silver can be seen in the night sky.";$/;"	v
+sneak	command10.c	/^int sneak( creature *ply_ptr, cmd *cmnd)$/;"	f
+sock_init	io.c	/^void sock_init(unsigned short port )$/;"	f
+sock_loop	io.c	/^void sock_loop()$/;"	f
+sort_cmds	misc.c	/^void sort_cmds()$/;"	f
+sort_cmp	misc.c	/^int sort_cmp( struct cmdstruct *first, struct cmdstruct *second )$/;"	f
+special_cmd	special1.c	/^int special_cmd(creature *ply_ptr, int special, cmd	*cmnd )$/;"	f
+special_obj	special1.c	/^int special_obj(creature *ply_ptr, cmd *cmnd, int special )$/;"	f
+spell_fail	magic8.c	/^int spell_fail( creature *ply_ptr, int how )$/;"	f
+splfn	access.c	/^	SPELLFN splfn;$/;"	m	struct:
+spllist	access.c	/^} spllist[] = {$/;"	v	file:
+spllist_size	access.c	/^static int spllist_size = sizeof(spllist)\/sizeof(*spllist);$/;"	v	file:
+splno	access.c	/^	int	splno;$/;"	m	struct:
+splno	mstruct.h	/^	int		splno;$/;"	m	struct:osp_t
+splstr	access.c	/^	char 	*splstr;$/;"	m	struct:
+spy_write	io.c	/^int spy_write(int fh, const void *lpvBuffer, unsigned int nLen )$/;"	f
+start_room_num	global.c	/^	int	start_room_num = 1;$/;"	v
+startup_mordor	main.c	/^void startup_mordor(void)$/;"	f
+stat_crt	dm2.c	/^int stat_crt(creature *ply_ptr, creature *crt_ptr )$/;"	f
+stat_obj	dm2.c	/^int stat_obj(creature *ply_ptr, object *obj_ptr )$/;"	f
+stat_rom	dm2.c	/^int stat_rom(creature *ply_ptr, room *rom_ptr )$/;"	f
+stats	global.c	/^	int 	stats;$/;"	m	struct:
+stats	mstruct.h	/^	int     stats;$/;"	m	struct:creature_template
+steal	command6.c	/^	int steal(creature *ply_ptr, cmd *cmnd )$/;"	f
+steal_money	command6.c	/^int steal_money(creature *ply_ptr, cmd *cmnd)$/;"	f
+still	global.c	/^	char still[80]="The air is still and quiet.";$/;"	v
+str	mstruct.h	/^	char		str[COMMANDMAX][MAX_TOKEN_SIZE];$/;"	m	struct:cmd
+strong_wind	global.c	/^	char strong_wind[80]="A strong wind blows across the land.";$/;"	v
+strstr	strstr.c	/^char *strstr(s1,s2)$/;"	f
+study	magic1.c	/^int study(creature *ply_ptr, cmd *cmnd )$/;"	f
+suicide	command5.c	/^void suicide(int fd, int param, char *str )$/;"	f
+summon	magic5.c	/^int summon(creature	*ply_ptr, cmd *cmnd, int how )$/;"	f
+sunrise	global.c	/^	char sunrise[80]="The sun rises.";$/;"	v
+sunset	global.c	/^	char sunset[80]="The sun disappears over the horizon.";$/;"	v
+szErr	ntservic.c	/^TCHAR	szErr[256];$/;"	v
+szServiceName	ntservic.c	/^char *szServiceName = "Mordor MUD";$/;"	v
+t_toggle	update.h	/^static int t_toggle =0; $/;"	v
+tagAnsiColor	mstruct.h	/^typedef struct tagAnsiColor$/;"	s
+tagDice	mstruct.h	/^typedef struct tagDice$/;"	s
+tagPlayer	mstruct.h	/^typedef struct tagPlayer $/;"	s
+talk	command8.c	/^int talk( creature *ply_ptr, cmd *cmnd )$/;"	f
+talk_action	command8.c	/^void talk_action( creature *ply_ptr, creature *crt_ptr, ttag *tt )$/;"	f
+target	global.c	/^	char *target;$/;"	m	struct:
+target	mstruct.h	/^        char *target;$/;"	m	struct:enemy_list
+teach	magic1.c	/^int teach(creature *ply_ptr, cmd *cmnd )$/;"	f
+teleport	magic4.c	/^int teleport(creature *ply_ptr, cmd	*cmnd, int how )$/;"	f
+temp_perm	creature.c	/^void temp_perm(object  *obj_ptr )$/;"	f
+tempstr	mstruct.h	/^	char		tempstr[4][80];$/;"	m	struct:extra
+terminateService	ntservic.c	/^void terminateService(int iErr)$/;"	f
+thaco	global.c	/^	char	thaco;$/;"	m	struct:
+thaco	mstruct.h	/^        char    thaco;$/;"	m	struct:creature_template
+thaco_list	global.c	/^short thaco_list[][20] = { $/;"	v
+theft_chance	command6.c	/^int theft_chance(creature *ply_ptr, creature *crt_ptr)$/;"	f
+threadHandle	ntservic.c	/^HANDLE	threadHandle;$/;"	v
+thunderheads	global.c	/^	char thunderheads[80]="Thunderheads roll in from the east.";$/;"	v
+time_x	update.h	/^static tx_tag   time_x[MAX_TEXIT] =$/;"	v
+title	global.c	/^	char title[80]="Mordor MUD Server";$/;"	v
+tmp_enchant	magic9.c	/^int tmp_enchant(creature *ply_ptr, cmd *cmnd )$/;"	f
+torrent_rain	global.c	/^	char torrent_rain[80]="A torrent soaks the ground.";$/;"	v
+touch_of_death	command12.c	/^int touch_of_death( creature *ply_ptr, cmd *cmnd )$/;"	f
+track	command4.c	/^int track( creature *ply_ptr, cmd *cmnd )$/;"	f
+trade	command10.c	/^int trade( creature *ply_ptr, cmd *cmnd )$/;"	f
+train	command7.c	/^int train(creature *ply_ptr, cmd *cmnd )$/;"	f
+transfer_balance	bank.c	/^int transfer_balance(creature *ply_ptr, cmd *cmnd)$/;"	f
+transform	command13.c	/^int transform( creature *ply_ptr, cmd *cmnd )$/;"	f
+transmute	command13.c	/^int transmute( creature *ply_ptr, cmd *cmnd )$/;"	f
+trophy_num	global.c	/^	int trophy_num = 1500;$/;"	v
+turn	magic3.c	/^int turn(creature *ply_ptr, cmd *cmnd )$/;"	f
+tx_mesg1	global.c	/^	char tx_mesg1[80]="The Ithil Express has docked in Parth.";$/;"	v
+tx_mesg2	global.c	/^	char tx_mesg2[80]="The Ithil Express has docked in Celduin.";$/;"	v
+tx_tag	update.h	/^} tx_tag;$/;"	t
+txt_parse	dm5.c	/^void txt_parse(char *str, char **pattern, int *val, char **replace )$/;"	f
+uninit_ply	player.c	/^void uninit_ply( creature *ply_ptr )$/;"	f
+unlock	command6.c	/^	int unlock( creature *ply_ptr, cmd *cmnd )$/;"	f
+up_level	player.c	/^void up_level( creature	*ply_ptr )$/;"	f
+update_action	update.c	/^void update_action(long t)$/;"	f
+update_active	update.c	/^void update_active(long t)$/;"	f
+update_allcmd	update.c	/^void update_allcmd(long t)$/;"	f
+update_combat	combat.c	/^int update_combat( creature *crt_ptr )$/;"	f
+update_dust_output	update.c	/^void update_dust_output(long t)$/;"	f
+update_exit	update.c	/^void update_exit(long t)$/;"	f
+update_game	update.c	/^void update_game()$/;"	f
+update_guildwar	update.c	/^void update_guildwar(long t)$/;"	f
+update_ply	player.c	/^void update_ply( creature *ply_ptr )$/;"	f
+update_random	update.c	/^void update_random(long t)$/;"	f
+update_random_exit	update.c	/^void update_random_exit(long t)$/;"	f
+update_security	update.c	/^void update_security(long t)$/;"	f
+update_shutdown	update.c	/^void update_shutdown(long t)$/;"	f
+update_time	update.c	/^void update_time(long t)$/;"	f
+update_users	update.c	/^void update_users(long t)$/;"	f
+update_weather	update.c	/^void update_weather(long t)$/;"	f
+uptime	command12.c	/^int uptime(creature *ply_ptr, cmd *cmnd)$/;"	f
+usage	main.c	/^void usage( char *szName )$/;"	f
+use	command9.c	/^int use( creature *ply_ptr, cmd *cmnd )$/;"	f
+use_herb	command13.c	/^int use_herb( creature *ply_ptr, object *obj_ptr, int herb_type )$/;"	f
+userid	mstruct.h	/^	char		userid[9];$/;"	m	struct:iobuf
+userid	mstruct.h	/^	char		userid[9];$/;"	m	struct:lockout
+val	mstruct.h	/^	long		val[COMMANDMAX];$/;"	m	struct:cmd
+validate_player	player.c	/^void validate_player(creature *ply_ptr)$/;"	f
+view_file	misc.c	/^void view_file(int fd, int param, char *str )$/;"	f
+view_file_reverse	misc.c	/^void view_file_reverse(int fd, int param, char *str)$/;"	f
+vigor	magic2.c	/^int vigor(creature *ply_ptr, cmd *cmnd, int how )$/;"	f
+vote	command11.c	/^int vote (creature *ply_ptr, cmd *cmnd )   $/;"	f
+vote_cmnd	command11.c	/^void vote_cmnd(int fd, int param, char *str )$/;"	f
+waiting	io.c	/^void waiting(int fd, int param, char *str )$/;"	f
+waxing_moon	global.c	/^	char waxing_moon[80]="The night sky is lit by the waxing moon.";$/;"	v
+wear	command3.c	/^int wear(creature *ply_ptr, cmd *cmnd )$/;"	f
+wear_all	command3.c	/^void wear_all( creature *ply_ptr )$/;"	f
+weight_obj	object.c	/^int weight_obj(object *obj_ptr )$/;"	f
+weight_ply	player.c	/^int weight_ply( creature *ply_ptr )$/;"	f
+welcome	command4.c	/^int welcome( creature *ply_ptr, cmd *cmnd )$/;"	f
+welcome_edit	post.c	/^int welcome_edit(creature *ply_ptr, cmd *cmnd)$/;"	f
+who	command5.c	/^int who( creature *ply_ptr, cmd *cmnd )$/;"	f
+whois	command5.c	/^int whois(creature *ply_ptr, cmd *cmnd )$/;"	f
+wind_gusts	global.c	/^	char wind_gusts[80]="The wind gusts, blowing debris through the streets.";$/;"	v
+wq_tag	io.c	/^typedef struct wq_tag {$/;"	s	file:
+wq_tag	io.c	/^} wq_tag;$/;"	t	file:
+xnum	misc.c	/^static int	xnum=0;$/;"	v	file:
+xstr	misc.c	/^static char	xstr[5][80];$/;"	v	file:
+yell	command6.c	/^int yell(creature *ply_ptr, cmd	*cmnd )$/;"	f
+zap	magic1.c	/^int zap(creature *ply_ptr, cmd *cmnd )$/;"	f
+zap_obj	magic1.c	/^int zap_obj(creature *ply_ptr, object *obj_ptr, cmd *cmnd )$/;"	f

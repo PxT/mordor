@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 
+
 /*This function will find the first occurrence of a midstring (s2) in a
   string (s1).  This function is here because BSD systems don't have it.
 

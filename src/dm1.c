@@ -3,16 +3,29 @@
  *
  *	DM functions
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: dm1.c,v 6.16 2001/07/17 19:25:11 develop Exp $
+ *
+ * $Log: dm1.c,v $
+ * Revision 6.16  2001/07/17 19:25:11  develop
+ * *** empty log message ***
+ *
+ * Revision 6.16  2001/07/14 21:26:44  develop
+ * *** empty log message ***
+ *
+ * Revision 6.15  2001/06/26 22:30:48  develop
+ * conjure bug fixes
+ *
+ * Revision 6.14  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
 #include <ctype.h>
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 
 /**********************************************************************/
 /*				dm_teleport			      */
@@ -22,29 +35,42 @@
 /* a player's location.  It will also teleport a player to the DM or   */
 /* one player to another.					       */
  
-int dm_teleport(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_teleport(creature *ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr;
 	creature	*crt_ptr2;
 	room		*rom_ptr;
+	ctag		*cp;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 	if(cmnd->num < 2) {
-		if(cmnd->val[0] >= RMAX) return(0);
+		if(cmnd->val[0] >= RMAX) 
+			return(0);
 		if(load_rom(cmnd->val[0], &rom_ptr) < 0) {
-			print(ply_ptr->fd, "Error (%d)\n", cmnd->val[0]);
+			sprintf(g_buffer, "Error: Room %d does not exist or could not be loaded\n", (int)cmnd->val[0]);
+			output(ply_ptr->fd, g_buffer);
 			return(0);
 		}
 	    if(F_ISSET(ply_ptr, PALIAS)) {
 			del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
-			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", 
+				m1arg(Ply[ply_ptr->fd].extr->alias_crt));
 			add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, rom_ptr, 1);
 	    }
+
+	    cp = ply_ptr->first_fol;
+	    while(cp) {
+		if(cp->crt->type == MONSTER && F_ISSET(cp->crt, MCONJU)) {
+			del_crt_rom(cp->crt, ply_ptr->parent_rom);
+			add_crt_rom(cp->crt, rom_ptr, 1);
+		}
+  	        cp = cp->next_tag;
+	    }	
+
 	    if(!F_ISSET(ply_ptr, PDMINV)) {
-			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", ply_ptr->name);
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", 
+				m1arg(ply_ptr->name));
 		}
 
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
@@ -55,17 +81,29 @@ cmd		*cmnd;
 		lowercize(cmnd->str[1], 1);
 		crt_ptr = find_who(cmnd->str[1]);
 		if(!crt_ptr || crt_ptr == ply_ptr || (crt_ptr->class == DM &&
-		   ply_ptr->class < DM && F_ISSET(crt_ptr, PDMINV))) {
-			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
+		   ply_ptr->class < DM && F_ISSET(crt_ptr, PDMINV))) 
+		{
+			sprintf(g_buffer, "%s is not on.\n", cmnd->str[1]);
+			output(ply_ptr->fd, g_buffer);
 			return(0);
 		}
 	    if(F_ISSET(ply_ptr, PALIAS)) {
 			del_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, ply_ptr->parent_rom);
-			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", Ply[ply_ptr->fd].extr->alias_crt);                
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num,"%M just wandered away.", 
+				m1arg(Ply[ply_ptr->fd].extr->alias_crt));
 			add_crt_rom(Ply[ply_ptr->fd].extr->alias_crt, crt_ptr->parent_rom, 1);
-        }
+            }
+	    cp = ply_ptr->first_fol;
+	    while(cp) {
+		if(cp->crt->type == MONSTER && F_ISSET(cp->crt, MCONJU)) {
+			del_crt_rom(cp->crt, ply_ptr->parent_rom);
+			add_crt_rom(cp->crt, crt_ptr->parent_rom, 1);
+		}
+  	        cp = cp->next_tag;
+	    }	
+
 	    if(!F_ISSET(ply_ptr, PDMINV)) {
-			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", ply_ptr->name);
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", m1arg(ply_ptr));
 		}
 
 		del_ply_rom(ply_ptr, ply_ptr->parent_rom);
@@ -77,7 +115,8 @@ cmd		*cmnd;
 		crt_ptr = find_who(cmnd->str[1]);
 		if(!crt_ptr || crt_ptr == ply_ptr || (ply_ptr->class < DM &&
 		   crt_ptr->class == DM && F_ISSET(crt_ptr, PDMINV))) {
-			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
+			sprintf(g_buffer, "%s is not on.\n", cmnd->str[1]);
+			output(ply_ptr->fd, g_buffer);
 			return(0);
 		}
 		lowercize(cmnd->str[2], 1);
@@ -86,12 +125,28 @@ cmd		*cmnd;
 		else
 			crt_ptr2 = find_who(cmnd->str[2]);
 		if(!crt_ptr2) {
-			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
+			sprintf(g_buffer, "%s is not on.\n", cmnd->str[1]);
+			output(ply_ptr->fd, g_buffer);
 			return(0);
 		}
 		if(!F_ISSET(ply_ptr, PDMINV)) {
-			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.",ply_ptr->name);
+			broadcast_rom(crt_ptr->fd, crt_ptr->rom_num, "%M disappears in a puff of smoke.", m1arg(crt_ptr->name));
 		}
+	    	if(F_ISSET(crt_ptr, PALIAS)) {
+			del_crt_rom(Ply[crt_ptr->fd].extr->alias_crt, crt_ptr->parent_rom);
+			broadcast_rom(crt_ptr->fd, crt_ptr->rom_num,"%M just wandered away.", 
+				m1arg(Ply[crt_ptr->fd].extr->alias_crt));
+			add_crt_rom(Ply[crt_ptr->fd].extr->alias_crt, crt_ptr2->parent_rom, 1);
+                }
+	    	cp = crt_ptr->first_fol;
+	    	while(cp) {
+			if(cp->crt->type == MONSTER && F_ISSET(cp->crt, MCONJU)) {
+				del_crt_rom(cp->crt, crt_ptr->parent_rom);
+				add_crt_rom(cp->crt, crt_ptr2->parent_rom, 1);
+			}
+  	        	cp = cp->next_tag;
+	    	}	
+
 		del_ply_rom(crt_ptr, crt_ptr->parent_rom);
 		add_ply_rom(crt_ptr, crt_ptr2->parent_rom);
 	}	
@@ -106,18 +161,17 @@ cmd		*cmnd;
 /* This function allows DMs to send messages that only they can see. */
 /* It is similar to a broadcast, but there are no limits.	     */
 
-int dm_send(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_send(creature *ply_ptr, cmd *cmnd )
 {
-	int	i, fd, found = 0;
+	int	fd, found = 0;
+	unsigned int i;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 
 	fd = ply_ptr->fd;
 
-	for(i=0; i<strlen(cmnd->fullstr); i++) {
+	for(i=0; i< strlen(cmnd->fullstr); i++) {
 		if(cmnd->fullstr[i] == ' ' && cmnd->fullstr[i+1] != ' ') {
 			found++;
 			break;
@@ -125,13 +179,12 @@ cmd		*cmnd;
 	}
 
 	if(found < 1 || strlen(&cmnd->fullstr[i+1]) < 1) {
-		print(fd, "*Send what?\n");
+		output(fd, "*Send what?\n");
 		return(0);
 	}
 
-	print(fd, "Ok.\n");
-	broadcast_wiz("=> %s sent, \"%s\".", ply_ptr->name, 
-		      &cmnd->fullstr[i+1]);
+	output(fd, "Ok.\n");
+	broadcast_wiz(ply_ptr, &cmnd->fullstr[i+1]);
 
 	return(0);
 
@@ -144,16 +197,14 @@ cmd		*cmnd;
 /* This function allows DMs to purge a room of all its objects and    */
 /* monsters.							      */
 
-int dm_purge(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_purge(creature *ply_ptr, cmd	*cmnd )
 {
 	ctag	*cp, *fol, *ctemp, *folprev;
 	otag	*op, *otemp;
 	room	*rom_ptr;
 	int	fd;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < BUILDER)
 		return(PROMPT);
 
 	fd = ply_ptr->fd;
@@ -163,29 +214,37 @@ cmd		*cmnd;
 	rom_ptr->first_mon = 0;
 	while(cp) {
 		ctemp = cp->next_tag;
-		if(F_ISSET (cp->crt, MDMFOL)) { /* clear relevant follow lists */
-                	F_CLR(cp->crt->following, PALIAS);
+		if(F_ISSET (cp->crt, MDMFOL)) { 
+			/* clear relevant follow lists */
+            		F_CLR(cp->crt->following, PALIAS);
 			Ply[cp->crt->following->fd].extr->alias_crt = 0;
-                	print (cp->crt->following->fd, "%1M's soul was purged.\n", cp->crt);
+            		mprint (cp->crt->following->fd, "%1M's soul was purged.\n", 
+								m1arg(cp->crt));
 			fol = cp->crt->following->first_fol;
-                	if(fol->crt == cp->crt) { 
-                        	cp->crt->following->first_fol = fol->next_tag;
+            		if(fol->crt == cp->crt) { 
+               			cp->crt->following->first_fol = fol->next_tag;
 				free(fol); 
-			}
-			else {
-			  while(fol) {	
-				if(fol->crt == cp->crt) {
-					folprev == fol->next_tag;
-        				free(fol);
-					break;
+	    		} 
+	    		else {
+				while(fol) {	
+					if(fol->crt == cp->crt) {
+						folprev = fol->next_tag;
+        					free(fol);
+						break;
+					}
+					folprev = fol;
+					fol = fol->next_tag;
 				}
-				folprev = fol;
-				fol = fol->next_tag;
-			  }
-			}
+	    		}
 		}
-			free_crt(cp->crt);
-			free(cp);
+		if(F_ISSET(cp->crt, MCONJU)) {
+            		mprint (cp->crt->following->fd, "%1M fades away.\n", 
+								m1arg(cp->crt));
+			del_conjured(cp->crt);
+			del_crt_rom(cp->crt, cp->crt->parent_rom);
+		}
+		free_crt(cp->crt);
+		free(cp);
 		
 		cp = ctemp;
 	}
@@ -202,7 +261,11 @@ cmd		*cmnd;
 		op = otemp;
 	}
 
-	print(fd, "Purged.\n");
+	output(fd, "Purged.\n");
+
+	if(ply_ptr->class < DM)
+		log_dm_command(ply_ptr->name, cmnd->fullstr);
+
 	return(0);
 
 }
@@ -214,15 +277,14 @@ cmd		*cmnd;
 /* This function allows DM's to list all users online, displaying */
 /* level, name, current room # and name, and foreign address.     */
  
-int dm_users(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_users(creature *ply_ptr, cmd	*cmnd )
 {
-	char	idstr[50];
-	long	t;
+	char	*idstr;
+	time_t	t;
 	int		fd, i, userid = 0, fulluser = 0;
+	char	str[10];
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 
 	if(cmnd->num > 1) {
@@ -232,62 +294,108 @@ cmd		*cmnd;
 
 	t = time(0);
 	fd = ply_ptr->fd;
-	ANSI(fd, BLUE);
-	if(fulluser){
-		print(fd, "%-9s %-10s %-52s", "Lev  Clas", " Player", " Email address");
+	ANSI(fd, AFC_BLUE);
+	if(fulluser)
+	{
+		sprintf(g_buffer, "\n%-9s %-10s %-52s", "Lev  Clas", " Player", " Email address");
+		output(fd, g_buffer);
 	}
 	else
-		print(fd, "%-9s %-10s %-20s %-15s %-15s", "Lev  Clas", " Player", "Room #: Name", userid ? "UserID" : "Address", "Last command");
-	print(fd, " Idle\n");
-	print(fd, "-------------------------------------------------------------------------------\n");
-	ANSI(fd, WHITE);
+	{
+		sprintf(g_buffer, "\n%-9s %-10s %-20s %-15s %-15s", "Lev  Clas", " Player", "Room #: Name", userid ? "UserID" : "Address", "Last command");
+		output(fd, g_buffer);
+	}
+	output(fd, " Idle\n");
+	output(fd, "-------------------------------------------------------------------------------\n");
+	ANSI(fd, AFC_WHITE);
 	for(i=0; i<Tablesize; i++) {
 		if(!Ply[i].ply) continue;
 		if(Ply[i].ply->fd < 0) continue;
-		if(Ply[i].ply->class == DM && ply_ptr->class < CARETAKER &&
+		if(Ply[i].ply->class == DM && ply_ptr->class < DM &&
 		   F_ISSET(Ply[i].ply, PDMINV)) continue;
-		print(fd, "[%2d] ", Ply[i].ply->level);
-		print(fd, "%-4.4s ", class_str[Ply[i].ply->class]);
+		if(F_ISSET(Ply[i].ply, PDMINV) && F_ISSET(Ply[i].ply, PROBOT) &&
+			(!strcmp(Ply[i].ply->name,dmname[0]) || !strcmp(Ply[i].ply->name,dmname[1])) )
+			continue;
+
+		sprintf(g_buffer, "[%2d] %-4.4s ", Ply[i].ply->level, get_class_string(Ply[i].ply->class));
+		if(Ply[i].ply->class == DM)
+			ANSI(fd, AFC_RED);
+		else if(Ply[i].ply->class == CARETAKER)
+			ANSI(fd, AFC_YELLOW);
+		else if(Ply[i].ply->class == BUILDER)
+			ANSI(fd, AFC_GREEN);
+		output(fd, g_buffer);
+
+		if ( F_ISSET(Ply[i].ply, PDMINV) )
+		{
+			strcpy(str, "+");
+		}
+		else if (F_ISSET(Ply[i].ply, PINVIS) )
+		{
+			strcpy(str, "*");
+		}
+		else
+		{
+			strcpy(str, " ");
+		}
+
 		if(!F_ISSET(Ply[i].ply, PSECOK)){
-			 ANSI(fd, RED);
+			 ANSI(fd, AFC_RED);
 		}
 		else {
-			 ANSI(fd, YELLOW);
+			 ANSI(fd, AFC_YELLOW);
 		}
-		print(fd, "%s%-10.10s ", 
-		      (F_ISSET(Ply[i].ply, PDMINV) || 
-		      F_ISSET(Ply[i].ply, PINVIS)) ? "*":" ",
-			Ply[i].ply->name);
-		ANSI(fd, WHITE);
+
+		sprintf(g_buffer, "%s%-10.10s ", str, Ply[i].ply->name);
+		output(fd, g_buffer);
+
+		ANSI(fd, AFC_WHITE);
 		if(fulluser) {
-			sprintf(idstr, "%s@%s", Ply[i].io->userid,
-				Ply[i].io->address);
-			if(!strcmp(Ply[i].io->userid, "no_port") || !strcmp(Ply[i].io->userid, "unknown"))
-				ANSI(fd, MAGENTA);
-			print(fd, "%-51.51s ", idstr);
+			idstr = malloc( strlen(Ply[i].io->userid) + strlen(Ply[i].io->address) + 3);
+			if ( idstr )
+			{
+				sprintf(idstr, "%s@%s", Ply[i].io->userid,
+					Ply[i].io->address);
+				if(!strcmp(Ply[i].io->userid, "no_port") || !strcmp(Ply[i].io->userid, "unknown"))
+					ANSI(fd, AFC_MAGENTA);
+
+				sprintf(g_buffer, "%-51.51s ", idstr);
+				output(fd, g_buffer);
+
+				free(idstr);
+			}
+			else
+			{
+				output(fd, "malloc failed in dm_users");
+			}
 		}
 		else {
-			ANSI(fd, WHITE);
-			print(fd, "%5hd: ", Ply[i].ply->rom_num);
-			ANSI(fd, BLUE);
-			print(fd, "%-12.12s ", Ply[i].ply->parent_rom->name);
-			ANSI(fd, CYAN);
-			print(fd, "%-15.15s ", userid ? Ply[i].io->userid : 
+			ANSI(fd, AFC_WHITE);
+			sprintf(g_buffer, "%5hd: ", Ply[i].ply->rom_num);
+			output(fd, g_buffer);
+			ANSI(fd, AFC_BLUE);
+			sprintf(g_buffer, "%-12.12s ", Ply[i].ply->parent_rom->name);
+			output(fd, g_buffer);
+			ANSI(fd, AFC_CYAN);
+			sprintf(g_buffer, "%-15.15s ", userid ? Ply[i].io->userid : 
 				Ply[i].io->address);
-			ANSI(fd, GREEN);
+			output(fd, g_buffer);
+			ANSI(fd, AFC_GREEN);
 			if(Ply[i].ply->class < DM || ply_ptr->class==DM) 
-                                print(fd, "%-15.15s ", Ply[i].extr->lastcommand);
-                        else
-                                print(fd, "%-15.15s ", "l");
+				sprintf(g_buffer, "%-15.15s ", Ply[i].extr->lastcommand);
+			else
+                sprintf(g_buffer, "%-15.15s ", "l");
+			output(fd, g_buffer );
 
 		}
-		ANSI(fd, WHITE);
-		print(fd, "%02ld:%02ld\n", (t-Ply[i].io->ltime)/60L, 
+		ANSI(fd, AFC_WHITE);
+		sprintf(g_buffer, "%02ld:%02ld\n", (t-Ply[i].io->ltime)/60L, 
 		      (t-Ply[i].io->ltime)%60L);
+		output(fd, g_buffer);
 	}
-	ANSI(fd, WHITE);
-	ANSI(fd, NORMAL);
-	print(fd, "\n");
+	ANSI(fd, AFC_WHITE);
+	ANSI(fd, AM_NORMAL);
+	output(fd, "\n");
 
 	return(0);
 
@@ -301,14 +409,13 @@ cmd		*cmnd;
 /* the first parameter to echo the rest of his command line to all */
 /* the other people in the room.				   */
 
-int dm_echo(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_echo(creature *ply_ptr, cmd *cmnd )
 {
 	room		*rom_ptr;
-	int		index = -1, i, fd;
+	int		index = -1, fd;
+	unsigned int i;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < BUILDER)
 		return(PROMPT);
 
 	fd = ply_ptr->fd;
@@ -322,11 +429,11 @@ cmd		*cmnd;
 	}
 
 	if(index == -1 || strlen(&cmnd->fullstr[index]) < 1) {
-		print(fd, "Echo what?\n");
+		output(fd, "Echo what?\n");
 		return(0);
 	}
 
-	broadcast_rom(-1, rom_ptr->rom_num, "%s", &cmnd->fullstr[index]);
+	broadcast_rom(-1, rom_ptr->rom_num, &cmnd->fullstr[index], NULL);
 
 	return(0);
 
@@ -339,19 +446,17 @@ cmd		*cmnd;
 /* This function allows DM's to save all the rooms in memory back to */
 /* disk in one fell swoop.  					     */
 
-int dm_flushsave(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_flushsave( creature *ply_ptr, cmd *cmnd )
 {
 	if(ply_ptr->class < DM || !(!strcmp(ply_ptr->name, dmname[1])))
 		return(PROMPT);
 
 	if(cmnd->num < 2) {
-		print(ply_ptr->fd, "All rooms and contents flushed to disk.\n");
+		output(ply_ptr->fd, "All rooms and contents flushed to disk.\n");
 		resave_all_rom(0);
 	}
 	else {
-		print(ply_ptr->fd, 
+		output(ply_ptr->fd, 
 		      "All rooms and PERM contents flushed to disk.\n");
 		resave_all_rom(PERMONLY);
 	}
@@ -367,14 +472,15 @@ cmd		*cmnd;
 /* This function allows a DM to shut down the game in a given number of */
 /* minutes.							        */
 
-int dm_shutdown(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_shutdown(creature *ply_ptr, cmd *cmnd )
 {
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class <= CARETAKER )
 		return(PROMPT);
 
-	print(ply_ptr->fd, "Ok.\n");
+	output(ply_ptr->fd, "Ok.\n");
+
+	/* book it Danno */
+	log_dm_command( ply_ptr->name, cmnd->fullstr);
 
 	Shutdown.ltime = time(0);
 	Shutdown.interval = cmnd->val[0] * 60 + 1;
@@ -383,21 +489,38 @@ cmd		*cmnd;
 
 }
 
+/*********************************************************************/
+/*			shutdown_catch				     */
+/*********************************************************************/
+
+/* The purpose of this function is to force dm's to fully type *shutdown */
+/* in order to shut the game down.  This prevents accidently shutdowns   */
+/* caused by typos with the *s command					 */
+
+int shutdown_catch(creature *ply_ptr, cmd *cmnd)
+{
+	if(ply_ptr->class <= CARETAKER)
+		return(0);
+
+	output(ply_ptr->fd, "You must fully type *shutdown to shut the game down.\n");
+
+	return(0);
+}
+
 /**********************************************************************/
 /*				dm_rmstat			      */
 /**********************************************************************/
 
 /* This function displays a room's status to the DM.		      */
 
-int dm_rmstat(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_rmstat( creature *ply_ptr, cmd *cmnd )
 {
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < BUILDER)
 		return(PROMPT);
 
-	print(ply_ptr->fd, "Room #%d\n", ply_ptr->parent_rom->rom_num);
+	sprintf(g_buffer, "Room #%d\n", ply_ptr->parent_rom->rom_num);
+	output(ply_ptr->fd, g_buffer);
 	return(0);
 }
 
@@ -408,9 +531,7 @@ cmd		*cmnd;
 /* This function allows a DM to flush the object and creature data so */
 /*  that updated data can be loaded into memory instead.	      */
 
-int dm_flush_crtobj(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_flush_crtobj(creature *ply_ptr, cmd *cmnd )
 {
 	if(ply_ptr->class < CARETAKER)
 		return(PROMPT);
@@ -418,7 +539,7 @@ cmd		*cmnd;
 	flush_obj();
 	flush_crt();
 
-	print(ply_ptr->fd, 
+	output(ply_ptr->fd, 
 		"Basic object and creature data flushed from memory.\n");
 
 	return(0);
@@ -430,47 +551,60 @@ cmd		*cmnd;
 
 /* This function allows a DM to reload a room from disk.	      */
 
-int dm_reload_rom(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_reload_rom( creature *ply_ptr, cmd *cmnd )
 {
-	if(ply_ptr->class < CARETAKER)
+	ctag *cp;
+
+	if(ply_ptr->class < BUILDER)
 		return(PROMPT);
 
+        cp = ply_ptr->first_fol;
+        while(cp) {
+                if(cp->crt->type == MONSTER && F_ISSET(cp->crt, MCONJU)) {
+                        del_conjured(cp->crt);
+                        del_crt_rom(cp->crt,ply_ptr->parent_rom);
+                        free_crt(cp->crt);
+                        output(ply_ptr->fd, "Conjured pet flushed.\n");
+                }
+                cp = cp->next_tag;
+        }
+
 	if(reload_rom(ply_ptr->rom_num) < 0)
-		print(ply_ptr->fd, "Reload failed.\n");
+		output(ply_ptr->fd, "Reload failed.\n");
 	else
-		print(ply_ptr->fd, "Ok.\n");
+	{
+		add_permcrt_rom(ply_ptr->parent_rom);
+		output(ply_ptr->fd, "Ok.\n");
+	}
+
 
 	return(0);
 }
 
 /**********************************************************************/
-/*				dm_resave			      */
+/*				dm_save			      */
 /**********************************************************************/
 
 /* This function allows a DM to save a room back to disk.	      */
 
-int dm_resave(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_save(creature *ply_ptr, cmd *cmnd )
 {
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < BUILDER )
 		return(PROMPT);
 
-	if(!strcmp(cmnd->str[1], "c") && (cmnd->num > 1)) {
+	if(!strcmp(cmnd->str[1], "c") && (cmnd->num > 1) && ply_ptr->class > CARETAKER) {
 		dm_save_crt(ply_ptr, cmnd);
 		return(0);
 	}
-	if(!strcmp(cmnd->str[1], "o") && (cmnd->num > 1)) {
+	if(!strcmp(cmnd->str[1], "o") && (cmnd->num > 1) && ply_ptr->class > CARETAKER) {
 		dm_save_obj(ply_ptr, cmnd);
 		return(0);
 	}
 
 	if(resave_rom(ply_ptr->rom_num) < 0)
-		print(ply_ptr->fd, "Resave failed.\n");
+		output(ply_ptr->fd, "Resave failed.\n");
 	else
-		print(ply_ptr->fd, "Room saved.\n");
+		output(ply_ptr->fd, "Room saved.\n");
 
 	return(0);
 }
@@ -482,23 +616,27 @@ cmd		*cmnd;
 /* This function allows a DM to create an object that will appear     */
 /* in his inventory.						      */
 
-int dm_create_obj(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_create_obj(creature *ply_ptr, cmd *cmnd )
 {
 	object	*obj_ptr;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 
 	if(load_obj(cmnd->val[0], &obj_ptr) < 0) {
-		print(ply_ptr->fd, "Error (%d)\n", cmnd->val[0]);
+		sprintf(g_buffer, "Error (%d)\n", (int)cmnd->val[0]);
+		output(ply_ptr->fd, g_buffer);
 		return(0);
 	}
 	if(F_ISSET(obj_ptr, ORENCH))
 		rand_enchant(obj_ptr);
-	print(ply_ptr->fd, "%s added to your inventory.\n", obj_ptr->name);
+	sprintf(g_buffer, "%s added to your inventory.\n", obj_ptr->name);
+	output(ply_ptr->fd, g_buffer);
 	add_obj_crt(obj_ptr, ply_ptr);
+
+	if(ply_ptr->class < DM)
+		log_dm_command(ply_ptr->name, cmnd->fullstr);
+
 	return(0);
 }
 
@@ -509,18 +647,16 @@ cmd		*cmnd;
 /* This function allows a DM to create a creature that will appear    */
 /* in the room he is located in.				      */
 
-int dm_create_crt(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_create_crt( creature *ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr;
 	object		*obj_ptr;
 	room		*rom_ptr;
 	int			num;
 	int			total, l,j, m, k;
-	long 		t;
+	time_t 		t;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 	rom_ptr = ply_ptr->parent_rom;
 
@@ -532,10 +668,10 @@ cmd		*cmnd;
 	}
 
 	total = 1;
-	if (cmnd->num  ==  2)
+	if (cmnd->num  ==  2) {
 	   if (cmnd->str[1][0] == 'n')
 		total = cmnd->val[1];
-	   
+	}  
 	else if (cmnd->str[1][0] == 'g'){
 		total = mrand(1, count_ply(rom_ptr));
 		if(cmnd->val[1] == 1){
@@ -547,7 +683,8 @@ cmd		*cmnd;
 
 
 	if(load_crt(num, &crt_ptr) < 0) {
-		print(ply_ptr->fd, "Error (%d)\n", cmnd->val[0]);
+		sprintf(g_buffer, "Error (%d)\n", (int)cmnd->val[0]);
+		output(ply_ptr->fd, g_buffer);
 		return(0);
 	}
 	t = time(0);
@@ -562,7 +699,7 @@ cmd		*cmnd;
                 crt_ptr->lasttime[LT_ATTCK].interval = 2;
 
 	    if(cmnd->str[1][0]=='p') {
-			print(ply_ptr->fd, "Loading prototype creature.\n");
+			output(ply_ptr->fd, "Loading prototype creature.\n");
 			for(k=0; k<10; k++)
 				if(crt_ptr->carry[k]) {
 					m=load_obj(crt_ptr->carry[k], &obj_ptr);
@@ -605,13 +742,20 @@ cmd		*cmnd;
             else
                 add_crt_rom(crt_ptr, rom_ptr, 0);
 
+#ifndef MOBS_ALWAYS_ACTIVE
             add_active(crt_ptr);
+#endif
+
 	l++;
 	if(l < total)
 		load_crt(num, &crt_ptr);
         }
 
-	return(0);
+
+	if(ply_ptr->class < DM)
+		log_dm_command(ply_ptr->name, cmnd->fullstr);
+
+	return(DOPROMPT);
 }
 
 /**********************************************************************/
@@ -621,13 +765,11 @@ cmd		*cmnd;
 /* This function allows a player to make a given object sitting on the */
 /* floor into a permanent object.				       */
 
-int dm_perm(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_perm(creature *ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr;
 	object		*obj_ptr;
-	int		i=0, x=0, n=0, fd;
+	int		x=0, n=0, fd;
 
 	if(ply_ptr->class < DM) 
 		return(PROMPT);
@@ -635,7 +777,7 @@ cmd		*cmnd;
 	fd=ply_ptr->fd;
 
 	if(cmnd->num < 2) {
-		print(fd, "Syntax: *perm [o|c|t] [name|d|exit] [timeout|slot]\n");
+		output(fd, "Syntax: *perm [o|c|t] [name|d|exit] [timeout|slot]\n");
 		return(0);
 	}
 
@@ -644,12 +786,14 @@ cmd		*cmnd;
 	
 	if(!strcmp(cmnd->str[2], "d") && strlen(cmnd->str[2])<2) {
 		if(cmnd->val[2]>10 || cmnd->val[2]<1){
-			print(fd, "Slot to delete out of range.\n");
+			output(fd, "Slot to delete out of range.\n");
 			return(0);
 		}
 		ply_ptr->parent_rom->perm_obj[cmnd->val[2]-1].misc=0;
 		ply_ptr->parent_rom->perm_obj[cmnd->val[2]-1].interval=0;
-		print(fd, "Perm object slot #%d cleared in room %d.\n", cmnd->val[2], ply_ptr->parent_rom->rom_num);
+		sprintf(g_buffer, "Perm object slot #%d cleared in room %d.\n", 
+			(int)cmnd->val[2], ply_ptr->parent_rom->rom_num);
+		output(fd, g_buffer);
 		return(0);
 	}
 
@@ -657,13 +801,13 @@ cmd		*cmnd;
 	obj_ptr = find_obj(ply_ptr,ply_ptr->parent_rom->first_obj,cmnd->str[2], 1);
 
 	if(!obj_ptr) {
-		print(ply_ptr->fd, "Object not found.\n");
+		output(ply_ptr->fd, "Object not found.\n");
 		return(0);
 	}
 
 	n=find_obj_num(obj_ptr);
 	if(!n) {
-		print(fd, "Object is not in database. Not permed.\n");
+		output(fd, "Object is not in database. Not permed.\n");
 		return(0);
 	}
 
@@ -673,42 +817,46 @@ cmd		*cmnd;
 	while(ply_ptr->parent_rom->perm_obj[x].misc)
 		x++;
 	if(x>9) {
-		print(fd, "Room is already full.\n");
+		output(fd, "Room is already full.\n");
 		return(0);
 	}
 
 	ply_ptr->parent_rom->perm_obj[x].misc=n;
 	ply_ptr->parent_rom->perm_obj[x].interval=(long)cmnd->val[2];
 	
-	print(fd, "%s permed with timeout of %d.\n", obj_ptr, cmnd->val[2]);
+	sprintf(g_buffer, "%s permed with timeout of %d.\n", obj_ptr->name, 
+						(int)cmnd->val[2]);
+	output(fd, g_buffer);
 
 	return(0);
 	/* perm creature */
 	case 'c':
 
-	if(!strcmp(cmnd->str[2], "d") && strlen(cmnd->str[2])<2) {
-                if(cmnd->val[2]>10 || cmnd->val[2]<1){
-                        print(fd, "Slot to delete out of range.\n");
+		if(!strcmp(cmnd->str[2], "d") && strlen(cmnd->str[2])<2) {
+                if(cmnd->val[2]>10 || cmnd->val[2]<1) {
+                        output(fd, "Slot to delete out of range.\n");
                         return(0);
-                }
+				}
 		
                 ply_ptr->parent_rom->perm_mon[cmnd->val[2]-1].misc=0;
-		ply_ptr->parent_rom->perm_mon[cmnd->val[2]-1].interval=0;
-                print(fd, "Perm monster slot #%d cleared.\n", cmnd->val[2]);
+				ply_ptr->parent_rom->perm_mon[cmnd->val[2]-1].interval=0;
+                sprintf(g_buffer, "Perm monster slot #%d cleared.\n", (int)cmnd->val[2]);
+                output(fd, g_buffer);
                 return(0);
         }
 
-	crt_ptr = find_crt(ply_ptr,ply_ptr->parent_rom->first_mon,cmnd->str[2], 1);
+		crt_ptr = find_crt(ply_ptr,ply_ptr->parent_rom->first_mon, 
+			cmnd->str[2], 1);
          
         if(!crt_ptr) {
-                print(ply_ptr->fd, "Creature not found.\n");
+                output(ply_ptr->fd, "Creature not found.\n");
                 return(0);
         }        
         
 		/* n=find_crt_num(crt_ptr); */
 		n=atoi(crt_ptr->password);
         if(!n) {  
-                print(fd, "Creature is not in database. Not permed.\n");
+                output(fd, "Creature is not in database. Not permed.\n");
                 return(0);
 	 }
         
@@ -718,30 +866,32 @@ cmd		*cmnd;
         while(ply_ptr->parent_rom->perm_mon[x].misc)
                 x++;
         if(x>9) { 
-                print(fd, "Room is already full.\n");
+                output(fd, "Room is already full.\n");
                 return(0);
 	}
         
         ply_ptr->parent_rom->perm_mon[x].misc=n;
         ply_ptr->parent_rom->perm_mon[x].interval=(long)cmnd->val[2];
                  
-        print(fd, "%s permed with timeout of %d.\n", crt_ptr, cmnd->val[2]);
+        sprintf(g_buffer, "%s permed with timeout of %d.\n", crt_ptr->name, (int)cmnd->val[2]);
+        output(fd, g_buffer);
                 
         return(0);
 	/* perm tracks */
 	case 't':
 		if(!strcmp(cmnd->str[2], "d")||cmnd->num < 3) {
  			F_CLR(ply_ptr->parent_rom, RPTRAK);               
-                        print(fd, "Perm tracks deleted.\n");
+                        output(fd, "Perm tracks deleted.\n");
                         return(0);
 		}
 		strcpy(ply_ptr->parent_rom->track,cmnd->str[2]); 
 		F_SET(ply_ptr->parent_rom, RPTRAK);
-		print(fd, "Perm tracks added leading %s.\n", cmnd->str[2]);
+		sprintf(g_buffer, "Perm tracks added leading %s.\n", cmnd->str[2]);
+		output(fd, g_buffer);
 		return(0);
 	
 	default:
-        print(fd, "Syntax: *perm [o|c|t] [name|d|exit] [timeout|slot]\n");
+        output(fd, "Syntax: *perm [o|c|t] [name|d|exit] [timeout|slot]\n");
 		return(0);
 	}
 }
@@ -752,24 +902,25 @@ cmd		*cmnd;
 
 /* This function allows a DM to turn himself invisible.		      */
 
-int dm_invis(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_invis(creature *ply_ptr, cmd	*cmnd )
 {
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 
-	if(F_ISSET(ply_ptr, PDMINV)) {
+	if(F_ISSET(ply_ptr, PDMINV)) 
+	{
 		F_CLR(ply_ptr, PDMINV);
-		ANSI(ply_ptr->fd, MAGENTA);
-		print(ply_ptr->fd, "Invisibility off.\n");
+		output_wc(ply_ptr->fd, "Invisibility off.\n", AFC_MAGENTA);
 	}
-	else {
+	else 
+	{
 		F_SET(ply_ptr, PDMINV);
-		ANSI(ply_ptr->fd, YELLOW);
-		print(ply_ptr->fd, "Invisibility on.\n");
+		output_wc(ply_ptr->fd, "Invisibility on.\n", AFC_YELLOW);
+		if ( !F_ISSET(ply_ptr, PALIAS) )
+		{
+			broadcast_rom(ply_ptr->fd, ply_ptr->rom_num, "%M disappears in a puff of smoke.", m1arg(ply_ptr));
+		}
 	}
-	ANSI(ply_ptr->fd, WHITE);
 	return(0);
 
 }
@@ -781,20 +932,19 @@ cmd		*cmnd;
 /* This function allows a DM to take a look at his own special stats. */
 /*  or another user's stats.					      */
 
-int dm_ac(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_ac(creature *ply_ptr, cmd *cmnd )
 {
 	creature	*crt_ptr;
 
-	if(ply_ptr->class < CARETAKER)
+	if(ply_ptr->class < CARETAKER )
 		return(PROMPT);
 
 	if(cmnd->num == 2) {
 		lowercize(cmnd->str[1], 1);
 		crt_ptr = find_who(cmnd->str[1]);
 		if(!crt_ptr) {
-			print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
+			sprintf(g_buffer, "%s is not on.\n", cmnd->str[1]);
+			output(ply_ptr->fd, g_buffer);
 			return(0);
 		}
 	}
@@ -804,8 +954,9 @@ cmd		*cmnd;
 		crt_ptr = ply_ptr;
 	}
 
-	print(ply_ptr->fd, "AC: %d  THAC0: %d\n",
+	sprintf(g_buffer, "AC: %d  THAC0: %d\n",
 	      crt_ptr->armor, crt_ptr->thaco);
+	output(ply_ptr->fd, g_buffer);
 
 	return(0);
 
@@ -817,21 +968,22 @@ cmd		*cmnd;
 
 /* This function allows a DM to force another user to do a command.   */
 
-int dm_force(ply_ptr, cmnd)
-creature	*ply_ptr;
-cmd		*cmnd;
+int dm_force(creature *ply_ptr, cmd	*cmnd )
 {
 	creature	*crt_ptr;
-	int		i, cfd, fd, index = 0;
-        char    	str[IBUFSIZE+1];
+	int		cfd, fd, index = 0;
+	unsigned int i;
+    char    	str[IBUFSIZE+1];
 
-	if(ply_ptr->class < CARETAKER || cmnd->num < 2)
+
+	if(ply_ptr->class < CARETAKER || cmnd->num < 2 )
 		return(PROMPT);
 
 	lowercize(cmnd->str[1], 1);
 	crt_ptr = find_who(cmnd->str[1]);
 	if(!crt_ptr) {
-		print(ply_ptr->fd, "%s is not on.\n", cmnd->str[1]);
+		sprintf(g_buffer, "%s is not on.\n", cmnd->str[1]);
+		output(ply_ptr->fd, g_buffer);
 		return(0);
 	}
 
@@ -841,8 +993,9 @@ cmd		*cmnd;
 
 	cfd = crt_ptr->fd;
 	if(!(Ply[cfd].io->fn == command && Ply[cfd].io->fnparam == 1)) {
-		print(ply_ptr->fd, "Can not force %s right now.\n", 
+		sprintf(g_buffer, "Can not force %s right now.\n", 
 		      cmnd->str[1]);
+		output(ply_ptr->fd, g_buffer);
 		return(0);
 	}
 

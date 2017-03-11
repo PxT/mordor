@@ -1,30 +1,76 @@
+ALCHEMIST
+Symbolist-Transmuter-Artificer-Runemaster
+	Mechanician-Enchanter-Savant-Archeus
+Symbolist-Scholar-Artisan-Runemistress
+	Mechanician-Enchantress-Savant-Adeptus
+ASSASSIN
+Prowler-Brawler-Cutthroat-Killer
+	Butcher-Murderer-Executioner-Dark Lord
+Prowler-Lurker-Stalker-Viper
+	Blade-Murderess-Femme Fatale-Dark Mistress
+BARBARIAN
+Tribesman-Beserker-Brutalizer-Pillager
+	Destroyer-Chieftain-Warlord-Great Khan
+Tribeswoman-Berserker Maiden-Amazon-Tigress
+	Destroyer-Chieftess-Warrior Princess-Amazon Queen
+BARD
+Musician-Singer-Rhymer-Skald
+	Minstrel-Troubadour-Poet Laureate-Royal Bard
+Musician-Lyricist-Poet-Sonneteer
+	Minstrel-Muse-Poet Laureate-Royal Muse
+CLERIC
+Acolyte-Novice-Curate-Priest
+	Bishop-Patriarch-High Priest-Pious One
+Acolyte-Healer-Postulant-Priestess
+	Prioress-Matriarch-High Priestess-Oracle
+DRUID
+Aspiriate-Initiate-Naturalist-Shaman
+	Druid Warrior-Elementalist-Elemental Master-Ancient One
+Aspiriate-Sister Initiate-Forester
+	Ovate-Forest Warden-Elementalist-Elemental Mistress-Druid Queen
+FIGHTER
+Warrior-Veteran-Swashbuckler-Knight Captain
+	Hero-Superhero-Champion-Lord of the Realm
+Warrior Maiden-Mercenary-Shield Maiden-Myrmidon
+	Heroine-Superheroine-Championess-Lady of the Realm
+MAGE
+Apprentice-Prestidigitator-Warlock-Occultate
+	Thaumaturge-Conjurer-Sorcerer-Wizard
+Apprentice-Medium-Witch-Mystic
+	Cabbalist-Conjuress-Sorceress-Coven Mistress
+MONK
+Pupil-Brother-Disciple-Sage
+	Master-Grand Master-Enlightened One
+Pupil-Sister-Disciple-Immaculate
+	Mistress-Grand Mistress-Superior One
+PALADIN
+Gallant-Protector-Warder-Guardian
+	Holy Warrior-Crusader-Justiciar-Defender of the Realm
+Gallant-Protectress-Sentinel-Guardian
+	Holy Avenger-Crusader-Seneschal-Sentinel of the Realm
+RANGER
+Guide-Yeoman-Hunter-Scout
+	Mountaineer-Pathfinder-Adventurer-Royal Guide
+Guide-Wanderess-Huntress-Tracker
+	Explorer-Trailblazer-Adventuress-Royal Forester
+THIEF
+Footpad-Mugger-Thug-Brigand
+	Rogue-Burglar-Sharper-Shadow Lord
+Footpad-Pickpocket-Cutpurse-Purloiner
+	Swindler-Cat Burglar-Magswoman-Shadow Mistress
+BUILDER
+Apprentice Builder-Apprentice Builder-Builder-Builder
+	Creator-Creator-Master Builder-Master Builder
+Apprentice Builder-Apprentice Builder-Builder-Builder
+	Creator-Creator-Mistress Builder-Mistress Builder
+CT
+Apprentice Caretaker-Apprentice Caretaker-Caretaker-Senior Caretaker
+	Leviathan Caretaker-Demigod-Denizen-Inquisitor
+Apprentice Caretaker-Apprentice Caretaker-Caretaker-Senior Caretaker
+	Leviathan-Demigoddess-Denizen-Inquisitor
+DM
+Dungeon Lord-Dungeon Master-Dark Lord-Death Master
+	Immortal-Da Man-Supreme Being-Grand Inquisitor
+Dungeon Mistress-Dungeon Queen-Dark Queen-Death Mistress
+	Grand Poobah-Divine Entity-Supreme Being-Grand Inquisitor
 
-Titles
-ASSASSIN:   Minor Assassin - Rutterkin - Killer - Cutthroat - Murderer
-	        Executioner - Expert Assassin - Master Assassin
-BARBARIAN:  Grunt - Tribesman - Savage - Brutalizer - Dragon-Slayer
-	        Barbarian Chief - Destroyer - Master Barbarian
-CLERIC:     Acolyte - Healer - Adept - Priest - Cardinal - Lama
-	        Patriarch - High Priest
-FIGHTER:    Veteran - Warrior - Punisher - Pugilist - Myrmidon
-	        Hero - Champion - Lord
-MAGE:       Apprentice - Prestidigitator - Necromancer - Occulate
-	        Thaumaturgist - Enchanter - Sorcerer - Wizard
-PALADIN:    Gallant - Protector - Warder - Guardian - Ordained Paladin
-	        Chevalier - Justiciar - Holy Warrior
-RANGER:     Searcher - Scout - Tracker - Underhillsman - Royal Guide
-	        Pathfinder - Ranger Knight - Ranger Lord
-THIEF:      Rogue - Footpad - Dervish - Burglar - Sharper - Magsman
-	        High Thief - Master Thief
-BARD:	    Jongleur - Lyrist - Sonneteer - Skald - Minstrel
-		Muse - Bard - Master Bard
-MONK:       Novice - Initiate - Brother - Disciple - Immaculate
-                Master - Superior Master - Grand Master
-DRUID:      Aspirant - Ovate - Initiate - Master Initiate - Druid
-                Master Druid - Archdruid - Great Druid
-ALCHEMIST:  Scholar - Sage - Artificer - Runemaster - Alchemist
-                Mechanician - Archeus - Master Archeus
-CARETAKER:  Builder - Creator - Slave - Daemon - Addict - Hero
-                Dungeonmaster - Caretaker
-DUNGEONMASTER:  Builder - Creator - Programmer - Dungeon Lord - Immortal
-                Divine Entity - Addict - Dungeonmaster

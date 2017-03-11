@@ -1,5 +1,0 @@
-
- finger is a finger client for use with the Mordor MUD.  A binary should
-be placed in ../../bin/ and named fing in order for it to be used from
-inside the mud with the *fing command.
-  This function is not currently supported for Win32.

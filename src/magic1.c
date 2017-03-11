@@ -4,15 +4,19 @@
  *  User routines dealing with magic spells.  Potions, wands,
  *  scrolls, and casting are all covered.
  *
- *  Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *  Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: magic1.c,v 6.13 2001/03/08 16:09:09 develop Exp $
+ *
+ * $Log: magic1.c,v $
+ * Revision 6.13  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+
 
 /**********************************************************************/
 /*              cast                      */
@@ -22,77 +26,77 @@
 /* the second parsed word to find out if the spell-name is valid, and  */
 /* then calls the appropriate spell function.                  */
 
-int cast(ply_ptr, cmnd)
-creature    *ply_ptr;
-cmd     *cmnd;
+int cast(creature *ply_ptr, cmd *cmnd )
 {
-    long    i, t;
+    time_t    i, t;
     int (*fn)();
     int fd, splno, c = 0, match = 0, n;
 
     fd = ply_ptr->fd;
 
     if(cmnd->num < 2) {
-        print(fd, "Cast what?\n");
+        output(fd, "Cast what?\n");
         return(0);
     }
     if(F_ISSET(ply_ptr, PBLIND)) {
-	ANSI(fd, RED);
-	print(fd, "You can't see to direct the incantation!\n");
-	ANSI(fd, WHITE);
-	return(0);
+		output_wc(fd, "You can't see to direct the incantation!\n", BLINDCOLOR);
+		return(0);
     }
     if(F_ISSET(ply_ptr, PSILNC)) {
-	ANSI(fd, YELLOW);
-	print(fd, "You can't recite the incantation!\n");
-	ANSI(fd, WHITE);
-	return(0);
+		output_wc(fd, "You can't recite the incantation!\n", SILENCECOLOR);
+		return(0);
     }
     do {
-        if(!strcmp(cmnd->str[1], spllist[c].splstr)) {
+        if(!strcmp(cmnd->str[1], get_spell_name(c))) {
             match = 1;
             splno = c;
             break;
         }
-        else if(!strncmp(cmnd->str[1], spllist[c].splstr, 
+        else if(!strncmp(cmnd->str[1], get_spell_name(c), 
             strlen(cmnd->str[1]))) {
             match++;
             splno = c;
         }
         c++;
-    } while(spllist[c].splno != -1);
+    } while(get_spell_num(c) != -1);
 
     if(match == 0) {
-        print(fd, "That spell does not exist.\n");
+        output(fd, "That spell does not exist.\n");
         return(0);
     }
 
     else if(match > 1) {
-        print(fd, "Spell name is not unique.\n");
+        output(fd, "Spell name is not unique.\n");
         return(0);
     }
 
-    if(F_ISSET(ply_ptr->parent_rom, RNOMAG) && ply_ptr->class < CARETAKER) {
-        print(fd, "Nothing happens.\n");
+    if(F_ISSET(ply_ptr->parent_rom, RNOMAG) && ply_ptr->class < BUILDER) {
+        output(fd, "Nothing happens.\n");
         return(0);
     }
 
-    i = LT(ply_ptr, LT_SPELL);
-    t = time(0);
+	t = time(0);
 
-    if(t < i) {
-        please_wait(fd, i-t);
-        return(0);
-    }
+	if ( ply_ptr->class < DM )
+	{
+		i = LT(ply_ptr, LT_SPELL);
+		i = MAX(i, LT(ply_ptr, LT_READS) ); 
 
+		if(t < i) {
+			please_wait(fd, i-t);
+			return(0);
+		}
+	}
+    
     F_CLR(ply_ptr, PHIDDN);
 
-    fn = spllist[splno].splfn;
+    fn = get_spell_function(splno);
 
-    if(fn == offensive_spell) {
-        for(c=0; ospell[c].splno != spllist[splno].splno; c++)
-            if(ospell[c].splno == -1) return(0);
-        n = (*fn)(ply_ptr, cmnd, CAST, spllist[splno].splstr,
+    if(fn == offensive_spell || fn == room_damage) {
+        for(c=0; ospell[c].splno != get_spell_num(splno); c++)
+            if(ospell[c].splno == -1) 
+				return(0);
+        n = (*fn)(ply_ptr, cmnd, CAST, get_spell_name(splno),
             &ospell[c]);
     }
 
@@ -100,10 +104,11 @@ cmd     *cmnd;
         n = (*fn)(ply_ptr, cmnd, CAST);
 
     if(n) {
+	ply_ptr->lasttime[LT_READS].ltime = t;
         ply_ptr->lasttime[LT_SPELL].ltime = t;
         if(ply_ptr->class == ALCHEMIST || ply_ptr->class == MAGE)
             ply_ptr->lasttime[LT_SPELL].interval = 3;
-        else if(ply_ptr->class == BARD || ply_ptr->class == CLERIC)
+        else if(ply_ptr->class == BARD || ply_ptr->class == CLERIC || ply_ptr->class == DRUID)
 	    ply_ptr->lasttime[LT_SPELL].interval = 4;
 	else
             ply_ptr->lasttime[LT_SPELL].interval = 5;
@@ -120,9 +125,7 @@ cmd     *cmnd;
 /* This function allows mages to teach other players the first six    */
 /* spells.                                */
 
-int teach(ply_ptr, cmnd)
-creature    *ply_ptr;
-cmd     *cmnd;
+int teach(creature *ply_ptr, cmd *cmnd )
 {
     room        *rom_ptr;
     creature    *crt_ptr;
@@ -132,24 +135,20 @@ cmd     *cmnd;
     rom_ptr = ply_ptr->parent_rom;
 
     if(cmnd->num < 3) {
-        print(fd, "Teach whom what?\n");
+        output(fd, "Teach whom what?\n");
         return(0);
     }
     if(F_ISSET(ply_ptr, PBLIND)) {
-        ANSI(fd, RED);
-        print(fd, "You can't see to do that!\n");
-        ANSI(fd, WHITE);
+        output_wc(fd, "You can't see to do that!\n", BLINDCOLOR);
         return(0);
     }
     if(F_ISSET(ply_ptr, PSILNC)) {
-	ANSI(fd, YELLOW);
-	print(fd, "You can't speak to do that!\n");
-	ANSI(fd, WHITE);
-	return(0);
+		output_wc(fd, "You can't speak to do that!\n", SILENCECOLOR);
+		return(0);
     }
 
-    if((ply_ptr->class != MAGE && ply_ptr->class != CLERIC) && ply_ptr->class < CARETAKER)  {
-        print(fd, "Only mages and clerics may teach spells.\n");
+    if((ply_ptr->class != MAGE && ply_ptr->class != CLERIC) && ply_ptr->class < BUILDER)  {
+        output(fd, "Only mages and clerics may teach spells.\n");
         return(0);
     }
 
@@ -158,66 +157,71 @@ cmd     *cmnd;
                cmnd->val[1]);
 
     if(!crt_ptr) {
-        print(fd, "I don't see that person here.\n");
+        output(fd, "I don't see that person here.\n");
         return(0);
     }
 
     do {
-        if(!strcmp(cmnd->str[2], spllist[c].splstr)) {
+        if(!strcmp(cmnd->str[2], get_spell_name(c))) {
             match = 1;
             splno = c;
             break;
         }
-        else if(!strncmp(cmnd->str[2], spllist[c].splstr, 
+        else if(!strncmp(cmnd->str[2], get_spell_name(c), 
             strlen(cmnd->str[2]))) {
             match++;
             splno = c;
         }
         c++;
-    } while(spllist[c].splno != -1);
+    } while(get_spell_num(c) != -1);
 
     if(match == 0) {
-        print(fd, "That spell does not exist.\n");
+        output(fd, "That spell does not exist.\n");
         return(0);
     }
 
     else if(match > 1) {
-        print(fd, "Spell name is not unique.\n");
+        output(fd, "Spell name is not unique.\n");
         return(0);
     }
 
-    if(!S_ISSET(ply_ptr, spllist[splno].splno)) {
-        print(fd, "You don't know that spell.\n");
+    if(!S_ISSET(ply_ptr, get_spell_num(splno))) {
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
 
-    if((spllist[splno].splno > 3) && (ply_ptr->class != CLERIC && ply_ptr->class < CARETAKER)) {
-        print(fd, "You may not teach that spell to anyone.\n");
+    if((get_spell_num(splno) > 3) && (ply_ptr->class != CLERIC && ply_ptr->class < BUILDER)) {
+        output(fd, "You may not teach that spell to anyone.\n");
         return(0);
     }
 
-    if((spllist[splno].splno > 5) && (ply_ptr->class != DM)) {
-        print(fd, "You may not teach that spell to anyone.\n");
+    if((get_spell_num(splno) > 5) && (ply_ptr->class != DM)) {
+        output(fd, "You may not teach that spell to anyone.\n");
         return(0);
     }
 
-    if((spllist[splno].splno < 3) && (ply_ptr->class != MAGE && ply_ptr->class < CARETAKER)) {
-        print(fd, "You may not teach that spell to anyone.\n");
+    if((get_spell_num(splno) < 3) && (ply_ptr->class != MAGE && ply_ptr->class < BUILDER)) {
+        output(fd, "You may not teach that spell to anyone.\n");
         return(0);
     }
    
 
     F_CLR(ply_ptr, PHIDDN);
 
-    S_SET(crt_ptr, spllist[splno].splno);
-    print(crt_ptr->fd, "%M teaches you the %s spell.\n", ply_ptr,
-          spllist[splno].splstr);
-    print(fd, "Spell \"%s\" taught to %m.\n", spllist[splno].splstr,
-          crt_ptr);
+    S_SET(crt_ptr, get_spell_num(splno));
+
+    sprintf(g_buffer, "%%M teaches you the %s spell.\n", 
+          get_spell_name(splno));
+    mprint(crt_ptr->fd, g_buffer, m1arg(ply_ptr));
+
+    sprintf(g_buffer, "Spell \"%s\" taught to %%m.\n", get_spell_name(splno));
+    mprint(fd, g_buffer, m1arg(crt_ptr));
+
+    sprintf(g_buffer, "%%M taught %%m the %s spell.", 
+		get_spell_name(splno));
 
     broadcast_rom2(fd, crt_ptr->fd, rom_ptr->rom_num,
-               "%M taught %m the %s spell.", ply_ptr, crt_ptr,
-               spllist[splno].splstr);
+               g_buffer, m2args(ply_ptr, crt_ptr));
 
     return(0);
 
@@ -230,9 +234,7 @@ cmd     *cmnd;
 /* This function allows a player to study a scroll, and learn the spell */
 /* that is on it.                           */
 
-int study(ply_ptr, cmnd)
-creature    *ply_ptr;
-cmd     *cmnd;
+int study(creature *ply_ptr, cmd *cmnd )
 {
     object  *obj_ptr;
     int fd, n, match=0, class;
@@ -240,13 +242,11 @@ cmd     *cmnd;
     fd = ply_ptr->fd;
 
     if(cmnd->num < 2) {
-        print(fd, "Study what?\n");
+        output(fd, "Study what?\n");
         return(0);
     }
     if(F_ISSET(ply_ptr, PBLIND)) {
-        ANSI(fd, RED);
-        print(fd, "You can't see to do that!\n");
-        ANSI(fd, WHITE);
+        output_wc(fd, "You can't see to do that!\n", BLINDCOLOR);
         return(0);
     }
 
@@ -267,26 +267,27 @@ cmd     *cmnd;
     }
 
     if(!obj_ptr) {
-        print(fd, "You don't have that.\n");
+        output(fd, "You don't have that.\n");
         return(0);
     }
 
     if(obj_ptr->type != SCROLL) {
-        print(fd, "That's not a scroll.\n");
+        output(fd, "That's not a scroll.\n");
         return(0);
     }
 
     if((F_ISSET(obj_ptr, OGOODO) && ply_ptr->alignment < -100) ||
        (F_ISSET(obj_ptr, OEVILO) && ply_ptr->alignment > 100)) {
-        print(fd, "%I burns you and you drop it.\n", obj_ptr);
+        mprint(fd, "%I burns you and you drop it.\n", m1arg(obj_ptr));
         del_obj_crt(obj_ptr, ply_ptr);
         add_obj_rom(obj_ptr, ply_ptr->parent_rom);
         return(0);
     }
 
 	if (F_ISSET(obj_ptr,OPLDGK) && 
-		(BOOL(F_ISSET(obj_ptr,OKNGDM)) != BOOL(F_ISSET(ply_ptr,PKNGDM)))){
-		print(fd, "You are unable to use %i.\n",obj_ptr);
+		(objectcheck_guild(obj_ptr) != check_guild(ply_ptr))){
+		mprint(fd, "You guild allegiance prevents you from using %i.\n",
+			m1arg(obj_ptr));
         return(0);
 	}
 
@@ -296,18 +297,20 @@ cmd     *cmnd;
 		class=ply_ptr->class;
 
 	if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
-                print(fd, "Your class prevents you from using %i.\n",obj_ptr);
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < BUILDER)){
+                mprint(fd, "Your class prevents you from using %i.\n",
+					m1arg(obj_ptr));
                 return(0);
         }                 
 
     F_CLR(ply_ptr, PHIDDN);
 
-    print(fd, "You learn the %s spell.\n", 
-          spllist[obj_ptr->magicpower-1].splstr);
-    print(fd, "%I disintegrates!\n", obj_ptr);
+    sprintf(g_buffer, "You learn the %s spell.\n", 
+          get_spell_name(obj_ptr->magicpower-1));
+    output(fd, g_buffer);
+    mprint(fd, "%I disintegrates!\n", m1arg(obj_ptr));
     broadcast_rom(fd, ply_ptr->rom_num, "%M studies %1i.",
-              ply_ptr, obj_ptr);
+              m2args(ply_ptr, obj_ptr));
 
     S_SET(ply_ptr, obj_ptr->magicpower-1);
     del_obj_crt(obj_ptr, ply_ptr);
@@ -325,26 +328,22 @@ cmd     *cmnd;
 /* spell to be cast.  If a third word is used in the command, then that */
 /* player or monster will be the target of the spell.           */
 
-int readscroll(ply_ptr, cmnd)
-creature    *ply_ptr;
-cmd     *cmnd;
+int readscroll(creature *ply_ptr, cmd *cmnd )
 {
     object  *obj_ptr;
     int (*fn)();
-    long    i, t;
+    time_t    i, t;
     int fd, n, match=0, c, splno, class;
 
     fd = ply_ptr->fd;
     fn = 0;
 
     if(cmnd->num < 2) {
-        print(fd, "Read what?\n");
+        output(fd, "Read what?\n");
         return(0);
     }
     if(F_ISSET(ply_ptr, PBLIND)) {
-        ANSI(fd, RED);
-        print(fd, "You can't see to do that!\n");
-        ANSI(fd, WHITE);
+        output_wc(fd, "You can't see to do that!\n", BLINDCOLOR);
         return(0);
     }
     obj_ptr = find_obj(ply_ptr, ply_ptr->first_obj,
@@ -364,7 +363,7 @@ cmd     *cmnd;
     }
 
     if(!obj_ptr) {
-        print(fd, "You don't have that.\n");
+        output(fd, "You don't have that.\n");
         return(0);
     }
 
@@ -374,21 +373,21 @@ cmd     *cmnd;
     }
 
     if(obj_ptr->type != SCROLL) {
-        print(fd, "That's not a scroll.\n");
+        output(fd, "That's not a scroll.\n");
         return(0);
     }
 
     if((F_ISSET(obj_ptr, OGOODO) && ply_ptr->alignment < -100) ||
        (F_ISSET(obj_ptr, OEVILO) && ply_ptr->alignment > 100)) {
-        print(fd, "%I burns you and you drop it.\n", obj_ptr);
+        mprint(fd, "%I burns you and you drop it.\n", m1arg(obj_ptr));
         del_obj_crt(obj_ptr, ply_ptr);
         add_obj_rom(obj_ptr, ply_ptr->parent_rom);
         return(0);
     }
 
 	if (F_ISSET(obj_ptr,OPLDGK) &&
-        (BOOL(F_ISSET(obj_ptr,OKNGDM)) != BOOL(F_ISSET(ply_ptr,PKNGDM)))){
-        print(fd, "You are unable to read %i.\n",obj_ptr);
+		(objectcheck_guild(obj_ptr) != check_guild(ply_ptr))){
+        mprint(fd, "You guild allegiance prevents you from reading %i.\n", m1arg(obj_ptr));
         return(0);
     }              
 
@@ -398,17 +397,19 @@ cmd     *cmnd;
 		class=ply_ptr->class;
 
 	if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
-                print(fd, "Your class prevents you from reading %i.\n",obj_ptr);
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < BUILDER)){
+                mprint(fd, "Your class prevents you from reading %i.\n",
+					m1arg(obj_ptr));
                 return(0);
         }                 
 
     if(F_ISSET(ply_ptr->parent_rom, RNOMAG) || (obj_ptr->magicpower-1 < 0)) {
-        print(fd, "Nothing happens.\n");
+        output(fd, "Nothing happens.\n");
         return(0);
     }
 
     i = LT(ply_ptr, LT_READS);
+	i = MAX(i, LT(ply_ptr, LT_SPELL) );
     t = time(0);
 
     if(i > t) {
@@ -420,22 +421,29 @@ cmd     *cmnd;
 
     ply_ptr->lasttime[LT_READS].ltime = t;
     ply_ptr->lasttime[LT_READS].interval = 3;
+    ply_ptr->lasttime[LT_SPELL].ltime = t;
 
+    if(ply_ptr->class == ALCHEMIST || ply_ptr->class == MAGE)
+            ply_ptr->lasttime[LT_SPELL].interval = 3;
+        else if(ply_ptr->class == BARD || ply_ptr->class == CLERIC)
+            ply_ptr->lasttime[LT_SPELL].interval = 4;
+        else
+            ply_ptr->lasttime[LT_SPELL].interval = 5;
 
     if(spell_fail(ply_ptr, SCROLL)){
-        print(fd, "%I disintegrates.\n", obj_ptr);
+        mprint(fd, "%I disintegrates.\n", m1arg(obj_ptr));
         del_obj_crt(obj_ptr, ply_ptr);
         free_obj(obj_ptr);
         return(0);
     }
 
     splno = obj_ptr->magicpower-1;
-    fn = spllist[splno].splfn;
+    fn = get_spell_function(splno);
 
-    if(fn == offensive_spell) {
-        for(c=0; ospell[c].splno != spllist[splno].splno; c++)
+    if(fn == offensive_spell || fn == room_damage) {
+        for(c=0; ospell[c].splno != get_spell_num(splno); c++)
             if(ospell[c].splno == -1) return(0);
-        n = (*fn)(ply_ptr, cmnd, SCROLL, spllist[splno].splstr,
+        n = (*fn)(ply_ptr, cmnd, SCROLL, get_spell_name(splno),
             &ospell[c]);
     }
 
@@ -444,9 +452,11 @@ cmd     *cmnd;
 
     if(n) {
         if(obj_ptr->use_output[0])
-            print(fd, "%s\n", obj_ptr->use_output);
+		{
+            output_nl(fd, obj_ptr->use_output);
+		}
 
-        print(fd, "%I disintegrates.\n", obj_ptr);
+        mprint(fd, "%I disintegrates.\n", m1arg(obj_ptr));
         del_obj_crt(obj_ptr, ply_ptr);
         free_obj(obj_ptr);
     }
@@ -462,9 +472,7 @@ cmd     *cmnd;
 /* This function allows players to drink potions, thereby casting any */
 /* spell it was meant to contain.                     */
 
-int drink(ply_ptr, cmnd)
-creature    *ply_ptr;
-cmd     *cmnd;
+int drink(creature *ply_ptr, cmd *cmnd )
 {
     object  *obj_ptr;
     int (*fn)();
@@ -474,7 +482,7 @@ cmd     *cmnd;
     fn = 0;
 
     if(cmnd->num < 2) {
-        print(fd, "Drink what?\n");
+        output(fd, "Drink what?\n");
         return(0);
     }
 
@@ -495,7 +503,7 @@ cmd     *cmnd;
     }
 
     if(!obj_ptr) {
-        print(fd, "You don't have that.\n");
+        output(fd, "You don't have that.\n");
         return(0);
     }
 
@@ -505,26 +513,28 @@ cmd     *cmnd;
     }
 
     if(obj_ptr->shotscur < 1 || (obj_ptr->magicpower-1 < 0)) {
-        print(fd, "It's empty.\n");
+        output(fd, "It's empty.\n");
         return(0);
     }
 
 	if(F_ISSET(ply_ptr->parent_rom, RNOPOT)){
-        print(fd, "%I starts to evaporates before you drink it.\n",obj_ptr);
+        mprint(fd, "%I starts to evaporates before you drink it.\n",
+			m1arg(obj_ptr));
         return(0);
 	}
 	
     if((F_ISSET(obj_ptr, OGOODO) && ply_ptr->alignment < -100) ||
        (F_ISSET(obj_ptr, OEVILO) && ply_ptr->alignment > 100)) {
-        print(fd, "%I burns you and you drop it.\n", obj_ptr);
+        mprint(fd, "%I burns you and you drop it.\n", m1arg(obj_ptr));
         del_obj_crt(obj_ptr, ply_ptr);
         add_obj_rom(obj_ptr, ply_ptr->parent_rom);
         return(0);
     }
 
 	if (F_ISSET(obj_ptr,OPLDGK) &&
-        (BOOL(F_ISSET(obj_ptr,OKNGDM)) != BOOL(F_ISSET(ply_ptr,PKNGDM)))){
-        print(fd, "You are unable to drink %i.\n",obj_ptr);
+		(objectcheck_guild(obj_ptr) != check_guild(ply_ptr))){
+        mprint(fd, "You guild allegiance prevents you from drinking %i.\n",
+			m1arg(obj_ptr));
         return(0);
     }              
 
@@ -534,20 +544,21 @@ cmd     *cmnd;
 		class=ply_ptr->class;
 
 	if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
-                print(fd, "Your class prevents you from drinking %i.\n",obj_ptr);
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < BUILDER)){
+                mprint(fd, "Your class prevents you from drinking %i.\n",
+					m1arg(obj_ptr));
                 return(0);
         }                 
 
     F_CLR(ply_ptr, PHIDDN);
 
     splno = obj_ptr->magicpower-1;
-    fn = spllist[splno].splfn;
+    fn = get_spell_function(splno);
 
-    if(fn == offensive_spell) {
-        for(c=0; ospell[c].splno != spllist[splno].splno; c++)
+    if(fn == offensive_spell || fn == room_damage) {
+        for(c=0; ospell[c].splno != get_spell_num(splno); c++)
             if(ospell[c].splno == -1) return(0);
-        n = (*fn)(ply_ptr, cmnd, POTION, spllist[splno].splstr,
+        n = (*fn)(ply_ptr, cmnd, POTION, get_spell_name(splno),
             &ospell[c]);
     }
 
@@ -556,14 +567,16 @@ cmd     *cmnd;
 
     if(n) {
         if(obj_ptr->use_output[0])
-            print(fd, "%s\n", obj_ptr->use_output);
+		{
+            output_nl(fd, obj_ptr->use_output);
+		}
 
-        print(fd, "Potion drank.\n");
+        output(fd, "Potion drank.\n");
         broadcast_rom(fd, ply_ptr->rom_num, "%M drank %1i.", 
-                  ply_ptr, obj_ptr);
+                  m2args(ply_ptr, obj_ptr));
 
         if(--obj_ptr->shotscur < 1) {
-            print(fd, "%I disintegrates.\n", obj_ptr);
+            mprint(fd, "%I disintegrates.\n", m1arg(obj_ptr));
             del_obj_crt(obj_ptr, ply_ptr);
             free_obj(obj_ptr);
         }
@@ -580,24 +593,20 @@ cmd     *cmnd;
 /* This function allows players to zap a wand or staff at another player */
 /* or monster.                               */
 
-int zap(ply_ptr, cmnd)
-creature    *ply_ptr;
-cmd     *cmnd;
+int zap(creature *ply_ptr, cmd *cmnd )
 {
     object  *obj_ptr;
-    long    i, t;
+    time_t    i, t;
     int fd, n, match=0, class;
 
     fd = ply_ptr->fd;
 
     if(cmnd->num < 2) {
-        print(fd, "Use what?\n");
+        output(fd, "Use what?\n");
         return(0);
     }
     if(F_ISSET(ply_ptr, PBLIND)) {
-        ANSI(fd, RED);
-        print(fd, "You can't see to use that!\n");
-        ANSI(fd, WHITE);
+        output_wc(fd, "You can't see to use that!\n", BLINDCOLOR);
         return(0);
     }
 
@@ -618,31 +627,33 @@ cmd     *cmnd;
     }
 
     if(!obj_ptr) {
-        print(fd, "You don't have that.\n");
+        output(fd, "You don't have that.\n");
         return(0);
     }
 
     if(obj_ptr->type != WAND) {
-        print(fd, "That's not a wand or staff.\n");
+        output(fd, "That's not a wand or staff.\n");
         return(0);
     }
 
     if(obj_ptr->shotscur < 1) {
-        print(fd, "It's used up.\n");
+        output(fd, "It's used up.\n");
         return(0);
     }
 
     if((F_ISSET(obj_ptr, OGOODO) && ply_ptr->alignment < -100) ||
        (F_ISSET(obj_ptr, OEVILO) && ply_ptr->alignment > 100)) {
-        print(fd, "%I burns you and you drop it.\n", obj_ptr);
+        mprint(fd, "%I burns you and you drop it.\n", 
+			m1arg(obj_ptr));
         del_obj_crt(obj_ptr, ply_ptr);
         add_obj_rom(obj_ptr, ply_ptr->parent_rom);
         return(0);
     }
 
 	if (F_ISSET(obj_ptr,OPLDGK) &&
-        (BOOL(F_ISSET(obj_ptr,OKNGDM)) != BOOL(F_ISSET(ply_ptr,PKNGDM)))){
-        print(fd, "You are unable to use %i.\n",obj_ptr);
+		(objectcheck_guild(obj_ptr) != check_guild(ply_ptr))){
+        mprint(fd, "Your guild allegiance preents you from using %i.\n",
+			m1arg(obj_ptr));
         return(0);
     }              
 
@@ -652,14 +663,15 @@ cmd     *cmnd;
 		class=ply_ptr->class;
 
 	if(F_ISSET(obj_ptr,OCLSEL))
-        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < CARETAKER)){
-                print(fd, "Your class prevents you from using %i.\n",obj_ptr);
+        if(!F_ISSET(obj_ptr,OCLSEL + class) && ( ply_ptr->class < BUILDER)){
+                mprint(fd, "Your class prevents you from using %i.\n",
+					m1arg(obj_ptr));
                 return(0);
         }                 
 
 
     if(F_ISSET(ply_ptr->parent_rom, RNOMAG) || (obj_ptr->magicpower < 1)) {
-        print(fd, "Nothing happens.\n");
+        output(fd, "Nothing happens.\n");
         return(0);
     }
 
@@ -690,10 +702,7 @@ cmd     *cmnd;
 /* This function is a subfunction of zap that accepts a player and  */
 /* an object as its parameters.                     */
 
-int zap_obj(ply_ptr, obj_ptr, cmnd)
-creature    *ply_ptr;
-object      *obj_ptr;
-cmd     *cmnd;
+int zap_obj(creature *ply_ptr, object *obj_ptr, cmd *cmnd )
 {
     int splno, c, fd, n;
     int (*fn)();
@@ -702,12 +711,12 @@ cmd     *cmnd;
     splno = obj_ptr->magicpower-1;
     if (splno < 0) 
 	return(0);
-    fn = spllist[splno].splfn;
+    fn = get_spell_function(splno);
 
-    if(fn == offensive_spell) {
-        for(c=0; ospell[c].splno != spllist[splno].splno; c++)
+    if(fn == offensive_spell || fn == room_damage) {
+        for(c=0; ospell[c].splno != get_spell_num(splno); c++)
             if(ospell[c].splno == -1) return(0);
-        n = (*fn)(ply_ptr, cmnd, WAND, spllist[splno].splstr,
+        n = (*fn)(ply_ptr, cmnd, WAND, get_spell_name(splno),
             &ospell[c]);
     }
     else
@@ -718,7 +727,9 @@ cmd     *cmnd;
 
     if(n) {
         if(obj_ptr->use_output[0])
-            print(fd, "%s\n", obj_ptr->use_output);
+		{
+            output_nl(fd, obj_ptr->use_output);
+		}
 
         obj_ptr->shotscur--;
     }
@@ -734,12 +745,7 @@ cmd     *cmnd;
 /* This function is called by all spells whose sole purpose is to do    */
 /* damage to a given creature.                      */
 
-int offensive_spell(ply_ptr, cmnd, how, spellname, osp)
-creature    *ply_ptr;
-cmd     *cmnd;
-int     how;
-char        *spellname;
-osp_t       *osp;
+int offensive_spell(creature *ply_ptr, cmd *cmnd, int how, char *spellname, osp_t *osp )
 {
     creature    *crt_ptr;
     room        *rom_ptr;
@@ -750,34 +756,38 @@ osp_t       *osp;
     rom_ptr = ply_ptr->parent_rom;
 
     if(ply_ptr->mpcur < osp->mp && how == CAST) {
-        print(fd, "Not enough magic points.\n");
+        output(fd, "Not enough magic points.\n");
         return(0);
     }
 
     if(!S_ISSET(ply_ptr, osp->splno) && how == CAST) {
-        print(fd, "You don't know that spell.\n");
+        output(fd, "You don't know that spell.\n");
         return(0);
     }
 
+    if(ply_ptr->level < osp->intcast - (bonus[(int)ply_ptr->intelligence] * 3)) {
+        output(fd, "You are not experienced enough to cast that spell.\n");
+        return(0);
+    }
 
     if(F_ISSET(ply_ptr, PINVIS)) {
         F_CLR(ply_ptr, PINVIS);
-        print(fd, "Your invisibility fades.\n");
+        output(fd, "Your invisibility fades.\n");
         broadcast_rom(fd, ply_ptr->rom_num, "%M fades into view.",
-                  ply_ptr);
+                  m1arg(ply_ptr));
     }
 
     if(how == CAST) switch(osp->bonus_type) {
     case 1:
-        bns = bonus[ply_ptr->intelligence] +
+        bns = bonus[(int)ply_ptr->intelligence] +
             mprofic(ply_ptr, osp->realm)/10;
         break;
     case 2:
-        bns = bonus[ply_ptr->intelligence] +
+        bns = bonus[(int)ply_ptr->intelligence] +
             mprofic(ply_ptr, osp->realm)/6;
         break;
     case 3:
-        bns = bonus[ply_ptr->intelligence] +
+        bns = bonus[(int)ply_ptr->intelligence] +
             mprofic(ply_ptr, osp->realm)/4;
         break;
     }
@@ -819,21 +829,24 @@ osp_t       *osp;
             ply_ptr->mpcur -= osp->mp;
 
         if(how == CAST || how == SCROLL || how == WAND)  {
-            print(fd, "You cast a %s spell on yourself.\n",
+            sprintf(g_buffer, "You cast a %s spell on yourself.\n",
                 spellname);
-            print(fd, "The spell did %d damage.\n", dmg);
+            output(fd, g_buffer);
+            sprintf(g_buffer, "The spell did %d damage.\n", dmg);
+            output(fd, g_buffer);
+            sprintf(g_buffer, "%%M casts a %s spell on %sself.", 
+				spellname, F_ISSET(ply_ptr, PMALES) ? "him":"her");
             broadcast_rom(fd, ply_ptr->rom_num, 
-                      "%M casts a %s spell on %sself.", 
-                      ply_ptr, spellname,
-                      F_ISSET(ply_ptr, PMALES) ? "him":"her");
+                      g_buffer, m1arg(ply_ptr));
         }
         else if(how == POTION) {
-            print(fd, "Yuck! That's terrible!\n");
-            print(fd, "%d hit points removed.\n", dmg);
+            output(fd, "Yuck! That's terrible!\n");
+            sprintf(g_buffer, "%d hit points removed.\n", dmg);
+            output(fd, g_buffer);
         }
 
         if(ply_ptr->hpcur < 1) {
-            print(fd, "Don't be stupid.\n");
+            output(fd, "Don't be stupid.\n");
             ply_ptr->hpcur = 1;
             return(2);
         }
@@ -844,63 +857,64 @@ osp_t       *osp;
     else {
 
         if(how == POTION) {
-            print(fd, "You can only use a potion on yourself.\n");
+            output(fd, "You can only use a potion on yourself.\n");
             return(0);
         }
 
-        crt_ptr = find_crt(ply_ptr, rom_ptr->first_mon,
-                   cmnd->str[2], cmnd->val[2]);
+	    crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr,
+               cmnd->str[2], cmnd->val[2], MON_FIRST);
 
-        if(!crt_ptr) {
-            cmnd->str[2][0] = up(cmnd->str[2][0]);
-            crt_ptr = find_crt(ply_ptr, rom_ptr->first_ply,
-                       cmnd->str[2], cmnd->val[2]);
 
-            if(!crt_ptr || crt_ptr == ply_ptr || 
-               strlen(cmnd->str[2]) < 3) {
-                print(fd, "That's not here.\n");
-                return(0);
-            }
+		if(!crt_ptr || crt_ptr == ply_ptr 
+			|| (crt_ptr->type == PLAYER  && strlen(cmnd->str[2]) < 3)) {
+			output(fd, "That's not here.\n");
+			return(0);
+		}
 
-        }
 
-        if(crt_ptr->type == MONSTER && F_ISSET(crt_ptr, MUNKIL)) {
-            print(fd, "You cannot harm %s.\n", F_ISSET(crt_ptr, MMALES) ? "him":"her");
-            return(0);
-        }
+		/* fix same name bug here - JPF */
+		if( ply_ptr->type == MONSTER )
+		{
+			/* for monster casting we need to make sure its not on itself */
+			if( ply_ptr == crt_ptr )
+			{
+				/* look for second creature with same name */
+				crt_ptr = find_crt_in_rom(ply_ptr, rom_ptr, cmnd->str[2], 2,
+					MON_FIRST);
+
+				if(!crt_ptr || crt_ptr == ply_ptr ) 
+					return(0);
+		    }
+		}
+
+		if(!is_crt_killable(crt_ptr, ply_ptr)) 
+		{
+			return(0);
+		}
 
         if(ply_ptr->type == PLAYER && crt_ptr->type == PLAYER && crt_ptr != ply_ptr) {
-            if(F_ISSET(rom_ptr, RNOKIL) && ply_ptr->class < DM) {
-                print(fd,"No killing allowed in this room.\n");
-                return(0);
-            }
-	    if(ply_ptr->level<4 && crt_ptr->level>9){
-		print(fd, "That would be foolish.\n");
-		return(0);
-	    }
-            if((!F_ISSET(ply_ptr,PPLDGK) || !F_ISSET(crt_ptr,PPLDGK)) ||
-                (BOOL(F_ISSET(ply_ptr,PKNGDM)) == BOOL(F_ISSET(crt_ptr,PKNGDM))) ||
-                (! AT_WAR)) {
-                if(!F_ISSET(ply_ptr, PCHAOS) && ply_ptr->class < DM) {
-                    print(fd, "Sorry, you're lawful.\n");
-                    return(0);
-                }
-                if(!F_ISSET(crt_ptr, PCHAOS) && ply_ptr->class < DM) {
-                    print(fd, "Sorry, that player is lawful.\n");
-                    return(0);
-                }     
-            }
-        }
+		    if(ply_ptr->level<4 && crt_ptr->level>9){
+				output(fd, "That would be foolish.\n");
+				return(0);
+			}
+
+			if ( !pkill_allowed(ply_ptr, crt_ptr) )
+			{
+				return(0);
+			}
+		}
+
+
 	if(crt_ptr->type != MONSTER)	
         if(is_charm_crt(ply_ptr->name, crt_ptr) && F_ISSET(ply_ptr, PCHARM)){
-                print(fd, "You just can't bring yourself to do that.\n");
+                output(fd, "You just can't bring yourself to do that.\n");
                 return(0);
                 }
 
         if(how == CAST)
             ply_ptr->mpcur -= osp->mp;
 
-	if(spell_fail(ply_ptr, how)){
+		if(spell_fail(ply_ptr, how)){
             return(0);
         }
 
@@ -917,32 +931,47 @@ osp_t       *osp;
         addrealm = MIN(addrealm, crt_ptr->experience);
         if(crt_ptr->type != PLAYER)
             ply_ptr->realm[osp->realm-1] += addrealm;
-        if(crt_ptr->type != PLAYER) {
-		/* if(is_charm_crt(crt_ptr->name, ply_ptr))
-			del_charm_crt(crt_ptr, ply_ptr); */
+        if(crt_ptr->type != PLAYER) 
+		{
+			/* if(is_charm_crt(crt_ptr->name, ply_ptr))
+				del_charm_crt(crt_ptr, ply_ptr); */
             
-	    add_enm_crt(ply_ptr->name, crt_ptr);
-            add_enm_dmg(ply_ptr->name, crt_ptr, m);
+			add_enm_crt(ply_ptr->name, crt_ptr);
+			add_enm_dmg(ply_ptr->name, crt_ptr, m);
         }
 
         crt_ptr->hpcur -= dmg;
         if(how == CAST || how == SCROLL || how == WAND) {
-            print(fd, "You cast a %s spell on %s.\n", spellname,
+            sprintf(g_buffer, "You cast a %s spell on %s.\n", spellname,
                 crt_ptr->name);
-            print(fd, "The spell did %d damage.\n", dmg);
+            output(fd, g_buffer);
+            sprintf(g_buffer, "The spell did %d damage.\n", dmg);
+            output(fd, g_buffer);
+
+            sprintf(g_buffer, "%%M casts a %s spell on %%m.",
+                       spellname);
+
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
-                       "%M casts a %s spell on %m.",
-                       ply_ptr, spellname, crt_ptr);
-            print(crt_ptr->fd, 
-                  "%M casts a %s spell on you for %d damage.\n",
-                  ply_ptr, spellname, dmg);
+                       g_buffer, m2args(ply_ptr, crt_ptr));
+
+
+            sprintf(g_buffer, 
+                  "%%M casts a %s spell on you for %d damage.\n",
+                  spellname, dmg);
+            mprint(crt_ptr->fd, g_buffer, m1arg(ply_ptr));
+
+			/* give players exp for being hit if the monster is killed */
+			if ( crt_ptr->type == PLAYER && ply_ptr->type == MONSTER )
+			{
+				add_enm_dmg(crt_ptr->name, ply_ptr, dmg);
+			}
         }
 
 
         if(crt_ptr->hpcur < 1) {
-            print(fd, "You killed %m.\n", crt_ptr);
+            mprint(fd, "You killed %m.\n", m1arg(crt_ptr));
             broadcast_rom2(fd, crt_ptr->fd, ply_ptr->rom_num,
-                      "%M killed %m.", ply_ptr, crt_ptr);
+                      "%M killed %m.", m2args(ply_ptr, crt_ptr));
             die(crt_ptr, ply_ptr);
             return(2);
         }

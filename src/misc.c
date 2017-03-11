@@ -4,7 +4,16 @@
  *	Miscellaneous string, file and data structure manipulation
  *	routines.
  *
- *	Copyright (C) 1991, 1992, 1993, 1997 Brooke Paul & Brett Vickers
+ *	Copyright (C) 1991, 1992, 1993 Brooke Paul
+ *
+ * $Id: misc.c,v 6.17 2001/07/06 17:31:54 develop Exp $
+ *
+ * $Log: misc.c,v $
+ * Revision 6.17  2001/07/06 17:31:54  develop
+ * changed error messsage in dice when zero is passed to it
+ *
+ * Revision 6.16  2001/03/08 16:09:09  develop
+ * *** empty log message ***
  *
  */
 
@@ -12,115 +21,56 @@
 	#define _BSD_COMPAT
 	#include <unistd.h>
 	#include <sys/stat.h>
-     	#include <fcntl.h>
+   	#include <fcntl.h>
 #endif /* IRIX */
 
-#include "mstruct.h"
+#include "../include/mordb.h"
 #include "mextern.h"
 #include <stdio.h>
 #include <sys/types.h>
-#ifndef WIN32
-	#include <sys/time.h>
-#else
-	#include <time.h>
-#endif
 #include <ctype.h>
-#ifdef DMALLOC
-  #include "/usr/local/include/dmalloc.h"
-#endif
+#include <sys/stat.h>
+#include <fcntl.h>
 
 
-/************************************************************************/
-/*				merror					*/
-/************************************************************************/
 
-/* merror is called whenever an error message should be output to the	*/
-/* log file.  If the error is fatal, then the program is aborted	*/
-
-void merror(str, errtype)
-char 	*str;
-char 	errtype;
-{
-	long t;
-	char bugstr[256];
-
-	t = time(0);
-	sprintf(bugstr, "Error occured in %s. %s", str, ctime(&t));
-	loge(bugstr);
-	if(errtype == FATAL)
-		exit(-1);
-}
-
-/************************************************************************/
-/*				lowercize				*/
-/************************************************************************/
-
-/* This function takes the string passed in as the first parameter and	*/
-/* converts it to lowercase.  If the flag in the second parameter has	*/
-/* its first bit set, then the first letter is capitalized.		*/
-
-void lowercize(str, flag)
-char	*str;
-int	flag;
-{
-	int 	i, n;
-
-	n = (str) ? strlen(str) : 0;
-	for(i=0; i<n; i++)
-		str[i] = (str[i] >= 'A' && str[i] <= 'Z') ? str[i]+32:str[i];
-	if(flag & 1)
-		str[0] = (str[0] >= 'a' && str[0] <= 'z') ? str[0]-32:str[0];
-}
-
-/************************************************************************/
-/*				low					*/
-/************************************************************************/
-
-/* If the character passed in as the first parameter is an uppercase 	*/
-/* alphabetic character, then it is converted to lowercase and returned */
-/* Otherwise, it is unchanged.						*/
-
-int low(ch)
-char	ch;
-{
-	if(ch >= 'A' && ch <= 'Z')
-		return(ch+32);
-	else
-		return(ch);
-}
-
-int up(ch)
-char	ch;
-{
-	if(ch >= 'a' && ch <= 'z')
-		return(ch-32);
-	else
-		return(ch);
-}
-
-/************************************************************************/
-/*				zero					*/
-/************************************************************************/
-
-/* This function zeroes a block of bytes at the given pointer and the */
-/* given length.						      */
-
-void zero(ptr, size)
-void 	*ptr;
-int	size;
-{
-	char 	*chptr;
-	int	i;
-
-        chptr = (char *)ptr;
-	for(i=0; i<size; i++) 
-		chptr[i] = 0;
-}
-	
 /* Temporary (but static) data for the next several functions */
 
 static char	xstr[5][80];
 static int	xnum=0;
+	
+
+
+/************************************************************************/
+/*				get_ply_flags()				*/
+/************************************************************************/
+int get_ply_flags(creature * ply_ptr )
+{
+	int	flags;
+
+	ASSERTLOG( ply_ptr );
+
+	flags = 0;
+
+	if ( ply_ptr && ply_ptr->type == PLAYER)
+	{
+		if(F_ISSET(ply_ptr, PDINVI))
+			flags |= INV;
+		if(F_ISSET(ply_ptr, PDMAGI))
+			flags |= MAG;
+		if ( ply_ptr->class >= IMMORTAL )
+			flags |= ISIM;
+		if ( ply_ptr->class >= CARETAKER )
+			flags |= ISCT;
+		if ( ply_ptr->class == DM )
+			flags |= ISDM;
+	}
+
+
+	return( flags );
+}
+
+
 
 /************************************************************************/
 /*				crt_str					*/
@@ -130,9 +80,7 @@ static int	xnum=0;
 /* and forms the appropriate singularized or pluralized version of the  */
 /* creature's name using certain flags.					*/
 
-char *crt_str(crt, num, flag)
-creature	*crt;
-int		num, flag;
+char *crt_str(creature *viewpoint, creature	*crt, int num, int flags )
 {
 	char	ch;
 	char	*str;
@@ -142,29 +90,51 @@ int		num, flag;
 	int     found;                                        
 	FILE    *plural;     
 
+	ASSERTLOG( viewpoint );
+	ASSERTLOG( crt );
+
+	if ( !crt )
+		return("");
+
 	str = xstr[xnum];  xnum = (xnum + 1)%5;
 
-	if(crt->type != MONSTER) {
-		if((((F_ISSET(crt, PINVIS) || F_ISSET(crt, PDMINV)) && 
-		   !(flag & 2)) || F_ISSET(crt, PDMINV)) && !F_ISSET(crt, PALIAS))
-			strcpy(str, "Someone");
-		else {
+	/* get the flags relative to the person seeing this creature */
+	flags |= get_ply_flags( viewpoint );
 
-		   if(F_ISSET(crt, PALIAS) && F_ISSET(crt, PDMINV)) {
-		     if(!F_ISSET(Ply[crt->fd].extr->alias_crt, MNOPRE)) { 
-                        strcpy(str, "A ");   
-			strcat(str, Ply[crt->fd].extr->alias_crt->name);
-		     }
-		     else
-			strcpy(str, Ply[crt->fd].extr->alias_crt->name);
-		   }
-		   else
+	if(crt->type != MONSTER) 
+	{
+		if(F_ISSET(crt, PALIAS) && F_ISSET(crt, PDMINV)) 
+		{
+			if(!F_ISSET(Ply[crt->fd].extr->alias_crt, MNOPRE)) 
+			{ 
+				strcpy(str, "A ");   
+				strcat(str, Ply[crt->fd].extr->alias_crt->name);
+			}
+			else
+				strcpy(str, Ply[crt->fd].extr->alias_crt->name);
+		}
+		else if ( ( F_ISSET(crt, PDMINV) && !(flags & ISIM ))
+			|| (F_ISSET(crt, PINVIS) && !(flags & INV) ))
+		{
+			strcpy(str, "Someone");
+		}
+		else
+		{
 			strcpy(str, crt->name);
-			if(F_ISSET(crt, PINVIS))
+			if( F_ISSET(crt, PDMINV ) )
+			{
+				strcat( str, " (+)");
+			}
+			else if(F_ISSET(crt, PINVIS))
 				strcat(str, " (*)");
+			else if (F_ISSET(crt, PDMOWN))
+				strcat(str, " (O)");
 		}
 		return(str);
 	}
+
+
+	/* else we got monsters */
 
 	if(num == 0) {
 		if(!F_ISSET(crt, MNOPRE)) {
@@ -188,13 +158,9 @@ int		num, flag;
 		}
 		strcat(str, crt->name);
 	}
-
 	else {
-		if(num < 21)
-			sprintf(str, "%s ", number[num]);
-		else
-			sprintf(str, "%d ", num);
-
+		strcpy( str, int_to_text( num ));
+		strcat(str, " ");
 		strcat(str, crt->name);
 		if(F_ISSET(crt, MTOMEN)) {
 			str[strlen(str)-2] = 'e';
@@ -211,47 +177,48 @@ int		num, flag;
 				str[strlen(str)] = 's';
 		}
 	}
-        if(F_ISSET(crt, MIREGP) && num > 1)
+    if(F_ISSET(crt, MIREGP) && num > 1)
+    {
+        found = 0;
+                    
+        strcpy(pfile, get_monster_path());
+        strcat(pfile,"/plurals");
+
+         
+        plural = fopen(pfile, "r");
+        if(plural != NULL)
         {
-                found = 0;
-                            
-                strcpy(pfile, MONPATH);
-                strcat(pfile,"/plurals");
+            while (!found && !(feof (plural)))
+            {
+                fflush(plural);
+				/* get singular form */
+                fgets(sform, sizeof(sform), plural);    
+                sform[strlen(sform)-1] = 0;
+                fflush(plural);
 
-                 
-                plural = fopen(pfile, "r");
-                if(plural != NULL)
-                {
-                    while (!found && !(feof (plural)))
-                    {
-                        fflush(plural);
-                       /* get singular form */
-                        fgets(sform, sizeof(sform), plural);    
-                        sform[strlen(sform)-1] = 0;
-                        fflush(plural);
-                       /* get plural form */
-                        fgets(pform, sizeof(pform), plural);    
-                        pform[strlen(pform)-1] = 0;
+				/* get plural form */
+                fgets(pform, sizeof(pform), plural);    
+                pform[strlen(pform)-1] = 0;
 
-                        if(strcmp(crt->name, sform) == 0)
-                        {   
-                            strcpy(str, "");
-                            if(num < 21)
-                            if(num < 21)
-                                sprintf(str, "%s ", number[num]);
-                            else
-                                sprintf(str, "%d ", num);
-                                strcat(str, pform);
-                            found = 1; 
-                         }
-                     }
-                     fclose(plural);
-                }
+                if(strcmp(crt->name, sform) == 0)
+                {   
+                    strcpy(str, "");
+					/* this if was extra dont kow why it was here */
+                    if(num < 21)
+
+						strcpy( str, int_to_text(num) );
+						strcat( str, " " );
+                        strcat(str, pform);
+                    found = 1; 
+                 }
+             }
+             fclose(plural);
         }
+    }
 
-	if(flag & CAP)
+	if(flags & CAP)
 		str[0] = up(str[0]);
-	if((flag & MAG) && (crt->type != PLAYER) && (F_ISSET(crt, MMAGIC)))
+	if((flags & MAG) && (crt->type != PLAYER) && (F_ISSET(crt, MMAGIC)))
 		strcat(str, " (M)");
 
 	return(str);
@@ -267,9 +234,7 @@ int		num, flag;
 /* In some cases it is necessary to drop the s on a plural version of	*/
 /* a word.								*/
 
-char *obj_str(obj, num, flag)
-object	*obj;
-int	num, flag;
+char *obj_str(creature *viewpoint, object *obj, int num, int flags )
 {
 	char 	ch;
 	char	str2[10];
@@ -280,7 +245,15 @@ int	num, flag;
 	int     found;
 	FILE    *plural;
 
+	ASSERTLOG( obj );
+
+	if ( !obj )
+		return("");
+
 	str = xstr[xnum];  xnum = (xnum + 1)%5;
+
+	/* get the flags relative to the person seeing this creature */
+	flags |= get_ply_flags( viewpoint );
 
 	if(num == 0) {
 		if(!F_ISSET(obj, ONOPRE)) {
@@ -308,10 +281,8 @@ int	num, flag;
 	}
 
 	else {
-		if(num < 21)
-			sprintf(str, "%s ", number[num]);
-		else
-			sprintf(str, "%d ", num);
+		strcpy( str, int_to_text(num) );
+		strcat(str, " ");
 
 		if(F_ISSET(obj, OSOMEA))
 			strcat(str, "sets of ");
@@ -333,7 +304,7 @@ int	num, flag;
         {
                 found = 0;
                             
-                strcpy(pfile, OBJPATH);
+                strcpy(pfile, get_object_path());
                 strcat(pfile,"/plurals");
 
  
@@ -353,12 +324,9 @@ int	num, flag;
                                 
                         if(strcmp(obj->name, sform) == 0)
                         {
-                            strcpy(str, "");
-                            if(num < 21)
-                                sprintf(str, "%s ", number[num]);
-                            else
-                                sprintf(str, "%d ", num);
-                                strcat(str, pform);
+                            strcpy(str, int_to_text(num) );
+							strcat(str, " " );
+                            strcat(str, pform);
                             found = 1;
                          }
                      }
@@ -366,15 +334,32 @@ int	num, flag;
                 }
         }
 
-	if(flag & CAP)
+	if(flags & CAP)
 		str[0] = up(str[0]);
-	if((flag & MAG) && obj->adjustment) {
+	if((flags & MAG) && obj->adjustment ) {
 		sprintf(str2, " (%s%d)", obj->adjustment >= 0 ? "+":"",
 			obj->adjustment);
 		strcat(str, str2);
 	}
-	else if((flag & MAG) && obj->magicpower)
+	else if((flags & MAG) && obj->magicpower)
 		strcat(str, " (M)");
+
+	/* CT or higher see this */
+	if ( flags & ISCT )
+	{
+		if ( F_ISSET(obj, OHIDDN) )
+		{
+			strcat( str, " (h)" );
+		}
+		if ( F_ISSET(obj, OINVIS) )
+		{
+			strcat( str, " (*)" );
+		}
+		if ( F_ISSET(obj, OSCENE) )
+		{
+			strcat( str, " (s)" );
+		}
+	}
 
 	return(str);
 }
@@ -390,8 +375,7 @@ int	num, flag;
 
 #define MAXLINE	77
 
-void delimit(str)
-char	*str;
+void delimit( char *str )
 {
 	int 	i, j, l, len, lastspace;
 	char 	str2[4096];
@@ -434,9 +418,7 @@ char	*str;
 
 #define FBUF	800
 
-void view_file(fd, param, str)
-int fd, param;
-char *str;
+void view_file(int fd, int param, char *str )
 {
 	char	buf[FBUF+1];
 	int	i, l, n, ff, line;
@@ -447,9 +429,9 @@ char *str;
 	case 1:
 		offset = 0L;
 		strcpy(Ply[fd].extr->tempstr[1], str);
-		ff = open(str, O_RDONLY, 0);
+		ff = open(str, O_RDONLY | O_BINARY);
 		if(ff < 0) {
-			print(fd, "File could not be opened.\n");
+			output(fd, "File could not be opened.\n");
 			RETURN(fd, command, 1);
 		}
 		line = 0;
@@ -460,11 +442,12 @@ char *str;
 				if(buf[i] == '\n') {
 					buf[i] = 0;
 					line++;
-					print(fd, "%s\n", &buf[l]);
+					output_nl(fd, &buf[l]);
 					offset += (i-l+1);
 					l = i+1;
 				}
-				if(line > 20) break;
+				if(line > 20) 
+					break;
 			}
 			if(line > 20) {
 				sprintf(Ply[fd].extr->tempstr[0], "%lu", 
@@ -472,16 +455,17 @@ char *str;
 				break;
 			}
 			else if(l != n) {
-				print(fd, "%s", &buf[l]);
+				output(fd, &buf[l]);
 				offset += (i-l);
 			}
-			if(n<FBUF) break;
+			if(n<FBUF) 
+				break;
 		}
 		if(n==FBUF || line>20) {
 			F_SET(Ply[fd].ply, PREADI);
-			print(fd, "[Hit Return, Q to Quit]: ");
-			output_buf();
-			Ply[fd].io->intrpt &= ~1;
+			output(fd, "[Hit Return, Q to Quit]: ");
+			output_ply_buf(fd);
+	        Ply[fd].io->intrpt &= ~1; 
 		}
 		if(n<FBUF && line <= 20) {
 			close(ff);
@@ -494,14 +478,14 @@ char *str;
 		}
 	case 2:
 		if(str[0] != 0) {
-			print(fd, "Aborted.\n");
+			output(fd, "Aborted.\n");
 			F_CLR(Ply[fd].ply, PREADI);
 			RETURN(fd, command, 1);
 		}
 		offset = atol(Ply[fd].extr->tempstr[0]);
-		ff = open(Ply[fd].extr->tempstr[1], O_RDONLY, 0);
+		ff = open(Ply[fd].extr->tempstr[1], O_RDONLY | O_BINARY);
 		if(ff < 0) {
-			print(fd, "File could not be opened.\n");
+			output(fd, "File could not be opened.\n");
 			F_CLR(Ply[fd].ply, PREADI);
 			RETURN(fd, command, 1);
 		}
@@ -514,7 +498,7 @@ char *str;
 				if(buf[i] == '\n') {
 					buf[i] = 0;
 					line++;
-					print(fd, "%s\n", &buf[l]);
+					output_nl(fd, &buf[l]);
 					offset += (i-l+1);
 					l = i+1;
 				}
@@ -526,16 +510,16 @@ char *str;
 				break;
 			}
 			else if(l != n) {
-				print(fd, "%s", &buf[l]);
+				output(fd, &buf[l]);
 				offset += (i-l);
 			}
 			if(n<FBUF) break;
 		}
 		if(n==FBUF || line > 20) {
 			F_SET(Ply[fd].ply, PREADI);
-			print(fd, "[Hit Return, Q to Quit]: ");
-			output_buf();
-			Ply[fd].io->intrpt &= ~1;
+			output(fd, "[Hit Return, Q to Quit]: ");
+			output_ply_buf(fd);
+	        Ply[fd].io->intrpt &= ~1; 
 		}
 		if(n<FBUF && line <= 20) {
 			close(ff);
@@ -555,10 +539,19 @@ char *str;
 
 /* This function rolls n s-sided dice and adds p to the total.		*/
 
-int dice(n, s, p)
-int 	n, s, p;
+int dice(int n, int s, int p)
 {
 	int	i;
+	
+	if(!n) {
+		merror("Zero number of dice", NONFATAL);
+		return(0);
+	}
+
+	if(!s) {
+		merror("Zero sides of dice", NONFATAL);
+		return(0);
+	}
 
 	for(i=0; i<n; i++)
 		p += mrand(1,s);
@@ -573,8 +566,7 @@ int 	n, s, p;
 /* This function takes a given amount of experience as its first 	*/
 /* argument returns the level that the experience reflects.		*/ 
 
-int exp_to_lev(exp)
-long 	exp;
+int exp_to_lev(long	exp )
 {
 	int level = 1;
 	
@@ -598,10 +590,9 @@ long 	exp;
 /* a 0 is returned.  Otherwise, the number of uses is decremented and	*/
 /* a 1 is returned.							*/
 
-int dec_daily(dly_ptr)
-struct daily	*dly_ptr;
+int dec_daily( struct daily *dly_ptr )
 {
-	long		t;
+	time_t		t;
 	struct tm	*tm, time1, time2;
 
 	t = time(0);
@@ -626,36 +617,7 @@ struct daily	*dly_ptr;
 	return(1);
 }
 
-/************************************************************************/
-/*				loge					*/
-/************************************************************************/
 
-/* This function writes a formatted printf string to a logfile called	*/
-/* "log" in the player directory.					*/
-
-void loge(fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
-char 	*fmt;
-int	i1, i2, i3, i4, i5, i6, i7, i8, i9, i10;
-{
-	char	file[80];
-	char	str[1024];
-	int	fd;
-
-	sprintf(file, "%s/log", LOGPATH);
-	fd = open(file, O_RDWR, 0);
-	if(fd < 0) {
-		fd = open(file, O_RDWR | O_CREAT, ACC);
-		if(fd < 0) return;
-	}
-	lseek(fd, 0L, 2);
-
-	sprintf(str, fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10);
-
-	write(fd, str, strlen(str));
-
-	close(fd);
-
-}
 
 /************************************************************************/
 /*				sort_cmds				*/
@@ -671,7 +633,7 @@ void sort_cmds()
 
 	while(cmdlist[Cmdnum].cmdno != 0) Cmdnum++;
 
-	qsort((void *)cmdlist, Cmdnum, sizeof(struct cmdstruct), sort_cmp);
+	qsort((void *)cmdlist, Cmdnum, sizeof(struct cmdstruct), (PFNCOMPARE)sort_cmp);
 
 }
 
@@ -681,33 +643,11 @@ void sort_cmds()
 
 /* This function is used by the quicksort routine to sort the command	*/
 /* list according to how often each command has been used.		*/
-
-int sort_cmp(arg1, arg2)
-struct cmdstruct *arg1, *arg2;
+int sort_cmp( struct cmdstruct *first, struct cmdstruct *second )
 {
-	return(strcmp(arg1->cmdstr, arg2->cmdstr));
+	return(strcmp(first->cmdstr, second->cmdstr));
 }
 
-/************************************************************************/
-/*				file_exists				*/
-/************************************************************************/
-
-/* This function returns 1 if the filename specified by the first par-	*/
-/* ameter exists, 0 if it doesn't.					*/
-
-int file_exists(filename)
-char *filename;
-{
-	int ff;
-
-	ff = open(filename, O_RDONLY);
-	if(ff > -1) {
-		close(ff);
-		return(1);
-	}
-	else
-		return(0);
-}
 
 /************************************************************************/
 /*				load_lockouts				*/
@@ -725,7 +665,7 @@ void load_lockouts()
 	if(Lockout) free(Lockout);
 	Numlockedout = 0;
 
-	sprintf(str, "%s/lockout", LOGPATH);
+	sprintf(str, "%s/lockout", get_log_path());
 	fp = fopen(str, "r");
 	if(!fp) return;
 
@@ -759,61 +699,354 @@ void load_lockouts()
 /*				please_wait				*/
 /************************************************************************/
 
-void please_wait(fd, duration)
-int	fd;
-int	duration;
+void please_wait(int fd, time_t duration )
 {
 	if(duration == 1)
-		print(fd, "Please wait 1 more second.\n");
+		output(fd, "Please wait 1 more second.\n");
 	else
-		print(fd, "Please wait %d more seconds.\n", duration);
-}
- 
-/************************************************************************/
-/*                              logn                                   */
-/************************************************************************/
- 
-/* This function writes a formatted printf string to a logfile called   */
-/* "name" in the log directory.                                       */
- 
-void logn(name,fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10)
-char    *name;
-char    *fmt;
-int     i1, i2, i3, i4, i5, i6, i7, i8, i9, i10;
-{
-	char    file[80];
-        char    str[1024];
-        int     fd;
- 
-        sprintf(file, "%s/%s", LOGPATH,name);
-        fd = open(file, O_RDWR | O_APPEND, 0);
-        if(fd < 0) {
-                fd = open(file, O_RDWR | O_CREAT, ACC);
-                if(fd < 0) return;
-        }
-        lseek(fd, 0L, 2);
- 
-        sprintf(str, fmt, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10);
- 
-        write(fd, str, strlen(str));
- 
-        close(fd);
-}
-/*====================================================================*/
-#ifdef FREEBSD
-int is_num(str)
-#else
-int isnumber(str)
-#endif
-char    *str;
-/* checks if the given str contains all digits */
+	{
+		if(duration > 60) 
+		{
+			sprintf(g_buffer, "Please wait %ld:%02ld minutes.\n", (long)duration/60L, (long)duration%60L);
+		}
+		else
+		{
+			sprintf(g_buffer,"Please wait %ld seconds.\n", (long)duration);
+		}
 
+		output(fd, g_buffer );
+	}
+
+}
+ 
+/*====================================================================*/
+/* checks if the given str contains all digits */
+int is_num(char *str )
 {
   int len, i;
    len = strlen(str);
    for (i=0;i < len; i++)
-      if(!isdigit(str[i]))
+      if(!isdigit((int)str[i]))
          return (0);
    return (1);
+}
+
+
+
+void **m1arg(void *arg1)
+{
+	static	void *argv[2];
+
+	argv[0] = arg1;
+	argv[1] = NULL;
+
+	return(argv);
+}
+
+
+void **m2args(void *arg1, void *arg2)
+{
+	static	void *argv[3];
+
+	argv[0] = arg1;
+	argv[1] = arg2;
+	argv[2] = NULL;
+
+	return(argv);
+}
+
+void **m3args(void *arg1, void *arg2, void *arg3)
+{
+	static	void *argv[4];
+
+	argv[0] = arg1;
+	argv[1] = arg2;
+	argv[2] = arg3;
+	argv[3] = NULL;
+
+	return(argv);
+}
+
+
+/************************************************************************/
+/* clean_str()								*/
+/*	called to check for modem escape codes and other things that	*/
+/*	should not be sent with send or broadcast etc.			*/
+/*									*/
+/*		JPF March 98						*/
+/************************************************************************/
+void clean_str(char *str, int strip_count )
+{
+	char	str_buf[2048];
+	char	*pnew;
+	char	*porg;
+	int		nPlusCount;
+	int		ndx;
+
+	pnew = str_buf;
+	porg = str;
+	nPlusCount = 0;
+
+
+	/* strip strip_count words from the beginning */
+	for ( ndx = 0; ndx < strip_count; ndx++ )
+	{
+		/* strip leading space */
+		while ( *porg != '\0' && *porg == ' ')
+			porg++;
+
+		/* skip word */
+		while ( *porg != '\0' && *porg != ' ')
+			porg++;
+	}
+
+	/* strip spaces after last stripped word */
+	while ( *porg != '\0' && *porg == ' ')
+		porg++;
+
+	/* copy the rest of the string in to the clean buffer */
+	/* removing offensive chars */
+	while ( *porg != '\0' )
+	{
+		switch( *porg )
+		{
+			case '+':
+				nPlusCount++;
+				if ( nPlusCount < 3 )
+				{
+					*(pnew++) = *porg;
+				}
+				break;
+			default:
+				nPlusCount = 0;
+				*(pnew++) = *porg;
+				break;
+		}
+		porg++;
+	}
+
+	*pnew = '\0';
+
+	/* now copy it back into the original buffer */
+	strcpy(str, str_buf );
+
+	return;
+}
+
+
+/************************************************************************/
+/* convert_seconds()							*/
+/*	Simple routine to converts seconds to days, hours, minutes and	*/
+/*	seconds								*/
+/*									*/
+/*	returns 0 on error, 1 on success				*/
+/*		JPF May 98						*/
+/************************************************************************/
+int convert_seconds_to_str(long interval, char *str )
+{
+	int	ret_code = 0 ;
+	int	days, hours, minutes, seconds;
+
+	ASSERTLOG( str );
+	ASSERTLOG( interval > 0 );
+
+	if ( str != NULL && interval > 0 )
+	{
+		days = interval/86400L;
+		hours = interval/3600L;
+		hours %= 24;
+		minutes = interval/60L;
+		minutes %= 60;
+		seconds = interval % 60;
+
+		if(!days)
+			sprintf(str, "%02d:%02d:%02d", hours, minutes, seconds); 
+		else if (days==1)
+			sprintf(str, "%d day %02d:%02d:%02d", days, hours, minutes, seconds); 
+		else
+			sprintf(str,"%d days %02d:%02d:%02d", days, hours, minutes, seconds); 
+
+		ret_code = 1;
+	}
+
+
+	return( ret_code );
+}
+
+/************************************************************************/
+/* in_group()                                                           */
+/*              Simple routine to test if two players are grouped       */
+/*              PxT March 2000						*/
+/************************************************************************/
+int in_group(creature *crt_ptr, creature *ply_ptr)
+{
+        ctag    *cp;
+                
+        if(ply_ptr->following == 0 && ply_ptr->first_fol == 0)
+                        return 0;
+        if(crt_ptr->following == 0 && crt_ptr->first_fol == 0)
+                        return 0;
+        if(ply_ptr == crt_ptr)   
+                        return 1;
+        if(crt_ptr->following == ply_ptr)
+                        return 1;
+        if(ply_ptr->following == crt_ptr)
+                        return 1;
+                        
+        cp = crt_ptr->first_fol;
+        while(cp) {
+                if(cp->crt == ply_ptr)
+                        return 1;
+                cp = cp->next_tag;
+        }
+        /* if a is following b, and c is following b, then a and c are grouped */
+        /* however if a is following b and b is following c, then a and c are not grouped */
+        /* This should be considered a feature not a bug... */
+        if(crt_ptr->following != 0) {
+                cp = crt_ptr->following->first_fol;
+                while(cp) {
+                        if(cp->crt == ply_ptr)
+                                return 1;
+                        cp = cp->next_tag;
+                }
+        }
+        return 0;
+}       /* end of in_group */
+
+
+/************************************************************************/
+/* void view_file_reverse(int fd, int param, char *str)			*/
+/* 									*/
+/* displays a file, line by line starting with the last			*/
+/* similar to unix 'tac' command					*/
+/* 									*/
+/* 									*/
+/************************************************************************/
+
+/* The maximum size (in bytes) of a screenful of data 	*/
+/* 80 characters+newline * 20 lines +1 for luck 	*/
+#define TACBUF ( (81 * 20 * sizeof(char)) + 1 )
+
+void view_file_reverse(int fd, int param, char *str)
+{
+
+off_t oldpos;
+off_t newpos;
+off_t temppos;
+int i,more_file=1,count,amount=1621;
+char string[1622];
+char search[80];
+long offset;
+
+FILE *ff;
+
+
+	if(strlen(Ply[fd].extr->tempstr[3]) > 0)
+		strcpy(search, Ply[fd].extr->tempstr[3]);
+	else
+		strcpy(search, "\0");
+	
+    switch(param) {
+	case 1:
+
+	strcpy(Ply[fd].extr->tempstr[1], str);
+	if ((ff = fopen(str, "r")) == NULL){
+		output(fd, "error opening file\n");
+		RETURN(fd, command, 1);
+	}
+
+
+
+	fseek(ff, 0L, SEEK_END);
+	oldpos = ftell(ff);
+	if(oldpos < 1) {
+		output(fd, "Error opening file\n");
+		RETURN(fd, command, 1);
+	}
+	break;
+
+	case 2:
+
+		if(str[0] != 0) {
+			output(fd, "Aborted.\n");
+			F_CLR(Ply[fd].ply, PREADI);
+			RETURN(fd, command, 1);
+		}
+
+	if ((ff = fopen(Ply[fd].extr->tempstr[1], "r")) == NULL){
+		output(fd, "error opening file\n");
+		F_CLR(Ply[fd].ply, PREADI);
+		RETURN(fd, command, 1);
+	}
+
+	offset = atol(Ply[fd].extr->tempstr[0]);
+	fseek(ff, offset, SEEK_SET);
+	oldpos = ftell(ff);
+	if(oldpos < 1) {
+		output(fd, "Error opening file\n");
+		RETURN(fd, command, 1);
+	}
+
+    } /* end switch */
+
+nomatch:
+	temppos = oldpos - TACBUF; 
+	if(temppos > 0)
+		fseek(ff, temppos, SEEK_SET);
+	else {
+		fseek(ff, 0L, SEEK_SET);
+		amount = oldpos;
+	}
+
+	newpos = ftell(ff);
+
+
+	fread(string, amount,1, ff);
+	string[amount] = '\0';
+	i = strlen(string);
+	i--;
+
+	count = 0;
+	while(count < 21 && i > 0) {
+		if(string[i] == '\n') {
+			if((strlen(search) > 0 && strstr(&string[i], search))
+				|| search[0] == '\0') {
+				sprintf(g_buffer, "%s", &string[i]);
+				output(fd, g_buffer);
+				count++;
+			}
+			string[i]='\0';
+		}
+		i--;
+	}
+
+	oldpos = newpos + i + 2;
+	if(oldpos < 3)
+		more_file =  0;
+
+	sprintf(Ply[fd].extr->tempstr[0], "%lu", (long) oldpos);
+		
+	
+	if(more_file && count == 0) 
+		goto nomatch;		/* didnt find a match within a screenful */
+	else if(more_file) {
+                output(fd, "\n[Hit Return, Q to Quit]: ");
+                output_ply_buf(fd);
+                Ply[fd].io->intrpt &= ~1; 
+
+		fclose(ff);
+		F_SET(Ply[fd].ply, PREADI);
+		RETURN(fd, view_file_reverse, 2);
+	} else {
+		if((strlen(search) > 0 && strstr(string, search))
+				 || search[0] == '\0') {
+			sprintf(g_buffer, "\n%s\n", string);
+			output(fd, g_buffer);
+		}
+		fclose(ff);
+		F_CLR(Ply[fd].ply, PREADI);
+		RETURN(fd, command, 1);
+	}
+
 }
 

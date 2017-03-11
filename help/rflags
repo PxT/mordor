@@ -8,12 +8,12 @@ RDARKR          9        Room is dark always			6   barbarian
 RDARKN          10       Room is dark at night			7   assassin 
 RPOSTO          11       Post office			      5-6   paladin 
 RNOKIL          12       Safe room, no playerkilling	      5-7   mage 
-RNOTEL          13       Cannot teleport to this room	      6-7   cleric 
+RNOTEL          13       No teleport/no summon to this room   6-7   cleric 
 RHEALR          14       Heal faster in this room	    5-6-7   ranger 
 RONEPL          15       1-player only inside	    	      4-7   bard 
 RTWOPL          16       2-players only inside 		      4-6   monk	
-RTHREE          17       3-players only inside 
-RNOMAG          18       No magic allowed in room 
+RTHREE          17       3-players only inside 		    4-6-7   druid
+RNOMAG          18       No magic allowed in room             4-5   alchemist
 RPTRAK          19       Permanent tracks in room 
 REARTH          20       Earth realm 
 RWINDR          21       Wind realm 
@@ -31,5 +31,10 @@ RNOPOT          32       No potion room
 RPMEXT          33       Player's magic spell extended 
 RNOLOG          34       Player cannot login to this room 
 RELECT          35       Election Booth 
-RNGHTO          36       Night only random occurance of monsters 
-
+RNDOOR		36	 Room is Indoors
+RISH2O		37	 Water Source
+RJAILR          38      /* Jail room */
+RBANKR          39      /* Bank room */
+RGILDA          40      /*   GUILD   100 Circle    010 Masters  001 Brotherhood */
+RGILDB          41      /*   FLAGS   110 Clan      101  Company 011  Guard */
+RGILDC          42      /*           111 Champions 000  White Council */

@@ -1,6 +1,6 @@
-Locate-person:
-This spell allows you to see through the eyes of another player, it
-doesn't always work...
+Clairvoyance:
+This spell allows you to see through the eyes of another player, but be 
+careful or you may reveal yourself to your target.
 MP cost: 15
 Syntax:
-cast locate-person <target>
+cast clairvoyance <target>

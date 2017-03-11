@@ -29,5 +29,10 @@ XPMAGE		27	 Paladin
 XPPALA		28	 Ranger
 XPRNGR		29	 Thief
 XPTHEF		30	 Bard
-XPMONK		32	 Monk
-
+XPMONK		31	 Monk
+XPDRUD		32	 Druid
+XPALCH		33	 Alchemist
+XPBUIL		34	 Builder
+RGILDA          37         GUILD   100 Circle    010 Masters  001 Brotherhood     
+RGILDB          38         FLAGS   110 Clan      101  Company 011  Guard     
+RGILDC          39                 111 Champions 000  White Council  

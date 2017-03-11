@@ -1,9 +1,9 @@
-Help on:
+Help on DM command:
+
 	*find [c|o] [name] [#]
 
-This function returns the database index number for the selected object 
-or creature.  Use of this command may result in lag, particularly when 
-searching large databases on slow comupters.
+  This function returns the database index number for the selected object 
+or creature.
 
 example:
 :*find c monk

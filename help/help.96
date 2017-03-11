@@ -1,0 +1,13 @@
+
+Help on command:
+
+        BARKSKIN 
+
+  This skill is only available to experienced Druids.  This skill    
+allows a druid to harden their skin into bark thus providing them
+more armor.
+
+example:
+
+:barkskin 
+You successfully barkskin.

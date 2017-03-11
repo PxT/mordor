@@ -1,0 +1,122 @@
+Sun May 19 12:14:41 2002: 
+Tesseract-0 (1): *list o -r1:100
+Sun May 19 12:14:47 2002: 
+Tesseract-0 (1): *list o -r100:200
+Sun May 19 12:14:52 2002: 
+Tesseract-0 (1): *list o -r200:300
+Sun May 19 12:14:54 2002: 
+Tesseract-0 (1): 
+Sun May 19 12:14:59 2002: 
+Tesseract-0 (1): *list o -r300:400
+Sun May 19 12:15:01 2002: 
+Tesseract-0 (1): *(list 
+Sun May 19 12:15:06 2002: 
+Tesseract-0 (1): *list o -r400:500
+Sun May 19 12:15:11 2002: 
+Tesseract-0 (1): *list o -r500:600
+Sun May 19 12:15:15 2002: 
+Tesseract-0 (1): *list o -r600:700
+Sun May 19 12:15:19 2002: 
+Tesseract-0 (1): *list o -r700:800
+Sun May 19 12:15:26 2002: 
+Tesseract-0 (1): *list o -r800
+Sun May 19 12:15:28 2002: 
+Tesseract-0 (1): 
+Sun May 19 12:15:33 2002: 
+Tesseract-0 (1): *list o -r800:900
+Sun May 19 12:15:33 2002: 
+Tesseract-0 (1): 
+Sun May 19 12:15:34 2002: 
+Tesseract-0 (1): *U 
+Sun May 19 12:15:35 2002: 
+Tesseract-0 (1): f*u f
+Sun May 19 12:15:36 2002: 
+Tesseract-0 (1): *u f
+Sun May 19 12:15:38 2002: 
+Tesseract-0 (1): *inf
+Sun May 19 12:15:38 2002: 
+Tesseract-0 (1): *act
+Sun May 19 12:15:39 2002: 
+Tesseract-0 (1): *u f
+Sun May 19 12:15:40 2002: 
+Tesseract-0 (1): l
+Sun May 19 12:15:41 2002: 
+Tesseract-0 (1): d
+Sun May 19 12:15:42 2002: 
+Tesseract-0 (1784): w
+Sun May 19 12:15:42 2002: 
+Tesseract-0 (1785): w
+Sun May 19 12:15:42 2002: 
+Tesseract-0 (1786): w
+Sun May 19 12:15:42 2002: 
+Tesseract-0 (1706): w
+Sun May 19 12:15:44 2002: 
+Tesseract-0 (1787): go all
+Sun May 19 12:15:45 2002: 
+Tesseract-0 (2255): n
+Sun May 19 12:15:46 2002: 
+Tesseract-0 (2256): n
+Sun May 19 12:15:47 2002: 
+Tesseract-0 (2256): go d
+Sun May 19 12:15:49 2002: 
+Tesseract-0 (2254): lsit
+Sun May 19 12:15:51 2002: 
+Tesseract-0 (2254): list
+Sun May 19 12:15:52 2002: 
+Tesseract-0 (2254): go d
+Sun May 19 12:15:53 2002: 
+Tesseract-0 (2256): d
+Sun May 19 12:15:54 2002: 
+Tesseract-0 (2256): s
+Sun May 19 12:15:54 2002: 
+Tesseract-0 (2255): s
+Sun May 19 12:15:55 2002: 
+Tesseract-0 (1787): s
+Sun May 19 12:15:56 2002: 
+Tesseract-0 (1787): w
+Sun May 19 12:15:56 2002: 
+Tesseract-0 (1788): w
+Sun May 19 12:15:57 2002: 
+Tesseract-0 (1638): s
+Sun May 19 12:15:58 2002: 
+Tesseract-0 (1639): s
+Sun May 19 12:15:59 2002: 
+Tesseract-0 (1640): s
+Sun May 19 12:15:59 2002: 
+Tesseract-0 (1634): e
+Sun May 19 12:16:00 2002: 
+Tesseract-0 (1797): e
+Sun May 19 12:16:01 2002: 
+Tesseract-0 (1796): e
+Sun May 19 12:16:02 2002: 
+Tesseract-0 (1709): s
+Sun May 19 12:16:02 2002: 
+Tesseract-0 (1710): e
+Sun May 19 12:16:03 2002: 
+Tesseract-0 (2285): list
+Sun May 19 12:16:05 2002: 
+Tesseract-0 (2285): *U 
+Sun May 19 12:16:06 2002: 
+Tesseract-0 (2285): f*inf
+Sun May 19 12:16:07 2002: 
+Tesseract-0 (2285): *act
+Sun May 19 12:16:07 2002: 
+Tesseract-0 (2285): *u 
+Sun May 19 12:16:08 2002: 
+Tesseract-0 (2285): *pa r
+Sun May 19 12:16:09 2002: 
+Tesseract-0 (2285): *act
+Sun May 19 12:16:10 2002: 
+Tesseract-0 (2285): *pa d
+Sun May 19 12:16:13 2002: 
+Tesseract-0 (2285): *U f
+Sun May 19 12:16:15 2002: 
+Tesseract-0 (2285): *inf
+Sun May 19 12:16:15 2002: 
+Tesseract-0 (2285): *act
+Sun May 19 12:16:16 2002: 
+Tesseract-0 (2285): *u f
+Sun May 19 12:16:24 2002: 
+Tesseract-0 (2285): *list m -r1:1000
+Sun May 19 12:16:33 2002: 
+Tesseract-0 (2285): *shut -1

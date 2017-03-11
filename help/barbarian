@@ -1,0 +1,16 @@
+BARBARIAN
+
+	Raised in the harsh lands of tribal villages, barbarians are hearty
+warriors capable of sustaining blow after blow from opponents. The barbarian
+can bash its opponent, rendering them stunned for a while and unable to
+attack. The barbarian can circle an opponent, an excellent tactic used while
+fighting.  Barbarians also possess the berserk skill, raising their hp and
+dexterity in a furious battle-frenzy.
+
+Skills:
+Bash, berserk, circle.
+
+Their stat cycle is as follows (starts over at levels 12 and 22):
+
+Level:          2   3   4   5   6   7   8   9   10  11
+Stat gained:	CON DEX PTY INT STR CON STR DEX PTY STR
