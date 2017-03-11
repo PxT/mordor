@@ -1,0 +1,23 @@
+
+Help on:
+
+	*STATUS [obj/crt/rm]
+
+	This function will give the vital stats for the specified object, 
+room, monster, or player.  If nothing is specified, then stats are given 
+for the parent room.
+
+example:
+:*status ruby
+
+Name: ruby key
+Desc: A fantastic key made of shimmering red rubies.
+Use:
+
+Hit: 11d0 + 0
+Shots: 1/1
+Type: 11
+AC: 00   Value: 00150   Weight: 01
+Flags set: None.
+
+

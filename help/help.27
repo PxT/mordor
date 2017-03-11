@@ -1,0 +1,24 @@
+Help on:
+	SET <flag>
+
+The following flags may be set and cleared:
+
+nobroad		No broadcast messages will be sent to you.
+nologin		No login messages will be sent to you.
+compact		Output is in "compacted" mode.
+roomname	Whether to show the room name
+short		Whether to show a room's short description
+long		Whether to show a room's long description
+wimpy		You will automatically flee when your hp is low
+prompt		Enables the output of your HP & MP with the prompt
+ansi		If you have a vt100 or ansi terminal you can view color
+nosummon	Makes it so that no one can cast summon on you
+echo		Your sends, emotes, and says will be echoed to you.
+	
+Example:
+
+: set short
+Short descriptions enabled.
+: clear short
+Short descriptions disabled.
+

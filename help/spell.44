@@ -1,0 +1,5 @@
+Breath-water:
+This spell allows its target to breath under water safely
+MP cost: 12
+Syntax:
+cast breath-water <target>

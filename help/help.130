@@ -1,0 +1,10 @@
+
+Help on:
+
+	*REPLACE [str1] [str2]
+
+	This function will search and replace [str1] for [str2].  Due to 
+the parsing of [str1] it can only be one word long, however [str2] can be 
+any length.  
+	NOTE:  This function does not reformat the text after replacement.
+

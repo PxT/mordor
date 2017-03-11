@@ -1,0 +1,14 @@
+Help on:
+
+	*INVIS
+
+	This is the DM invisibilty function.  Use it to toggle between 
+invis and non-invis.  Note that if you logout as invis, when you log back 
+in a braodcast message will not be printed.  Also, this type of invis is 
+immune to the spell detect-invisibility.
+
+example:
+:*invis
+Invisibility off.
+
+

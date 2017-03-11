@@ -1,0 +1,25 @@
+Help on:
+	ATTACK <player/monster> [#]
+	KILL <player/monster> [#]
+
+The attack command allows a player to fight a monster or player who is
+in the same room.  Once a monster is attacked, it will remember your
+face until it's dead, so don't make too many enemies at once.  If you
+do not supply a numeric modifier to the monster's name and there are more
+than one of that monster in the room, then you will be assumed to be 
+attacking the first such monster in the room.  As additional monsters
+are added to the room, they will be given larger identifying numbers,
+so you can assume that the numeric identifier you chose to begin with
+will not change.
+
+IMPORTANT:  Combat in Isengard is not like combat in many other MUDs where
+you type kill <monster> once and sit back and yawn.  You must continue to
+attack the monster you're fighting. 
+
+Example:
+
+You see two hobbits.
+: k hob 2
+You attack the hobbit.
+You hit for 5 damage.
+

@@ -1,0 +1,11 @@
+
+Help on:
+
+	*APPEND [-sn] [text]
+
+	This function appends [text] to the current description.  If the 
+-s flag is set then it will append to the short description.  If the -n 
+is set then it will append without adding a new line.  NOTE:  This 
+function does not reformat the text appended.
+
+

@@ -1,0 +1,8 @@
+	
+	Monsters are easily made in the editor.  Be sure to check the 
+file dm.doc in this directory for information about the various flags and 
+statistics.
+	Monsters may be changed online using the *z command.  Play with 
+it and see what happen.  Any changes made with *z will be lost after a 
+shutdown unless the creature is permed.
+	

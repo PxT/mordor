@@ -1,0 +1,12 @@
+Help on:
+
+	*SAVE
+
+	This function saves the parent room to disk.  Use this function 
+to assure that any changes you make to a room become permanent.
+
+example:
+:*save
+Ok.
+
+

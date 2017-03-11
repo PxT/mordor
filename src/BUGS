@@ -1,0 +1,9 @@
+
+	Yes, there are bugs.  If you happen to find one, please let us
+know (or even better -- send a patch) so that we can tell others who are 
+running this same code.  You can send your bugs or patches to 
+mordor@moria.bio.uci.edu or post them to rec.games.mud.admin.
+	None of the bugs in this version of the code should do any damage 
+to your system.  They may cause players or room files to be corrupted 
+when frp crashes, so you should backup every now and then.
+

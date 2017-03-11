@@ -1,0 +1,13 @@
+Help on:
+
+	*PERM [obj name]
+
+	This will make the object named a permanent object in the parent 
+room.  It is not recommended for use unless you have access to the off 
+line editor to set the perm variables.
+
+example:
+:*perm sword
+Done.
+
+

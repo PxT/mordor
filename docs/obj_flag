@@ -1,0 +1,166 @@
+
+                        >Object Flags<
+ 
+The following is a list and a brief description of all object 
+flags.
+syntax: name              flag #  stat name    defined name 
+ 
+The value for flag # includes the offset of +1
+ 
+======================================================================= 
+
+Permanent               1       Pperm               OPERMT
+    Object will remain in a room until a player picks
+the object up.
+
+Hidden                  2       Hidden              OPERMT
+    Object appears hidden, players need to sucessful search to find
+the object. (if a monster is carring an item with the hidden flag
+set, players will not see the object on the monster after the
+monster is killed).
+
+Invisible               3       Invis               OINVIS
+    Players without detect-invisible are unable to pick the
+object up or use the object.
+
+Prefix Some             4       <none>              OSOMEA
+    The object will be preceded with the word 'some' 
+instead of the word 'a'.
+
+Plurals                 5       <none>              ODROPS
+    If more than one of the object appears do not add an 's'
+to make the object name plural.
+    
+No Prefix               6       <none>              ONOPRE
+    The object name will be displayed without any form of a
+prefix.
+
+Container               7       Cont                OCONTN
+    Object may serve as a container, where players may put
+other items into the container.  Players can not put
+a container into a container.
+
+Weightless Container    8       Wtless              OCONTN
+    The weight of all the items inside the container are not 
+included as part of a players total weight.
+
+Temp Permanent          9       Tperm               OTEMPP
+Inventory Permanent     10      IPerm               OPERM2
+
+Mage restricted         11      Nomage              ONOMAG
+    Object may not be wored by mages.  This flag has become
+obsolete with the class selective flags (OCLSEL).
+
+Light Source            12      Light               OLIGHT
+    Object provides a light source if equiped.
+
+Good Only               13      Good                OGOODO
+    Only players that have a "good" alignement may use the object.
+If used by an "evil" player, the player will be shocked by the item.
+
+Evil Only               14      Evil                OEVILO
+    Only players that have a "evil" alignement may use the object.
+If used by an "good" player, the player will be shocked by the item.
+
+Enchanted               15      Ench                OENCHA
+    Object is enchanted, and can not be enchanted with the 
+enchant spell unless the object loses it enchant.  It is
+imported to set this flag on ALL magic weapons and armor
+(items with a '+' associated with them).
+
+Non repairable          16      NoFix               ONOFIX
+    Once the object has broke, the smitty will be unable to repair
+the object. This flag is unnecessary for wands and potions since
+those objects are automatically unrepairable.
+
+Climbing Gear           17      Climbing            OCLIMB
+    When the object is equiped, it will aid the player in
+exits that require climbing gear to ascend or repel.
+
+Cannot be taken         18      Notake              ONOTAK
+    Players will be unable to 'get' the object.  This is useful
+for signs and other unremovable devices.
+
+OSCENE                  19      Scenery             OSCENE
+    Object is part of a room's scenery, and is unremovable
+by the players.
+
+Sized armor             20/21   Sized               OSIZE1/OSIZE2
+    Object can only be worn by selected size (race). If 00 =
+wearable by all, 01 = wearable by small race, 10 = wearable by 
+medium race, 11 = wearable by large race.
+
+Random Enchant          22      RandEnch            ORENCH
+    The object will be given a random enchant value (nornal, +1,
++2, or +3) when ever the object is created (when a monster appears
+and drops it).
+
+Cursed                  23      Cursed              OCURSE
+    Object is cursed, once the object is wielded, held or worn
+by a player, the player will be unable to remove the item.
+
+Worn                    24      Worn                OWEARS
+    Object is currently being worn by a player, this is an
+interal flag, and should not be set on an object.   
+
+Floor usable            25      Use-floor           OUSEFl
+    Object can be used by players even though the object is
+on the floor.
+
+Devouring container     26      Devours             OCNDES
+    Any placed into the container will be destroyed.
+
+Female only             27      Nomale              ONOMAL
+    Object will only be usable by players of the female gender.
+
+Male only               27      Nofemale            ONOFEM
+    Object will only be usable by players of the male gender.
+
+Damage based object     29      NdS dam             ODDICE
+    Various spells if invoked by an object, will base their
+damage on the number*sides +plus. This flag should not be set
+unless you are sure the spell is design for NdS damage.
+Currently drain energy is the only spell designed  for NdS.
+
+Pledge Only             30/31   Kingdom 0/1         OPLDGK/OKNGDM
+    Object may only be use / worn by players who have pledged.
+The OPLDGK needs to be set, the OKNGDM determines which kigdom
+theobject belongs to. If OKNGDM is unset then object belongs to
+kingom 0 otherwise the object belongs to kingdom 1.
+
+Class selective         32      Cls-Sel:            OCLSSEl
+    Object can only be used by selected classes.  The following
+eight flags detemine which classes can use the object.
+
+Assassin usable			33		A					OASSNO
+	If this flag is set in conjunction with	OCLSSEL, then
+assassin classes can use the object.
+
+Barbarian usable		34		B					OBARBO
+	If this flag is set in conjunction with	OCLSSEL, then
+barbarian classes can use the object.
+
+Cleric usable			35		C					OCLERO
+	If this flag is set in conjunction with	OCLSSEL, then
+cleric classes can use the object.
+
+Fighter usable			36		F					OFIGHO
+	If this flag is set in conjunction with	OCLSSEL, then
+fighter classes can use the object.
+
+Mage usable				37		M					OMAGEO
+	If this flag is set in conjunction with	OCLSSEL, then
+mage classes can use the object.
+
+Paladin usable			38		P					OPALAO
+	If this flag is set in conjunction with	OCLSSEL, then
+paladin classes can use the object.
+
+Ranger usable			39		R					ORNGRO
+	If this flag is set in conjunction with	OCLSSEL, then
+ranger classes can use the object.
+
+Thief usable			40		T					OTHIEO
+	If this flag is set in conjunction with	OCLSSEL, then
+thief classes can use the object.
+

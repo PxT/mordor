@@ -1,0 +1,80 @@
+                        >Exit Flags<
+
+The following is a list and a brief description of all room exit
+flags.
+syntax: name              flag #  stat name    defined name 
+
+The value for flag # includes the offset of +1
+
+=======================================================================
+Hidden              1       Secret          XSECRT
+    Hidden exits are hidden from view and can be found by search.
+
+Invisible           2       Invisible       XINVIS
+    Invisible exits will only be detected and usable by players
+    currently under detect-invisiblity.
+
+Locked              3       Locked          XLOCKED
+    The exit is currently lock  A player needs to unlock the
+    exit before opeing it.
+
+Closed              4       Closed          XCLOSD
+    The exit is currently closed.
+
+Lockable            5       Lockable        XLOCKS
+    A player can lock the exit if they have the correct key.
+
+Clossable           6       Closable        XCLOSS
+    A player can close the exit.
+
+Unpickable          7       Un-pick         XUNPCK
+    If an exit is locked, the exit is unpickable.
+ 
+Weightless          8       Naked           XNAKED
+    Players can't bring any equipment or weapons through the exit.
+
+Climbing Up         9       ClimbUp         XCLIMB
+    Player needs climbing gear to use the exit.  Climbing gear is not
+    required, but a player might fall if they tried to use that exit.
+
+Climb  Down         10      ClimbRepel          XREPEL
+    Player needs climbing gear to use the exit.  Climbing gear is not
+    required, but a player might fall if they tried to use that exit.
+
+Difficult Climb     11      HardClimb           XDCLIM
+    The player must have climbing gear or currently have levatation 
+    spell or be using a levitation item to use exit.
+
+Fly                 12      Fly                 XFLYSP
+    The player must currently be under a fly spell to use the exit.
+
+Female only         13      Female              XFEMAL
+    Only females characters may use the exit.
+
+Male only           14      Male                XMALES
+    Only male characters may use the exit.
+
+Kingdom / Pledge    14/15   Kingdom 0/1         XPLDGK / XKNGDM
+    Only players that have pledged to a given kingdom may use the exit.
+    The XPLDGK flag restricts the exit to pledged players while the
+    XKNGDM denotes to which kingom the exit belongs.  If XKNGDM is not
+    set, then the exit belongs to kingdom 0, otherwise the exit belongs
+    to kingdom 1.
+
+Night time          17       Night              XNGHTO
+    The exit is only usable during the day (game time).
+
+Day time            18       Day                XDATON
+    The exit is only usable during the day (game time).
+
+Gaurded             19      P-Guard             XPGUAR
+    The exit is guarded by a passive guard monster.  The monster
+    MPGUARD flag must also be set on the monster doing the guarding.
+    A player will not be able to use the exit as long as the
+    monster is present.
+
+unseen exit         20      NoSee               XNOSEE
+    The exit is unusable and invisible to players.  This flag is not
+    normally used, except in cases of multiple timed exits.  (exits that
+    periodically change room connections, based on a given time).
+

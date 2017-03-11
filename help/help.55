@@ -1,0 +1,13 @@
+Help on:
+	SENDMAIL
+	READMAIL
+	DELETEMAIL
+
+These commands only work in a post office, and allow you to send kludgy
+little letters to other players that play the game.  To send a letter
+to another player, you use the SENDMAIL command.  To read your mail,
+use the READMAIL command.  And to delete your mail once you've read it
+use the DELETEMAIL command.  The text editor for the sendmail command is
+very primitive and does not have word wrap, so do not make lines longer
+than 80 characters in length.
+

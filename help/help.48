@@ -1,0 +1,10 @@
+Help on:
+	REPAIR <object> [#]
+
+The repair command only works in repair shoppes and will allow you to
+repair an object that has been broken.  To find out how much the repair
+will cost, use the COST command first.  Once an item is repaired, it
+is as good as new.  But watch out, sometimes the repair smith completely
+shatters the object you're trying to repair.  He's not as good a smithy
+as he once was.
+

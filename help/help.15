@@ -1,0 +1,8 @@
+Help on:
+	HEALTH
+	SCORE
+
+Health shows you a brief status report on your character.  It lists
+your name, title, hit points, magic points, gold and experience.  It
+also tells you if you are currently hidden or poisoned.
+

@@ -1,0 +1,6 @@
+Word-of-recall:
+This spell recalls its target to the Tree of Life
+Word-of-recall may only be cast be clerics.
+MP cost: 25
+Syntax: 
+cast word <target>

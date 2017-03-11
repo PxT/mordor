@@ -1,0 +1,14 @@
+Help on:
+	UNLOCK <exit/door> [#] [with] <key name> [#]
+
+The unlock command allows you to unlock a locked door if you have the
+appropriate key.
+
+Example:
+
+Obvious exits: mahogany door.
+: inv
+You are carrying: a silver key, a steel key, a mahogany key.
+: unlock door with key 3
+You unlocked the door.
+

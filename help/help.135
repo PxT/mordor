@@ -1,0 +1,14 @@
+
+Help on:
+
+	*GROUP [crt]
+
+	This function will tell who is currently in the group of the 
+specified character.
+
+example:
+:*group gonzo
+Gonzo is following: no one
+Gonzo group: None.
+
+

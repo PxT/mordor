@@ -1,0 +1,5 @@
+Fly:
+This spell allows its target to fly
+MP cost: 15
+Syntax:
+cast fly <target>

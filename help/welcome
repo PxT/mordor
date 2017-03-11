@@ -1,0 +1,139 @@
+
+Land of Isengard
+Version 2.0L 
+
+Scenarios created by Alice, Bahamut, Boromir, Eldritch, Melkor, Styx and 
+		     Tesseract.
+
+****************************************************************************
+   NOTE: It is recommended that players read this file in its entirety. 
+****************************************************************************
+
+INTRODUCTION
+	Isengard is a MUD (Multi-User Dungeon).  It is a real time game
+in which you can interact with other users.  The following is a brief
+explanation of important commands and topics needed to succeed in this
+game.  Some commands have multiple eqivalents and they will be listed
+with commas separating them.  Variable arguments will be listed via
+<argument>.
+
+COMMAND LINE
+	The game is command line driven, with a colon as its normal
+prompt.  The command interpreter is an intelligent one.  Commands may
+be given in upper and/or lowercase letters.  Abbreviations of commands
+and its arguments may be used.  The partial/complete command given
+will be searched through the available commands to find a unique
+match.  If it is not a unique command, more information (letters) must
+be given.
+
+HELP
+	Online help can be summoned by issuing the command 'help
+<command>'.  If a command argument is given, specific information on
+it will be listed, otherwise all the available commands will be
+listed.
+
+COMMUNICATION
+	Since Isengard is a multi-user game, there needs to be some way
+to talk to other players.  The following commands are used for
+communication:
+	"say <message>", ' <message>, " <message> : the message will
+be sent to all the players in the same room.
+	"yell <message>" : the message will be sent to all the players
+in the same room and adjoining rooms.
+	"tell <player> <message>", "send <player> <message>" : the
+message will be sent to only the specific player identified.
+	"broadcast <message>" : the message will be sent to all
+players online Isengard.  A five broadcast per day quota is imposed on
+each character.
+
+MOVEMENT
+	To move from one room to another, use the "go" command.
+	"go <direction>" : direction is any valid exit to the current
+room, which may be visible, hidden, or invisible.  Examples are "go
+north", "go up", "go door".
+	Instead of typing "go <direction>" all the time, certain
+directions may be given as the command itself.  These command
+directions include "north", "south", "east", "west", "northwest",
+"northeast", "southwest", "southeast", "up", and "down".  The first
+one or two letters of each of these command directions may be used as
+a special abbreviation.  For example, use "n" instead of "north" (or
+instead of "go north") and "ne" instead of "northeast".
+
+INVENTORY/OBJECTS
+	Each character is able to carry a limited amount of objects.
+These objects include weapons, armor, scrolls, potions, gold, torches,
+keys, and other items.  Each item (except gold) has a specific weight
+value.  A character may not carry more than he/she can handle, which
+depends on his/her class, strength, and level.
+	"inventory" : lists all items currently in a character's
+possession, but not worn, held, or wielded.
+	"equipment" : lists all items currently worn, held, or
+wielded.
+	"get <item> [#] [from] [<item2>] [#]" : attempts to get an
+item on the floor in the room and place it in the character's
+inventory.  If <item2> is given, (i.e., a bag) then it will attempt to
+get <item> from <item2> and place it in the character's inventory.
+IMPORTANT: Refer to objects with only one name.  For example, if you
+wish to get some cloth armor, type "get armor" or "get cloth".  Do not
+type "get cloth armor" because the game will think the armor is a
+container.
+	"drop <item>" : removes the <item> from the character's
+inventory and places it on the floor in the current room.
+	Armor: an object which you wear on a specific part of a
+character's body which contributes towards your Armor Class (AC)
+value.  "wear <item>" will attempt to wear a specific item and will
+succeed if it is an armor item, no other item is worn in its spot, and
+it is not broken.  "wear all" is a shortcut which attempts to wear all
+the items in your inventory (in the order that they appear).
+
+*** HINTS FOR THE NEW PLAYER
+	There are several recommendations that a new user should be 
+aware of:
+
+	1. Your first character should be made Lawful.
+Isengard can be a violent place for the chaotic player, and it is best to 
+become famililar with the game and its commands before attempting to 
+challenge other players.
+	2. Use the _set_ command to set your character's parameters. These
+parameters, and their current settings, can be found by typing 'set' and
+'help set' at the command prompt.  It is recommended that you 'set prompt'
+first, as this will give you real-time information about your character's
+status.  In addition, we recommend that you 'set long' until you have
+become _very_ familiar with Isengard.  The information you gain from
+reading the full room descriptions will save you much grief and time. 
+	3. When encountering a new monster, be sure to _look_ at it 
+before anything else (unless it is attacking you).  At the lower levels 
+there are very few monsters that will attack you first, so it is usually 
+safe to 'look' at them.  The information you gain from looking will tell 
+you if the monster is an opponent that you can handle.  It will also let 
+you know if it is a good idea to talk to them.  Many of the monsters can 
+talk interactively and will provide vital information about the game.  
+Some will attack you if you talk to them so you need to look first and 
+then decide if it is safe to talk.
+	
+		*** HINTS TO GET TO LEVEL 2 ***
+NOTE: You must get to level two within a month or so in order for the 
+character to be saved permanently.
+
+	Level 1 players should not attempt areas outside Celduin until at
+least level 2 or by grouping with other players.  Attack easy monsters
+such as students, scribes, monks, merchants, laborers, and vagrants.  This
+can be accomplished by just hanging out at Celduin Square, the University
+or a Pub where all of the non-agressive monsters arrive.  Make sure to
+watch your hitpoints with "sc".  It's not recommended that you attack
+without close to full hitpoints.  Remember that you must constantly attack
+with "k <monster>" every 3 seconds or so.  Monsters will remember their
+enemies, so if you attack one and flee (in which case you drop your
+wielded weapon), it will attack you if you come back to that room.  After
+you reach level 2, you can do some more exploring of the town, and the
+areas outside Celduin.  The general rule is _look_ and _talk_ before
+attacking, and above all: BE CAREFUL. 
+
+If you have ANY questions or problems, first try asking a Caretaker. If
+one is not available, ask one of the Dungeonmasters.  If you are unable 
+to talk to them online, you can always leave them mail with your 
+questions. 
+
+-----------------------------------------------------------------------------
+
+Welcome file still under development. 11MAR95

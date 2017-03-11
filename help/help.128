@@ -1,0 +1,14 @@
+
+Help on:
+
+	*SILENCE [player] [c/m] (x)
+
+	This command will remove all broadcasts from a player.  If the c 
+flag is set it will list the remaining broadcasts for the player.  If m 
+is set and followed by a number, then that number of broadcasts will be 
+given to the player.
+
+example:
+:*silence gonzo
+Gonzo is silenced.
+

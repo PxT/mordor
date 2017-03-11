@@ -1,0 +1,9 @@
+Help on:
+	BASH <monster/player> [#]
+
+This command allows fighters and barbarians to bash an opponent, knocking
+it to the floor for several seconds.  Bash does half the normal damage of
+a regular attack, but it also causes the opponent to be delayed for
+several seconds while he tries to get up off the floor.  This in effect
+gives the player the initiative.
+

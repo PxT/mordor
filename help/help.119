@@ -1,0 +1,14 @@
+
+Help on:
+
+	*ADD R [#]
+
+	This creates a new, empty room with the number specified, and 
+adds it to the current database of rooms.
+
+example:
+:*add r 4123
+
+Room #4123 created.
+
+ 

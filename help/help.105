@@ -1,0 +1,12 @@
+Help on:
+
+	*CREATE [obj #]
+
+	This function creates an already defined object.  The number of 
+the item to create must be known.
+
+example:
+:*create 104
+ruby key added to your inventory.
+
+

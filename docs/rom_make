@@ -1,0 +1,14 @@
+
+	There are basically two ways to create a room:
+
+1) Online using the *add command, and the various room editing functions.
+        See the documentation about *add, *replace, *save, *reload,
+*name, *set, and *rm in the dm_cmnd file..
+
+2) Offline with the editor.  
+	It is important that you use the *reload command to reload any
+changes you make in the editor if the game is running while you are
+editing offline.  If not, the changes you make in the editor could be
+erased by the game. 
+
+

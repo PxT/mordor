@@ -1,0 +1,5 @@
+Remove-disease:
+This spell removes diseases
+MP Cost: 12
+Syntax:
+cast remove-disease <target>

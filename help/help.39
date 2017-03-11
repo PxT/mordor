@@ -1,0 +1,15 @@
+Help on:
+	STUDY <object> [#]
+	LEARN <object> [#]
+
+The study command allows you to study magical scrolls and learn the spell
+that is written upon it.  Most spells have to be learned this way.  Once
+a scroll is studied, it disintegrates.
+
+Example:
+
+You have: a grey scroll, a black scroll.
+: study scroll 2
+You learn the hurt spell.
+The black scroll disintegrates.
+

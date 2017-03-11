@@ -1,0 +1,10 @@
+Use italk instead of telnet because telnet is an ugly
+way to connect to anything, 
+
+italk localhost 4040
+or on tesla 
+italk m
+
+If you insist on TELNET, then use telnet localhost 4040
+
+cmd_ital

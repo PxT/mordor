@@ -1,0 +1,5 @@
+Resist-fire:
+This spell protects its target from fire breath attacks
+MP cost: 12
+Syntax:
+cast resist-fire <target>

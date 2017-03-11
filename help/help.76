@@ -1,0 +1,18 @@
+
+Help on command:
+
+	TRADE
+
+Syntax:
+
+	TRADE <item> <monster>
+
+	With this command you can trade items from your inventory to a 
+monster.  The monster may or may not give you something in return.  In 
+fact, he may not even take what you have unless he wants it.
+
+Example:
+:trade sword Nathalin
+Nathalin the Trader says, "I don't want that!"
+
+

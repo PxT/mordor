@@ -1,0 +1,72 @@
+Interactive talk
+
+    Interactive talk allows a monster and a player to interactively
+talk.  When a player asks a monster about a "key" question, the monster 
+will respond with a specified response.  In addition, a monster can perform
+various actions (attack, social command, or cast a spell) whenever asked 
+about a key word.  The interactive talk file is located in:
+/usr/games/mordor/objmon/talk. 
+Generally the name of the file is the name of the monster-level.
+The format to use the interactive talk file is:
+<key word line> [action phrase]
+<response line>
+
+    The maximum size of the key word line is 80 characters while the response
+line can be up to 1024 characters (including carriage return and null 
+character).  Note: a hard return will denote the end of a line, so 
+return should only be entered at the end of "key word line" and
+the  "response line".  
+
+    The <key word> is defined by a single word (no spaces).  The 
+parameters for the action phrase are based on the type of the
+command.  A monster can perform the following actions:
+
+<key word> ATTACK
+    The monster will attack the player who asks the monster about the 
+given key word.  The word ATTACK must appear in all capitals.
+
+<key word> ACTION type PLAYER
+    The monster will perform the social action defined by type when the
+key word is spoken.  The type parameter can be any of the normal social
+commands.  If the social command is followed by the word PLAYER, the 
+social action will be performed on the player who spoke the key word.  
+Otherwise the social command will be interpreted as general (wave vs 
+wave happy).  Note the words ACTION and PLAYER must appear in all capitals.
+
+<key word> CAST <spell>
+    The monster will cast the given spell on the player who
+spoke the key word.  The monster must have sufficient mp, and belong
+to the correct class (and know the spell) in order to cast it. 
+A monster casting heal must be a cleric/paladin and have 25 mp
+to successfully cast the spell.
+
+<key word> GIVE <item #>
+    The monster will give a specified object to the player who asked the 
+key word.  Object may be a quest item, in which case the player will only
+be able to receive one of the item.  Also, if a player is weighted down,
+and unable to hold the object, the monster will not give the object. 
+Be careful with the value of the objects being given away since it might 
+provide a loop hole for making money.
+
+examples:
+
+die ATTACK
+response.
+    If a player asks a monster about "die", the monster will give
+the response and then attack the player.
+
+bye ACTION wave
+response
+    If a player asks a monster about "bye" the monster will give
+the response and wave to everyone in the room.
+
+bye ACTION wave PLAYER
+    If a player asks a monster about "bye" the monster will give
+the response and wave to the player who asked about "bye".
+
+bless CAST bless
+    If a player asks the monster about "bless", the monster will
+cast a bless spell on the player, provided the monster knows the
+spell and has sufficient mp to do so.
+
+ll

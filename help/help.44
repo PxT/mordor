@@ -1,0 +1,9 @@
+Help on:
+	VALUE <object> [#]
+	COST <object> [#]
+
+The value command only works in pawn shoppes and it is used to ask the
+pawn shoppekeeper how much money he will give you for a particular item.
+In a repair shoppe, use the cost command to see how much the repair
+smith wants to charge you to fix a given armor or weapon.
+

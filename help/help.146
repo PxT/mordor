@@ -1,0 +1,15 @@
+
+Help on command:
+
+	*CHARM <player>
+
+	Displays who the given player has charmed.
+
+example:
+:*charm gonzo
+Charm list for Gonzo:
+Blast.
+nobleman.
+
+
+

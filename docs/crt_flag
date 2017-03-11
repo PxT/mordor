@@ -1,0 +1,193 @@
+                         >Creature Flags<
+
+The following is a list and brief description of all creature flags.
+syntax: name     flag #  stat name    defined name
+ 
+The value for flag # includes the offset of +1
+
+==================================================================
+Permanent Monster       1           Perm            MPERMT
+    The monster will be a permanent monster, and will be saved as
+    part of the room.
+
+Hidden                  2           <none>          MHIDDN
+    The monster appears hidden, and can not be seen, unless 
+    searched for. 
+
+Invisible               3           Invis           MINVIS
+    The monster appears invisible.  Players interacting 
+    with the monster must have detect-invisible.
+
+Plural name             4           <none>          MTOMEN
+    The moster's name is changed from "man" to "men" when
+    more than one of the monster's appears.  
+
+No Plural               5           <none>          MDROPS
+    No "s" will be added to monster's plural name.
+
+No Prefix               6           <none>          MNOPRE
+    No prefix words will be used when the monster's name is displayed.
+
+Aggressive              7           Aggr            MAGGRE
+    The monster will attack all visible players on sight.
+
+Guard Treasure          8           Guard           MGUARD
+    The monster will guard all items on the floor of the room, and
+    prevent any player from picking up the object(s)
+Follow attacker         10          Follow          MFOLLO
+    If a player is currently attacking the monster, and the player
+
+Flee                    11          Flee            MFLEER
+    The monster will flee when it loses 90% or more of it's total HP.
+
+Scavenger               12          Scav            MSCAVE
+    The monster will pick up an object from the floor.
+
+Gender                  13          Male            MMALES
+    The monster gender is male, otherwise the monster will
+    be considered to be female if this flag is not set.
+
+Poisoner                14          Poison          MPOISS
+    The monster has the special ability to poison attacking
+    players.
+
+Undead                  15          Undead          MUNDED
+    The monster is the type undead, which allows clerics,
+    paladins, and caretakers+ to turn the monster.  With a sucessful
+    turn, the monster can lose 1/2 their current total hp or be
+    totally destroyed.
+
+No Steal                16          No-steal        NUNSTL
+    The monster can not be stolen from, regardless of a
+    player's class, level or abilties.
+
+Poisoned                17          Poisoned        MPOISN
+    The monster is currently suffering from the affects of
+    poison.  As of now, this flag is not in use in mordor.
+
+Casts spells            18          Magic           MMAGIC
+    The monster has the ability to cast spells during combat.
+    The type of spells casted depends on on which known
+    spell flags are set for the monster.
+
+Has Scavenged           19          <none>          MHASSC
+    The monster has already picked up some object off of the ground
+    and will not pick up anything else.  This flag is used interally.
+
+Breath Weapon Attack    20          <see below>     MBRETH
+    The monster has a chance of using a breath-weapon as a form
+    of attack.  The actual type of breath weapon is defined by the parameters
+    MBRWP1 and MBRWP2.   The *stat name given for MBRETH also depends on
+    the setting of MBRWP1 and MBRWP2.
+
+Type of breath          29/30       <see below>     MBRWP1/MBRWP2
+    The two flags MBRWP1 and MBRWP2 determine the type of breath
+    attack if the MBRETH flag is set. The follow are the type of breath
+    attack for (MBRWP1,MBRWP2): (0,0) = BR-fire, (01) = BR-ice, 
+    (1,0) = BR-gas, (1,1) = BR-acid
+
+Magic Harm  Only        21          Magic-only      MMGONL
+    The monster may only be harmed with magic spells.  No weapon
+    will have an affect on the monster.
+
+Detect Invisibility     22          Detect-invis    MDINVIS
+    The monster will be able to detect invisible players.
+
+Magic / Enchant         23          Enchant-only    MENONL
+    The monster can only be harmed with enchanted weapons or magic spells.
+
+Interactive Talk        24          Talks           MTALKS
+    The monster has the ability to have interactive talk with a
+    player.  i.e. The player may ask questions of the monster.
+
+No Harm                 25          Unkillable      MUNKIL
+    The monster can not be harmed by any form of player attack.
+    The player will not be able to attack the monster.
+
+Fix amount of gold      26          NonrandGold     MNRGLD
+    The monster will drop the exact amount of gold defined
+    by the gold field.  Normally the monster would drop a random
+    amount equal to or less that the set amount.
+
+Aggressive talk         27          Talk-aggr       MTLKAG
+    The monster will attack any player who talks to it.
+
+Resist-magic            28          Resist-magic    MRMAGI
+    The monster will be able to resist magical attacks.  The
+    percent of magic resistance is based on: (monster_intelligence +
+    monster_piety)*2.  Any monster with resist-magic will only
+    be affected by befuddle for 3 seconds, regardless of percentage.
+
+Experience Drain        31          Energy Drain    MENEDR
+    The monster has the special attack of draining a player's
+    experience.  The amount of experience drained is based on:
+    5-sided dice rolled monster_level times plus monster_level*5.
+
+Kingdom allegiance      32          <see below>    MKNGDM
+    This flag specifies which kingdom a monster belongs to when
+    either the MPLDGK or the MRSCND flag is set.  If MKNGDM is set
+    the monster belongs to kingdom 1 otherwise the monster is 
+    a member of kingdom 0.
+
+Pledge                  33          Pledge 0/1      MPLDGK
+    Players can pledge to this monster and it's kingdom. 
+    The monster and player must both be in a room with the 
+    RPLDGK and the correct RKNGDN flag set.  The RKNGDM
+    flag determins which kingdom the monster belongs to.
+
+Rescind                 34          Rescind 0/1     MRSCND
+    A pledged player can rescind his pledge to a monster that has this
+    flag set.  The monster and player must both be in in a room with the
+    RRSCND and the correct RKNGDN flag set. The RKNGDM flag determines
+    which kingdom the monster belongs to.
+
+Disease                 35          Disease         MDISEA
+    The monster has a chance of inflicting disease on a player,
+    when the monster attacks.
+
+Disolve items           36          Dissolve        MDISIT
+    The monster has a chance on a sucessful attack of dissolving
+    an item which a player may have equiped, wielded, or held.  
+    Items in the player's inventory will not be affected.
+
+Vendor                  37          Purchase        MPURIT
+    The monster will be able to sell any of it's "carried items".
+    Players can obtain a list of what the monster has for sale with
+    the "select" command, and can buy with the "purchase" command..
+    
+Gives Items for quest   38          Trade           MTRADE
+    If the monster is presented with a certain item (players use
+    the trade command), the monster will give an item to the player.
+    This is useful in making interactive monster / player quests.
+    As of now, the 10 possible carried items represents the traded item/
+    reward.  The first 5 of the monster carried items represent a needed
+    item by the monster.  In return for one of these items the monster
+    will give the player the object located in the carried item slot
+    (needed item + 5).  For example, a player gives a monster an item
+    described in carried item slot 1, the monster will return
+    the item described in slot 6 as a reward.
+
+Passive guard           39          P-Guard         MPGUAR
+    The monster is a passive guard.  The monster will not allow 
+    any players to go through any exits in the current room with the
+    XPGUAR flag set.
+
+Good Aggressive        40          Good-Aggro      MGAGGR
+    The monster will attack any good alignment players on site,
+    and ignore evil or neutral players.  Note: the MAGGRO flag will
+    over ride MGAGGR.
+
+Evil Aggressive        41          Evil-Aggro      MEAGGR
+    The monster will attack any evil alignment players on site,
+    and ignore good or neutral players.  Note: the MAGGRO flag will
+    over ride MEAGGR.
+
+Death Scene            42          Ddesc           MDEATH
+    Once the monster is killed, the text in the monster's death 
+    description will be displayed to everyone in the room where
+    the monster's death occured. The location of the death scene file
+    is in ddesc/ (currently mordor/objmon/ddesc/).  The name of the 
+    file is the monster's name "_" monster level. All blank spaces
+    in the name need to be replaced with '_' (i.e. Barney_the_dinosaur_20).
+    The monster with the death scene must also be a permanent monster.
+

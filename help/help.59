@@ -1,0 +1,19 @@
+
+Help on command:
+
+	BROADCAST
+
+Syntax:
+
+	BROADCAST <text>
+
+	This command allows you to broadcast a message to all players in 
+the game.  You are limited to a certain number of broadcasts per day, and 
+this value increses with your level.
+
+Example:
+: broadcast Can someone tell me where to train?
+
+### Gonzo broadcasted, "Can someone tell me where to train?".
+
+

@@ -1,0 +1,16 @@
+Help on:
+	CAST <spell> [on] [<player/monster/object> [#]]
+
+The cast command allows you to cast spells which you may have learned
+by STUDYing scrolls.  The INFO command will tell you which spells you
+currently know.  Different spells cost different amounts of magic points.
+When you cast a spell, the magic points are subtracted, and the special
+magic effect is produced.  Unlike other MUDs, this one allows all classes 
+to cast spells.  Of course, some classes get more magic points than others.
+To cast a spell on yourself, do not include a target.
+
+Example:
+
+: cast vigor
+You cast a vigor spell on yourself.
+

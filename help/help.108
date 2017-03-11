@@ -1,0 +1,15 @@
+Help on:
+
+	*SEND
+
+	This function alllows for DM communication.  It is similar to the 
+normal broadcast command, but has no daily limits and is only seen by 
+caretaker and higher.
+
+example:
+:*send Meet me at the tree.
+
+Ok.
+--- Tesseract sent, "Meet me at the tree.".
+
+

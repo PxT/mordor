@@ -1,0 +1,15 @@
+
+Help on:
+
+	*FINGER [player]
+
+	This function fingers any player in the game.
+
+example:
+:*finger gonzo
+Forking to mendel.bio.uci.edu.
+Output will arrive shortly.
+Login       Name              TTY Idle    When    Where
+bpaul    Brooke Paul           p1    2 Fri 07:47  128.200.21.101
+
+

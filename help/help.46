@@ -1,0 +1,16 @@
+Help on:
+	TRAIN
+
+The train command allows your player to go up a level if he or she has achieved
+the right amount of experience.  Each class has his or her own training 
+location, and the best way to find it is to type TRAIN in several rooms until
+you find it.  Usually, the training room is related in some logical way to
+your character's class.  The amount of experience required to go up to
+level 2 is 512 experience.  From that point on the amount required continues
+to double, i.e. 1024 XP for level 3, 2048 XP for level 4, etc.  The experience
+required starts to level off after level 10.
+
+Gold is also required to train.  The amount of gold required is half the 
+amount of experience required.  When you go up a level, you gain additional 
+hit points and magic points, and you also go up in one of the 5 stats.
+

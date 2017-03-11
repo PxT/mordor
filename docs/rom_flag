@@ -1,0 +1,144 @@
+                        >Room Flags<
+
+The following is a list and a brief description of all room flags
+
+syntax: name              flag #  stat name    defined name 
+
+The value for flag # includes the offset of +1
+
+========================================================================
+Shop                1       Shoppe          RSHOPP
+    The room serves as a shop where players can buy goods.
+
+Recycle             2       Dump            RDUMPR
+    All items dropped in the room will be recycled (disappear)
+and the player will get 5 gp for each item dropped.
+
+Pawnshop            3       Pawnshop	    RPAWNS
+    Room can serve as a shop for player to sell their goods.
+
+Training ground     4-5-6-7   Train           RTRAIN
+    Room can serve as a training ground for characters.
+
+Name                    Flags
+----                    -----
+
+Assassin                7
+Barbarian               6
+Cleric                  6, 7
+Fighter                 5
+Mage                    5, 7
+Paladin                 5, 6
+Ranger                  5, 6, 7
+Thief                   4
+
+Repair Shop         8       Repair          RREPAI
+    Players can have weapons and armor repaired in the room.
+
+Continual Darkness  9       DarkAlways      RDARKR
+    The room is constantly in darkness, players need to be able
+to see int he dark or have a light source to be able to see.
+
+Dark At Night       10      DarkNight       RDARKN
+    Players need to have a light source or intrared vison
+to see the room at nigth (game time).
+
+Post Office         11      PostOffice      RPOSTO
+    A player can send or read their mail in the room.
+
+Safe Room           12      NoPlyKill       RNOKIL
+    The room is a safe room, no player killing or player stealing
+allow in the room.
+
+No Teleport         13      NoTeleport      RNOTEL
+    Players are unable to teleport, be summoned to or track to
+the room.
+
+Fast heal           14      HealFast        RHEALR
+    Players heal time is reduced in this room to promote faster healing.
+
+One Player          15      OnePlayer       RONEPL
+    A maxium of one player is allowed in the room.
+
+Two Player          16      TwoPlayer       RTWOPL
+    A maxium of two players are allowed in the room at the same time.
+
+Three Player        17      Threeplyr       RTHREE
+    A maxium of three players are allowed in the room at the same time.
+
+No Magic            18      NoMagic         RNOMAG
+    Players are unable to cast any form of magic in this room.
+
+Permanent Tracks    19      PermTrack       RPTRAK
+    The room has "permanent" tracks on the ground which rangers
+can detect withthe track command.
+
+Earth Realm         20      Earth           REATH
+    All Earth realm spells gain a damage bonus while Wind
+spell suffer a damage penality when casted in the room.
+
+Wind Realm          21      Wind            RWINDR
+    All Wind realm spells gain a damage bonus while Earth
+spell suffer a damage penality when casted in the room.
+
+Fire Realm          22      Fire            RFIRER
+    All Fire realm spells gain a damage bonus while Water
+spell suffer a damage penality when casted in the room.
+
+Water Realm         23      Water           RWATER
+    All Water realm spells gain a damage bonus while Fire
+spell suffer a damage penality when casted in the room.
+
+Group Wander        24      Group           RPLWAN
+    The monster of random monsters taht appear will be based
+on the size of the group in the room. I.E. if 4 players are in the
+room between 1 to 3 monster will appear at one time.
+
+Player Harm         25      PHarm           RPHARM
+    Players that spend a certian lenght of time in thisd room
+will start to lose hp.  If an elemental flag is set for
+the room (Fire, Water, Wind, Earth), the player will lose damage
+with respects to that realm (fire realm: player gets burnt, etc.)
+If a player has the proper resist-element for given element
+(earthshiled for earth pharm rooms, the player won't suffer
+any damage.
+
+Poison              26      P-Poison        RPPOIS
+    If the RPPOIS flag is set in conjunction with the RPHARM flag,
+a player will become posioned if they spend enough time inthe room.
+The player will not suffer any damage unless an elemental flag is set.
+
+Magic Drain         27      MPDrain         RPMPRD
+    If the RPMPDR flag is set in conjunction with the RPHARM flag,
+a player will lose magic points in the room.  A player will
+not die if their mp reaches 0.  The player will not suffer any 
+damage unless an elemental flag is set.
+
+Befuddling          28      Confusion       RPBEFU
+    If the RPBEFU flag is set in conjunction with the RPHARM flag,
+a player will become confused for a short peroid of time if they
+spend enough time in the room. The player will not suffer any
+damage unless an elemental flag is set.
+
+No Summon           29      No SUmmon       RNOLEA
+    Players in the room can not be summoned out of, regardless
+if the no summon is set or cleared.
+
+Pledge              30      Pledge          RPLDGK
+    The room can serve as a place for players to pledge
+their alligance  to a kingdom. Note: a monster with the 
+MPLDGK flag set must also be in the room.
+
+Rescind             31      Rescind         RRSCND
+    The room can serve as a place for players to rescind
+their alligance  to a kingdom. Note: a monster with the 
+MRSCND flag set must also be in the room.
+
+No Potion           32      No Potion       RNOPOT
+    Players will be unable to drink potions in the room.  Any
+attemp to do so wil result in the evaporation of th epotion.
+
+Extended Magic      33      Pmagic          RPMEXT
+    Players casting defesnive spells will have an increased duration while
+mend wounds and vigor would have inceased healing power.
+                          

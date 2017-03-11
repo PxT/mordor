@@ -1,0 +1,5 @@
+Resist-magic:
+This spell protects its target from magical attacks
+MP cost: 12
+Syntax:
+cast resist-magic <target>

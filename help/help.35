@@ -1,0 +1,10 @@
+Help on:
+	PICK <exit/door> [#]
+
+The pick command allows thieves to pick the locks of locked doors.  If
+they are successful, the door is unlocked.  Some doors are more difficult 
+to pick than others, and a higher level thief is more successful than a 
+lower one.
+
+ 
+

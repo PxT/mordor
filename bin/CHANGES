@@ -1,0 +1,18 @@
+20 JUN 95
+Mordor_2.5 -- source code added to distribution.
+	   several nifty new functions including charm, PNLOGN & PLECHO.
+
+2 APR 95 Mordor_2.4 --   
+		racing problem fixed in I/O
+		dm_dust function added
+
+31 MAR 95
+Mordor_2.3 --   dm_help functions added.
+                MAXPLAYERS set to 50
+
+25 FEB 95
+Mordor_2.2 --   muddle source code included.
+
+21 FEB 95
+Mordor_2.1 -- 	recompiled using optimizations (-m486 -O2).
+

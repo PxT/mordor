@@ -1,0 +1,15 @@
+Help on:
+	WIELD <object> [#]
+	READY <object> [#]
+
+Wield allows you to wield a weapon of some sort, as long as you are not
+already wielding one.  If you have proficiency in the type of weapon you
+are wielding, you will hit an opponent more frequently.
+
+Example:
+
+: inventory
+You have a small bow, a long bow, a small ash bow.
+: wield bow 3
+You wield a small ash bow.
+

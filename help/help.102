@@ -1,0 +1,16 @@
+
+Help on:
+
+	*RM
+	
+	This function outputs the current parent room number.
+
+example:
+:*rm
+
+Room #69
+
+
+
+
+

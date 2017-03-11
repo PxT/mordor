@@ -1,0 +1,13 @@
+Help on:
+
+	*ECHO [text]
+
+	This function echos the text to all other players in the parent 
+room.  
+
+example:
+:*echo follow me
+
+follow me
+
+

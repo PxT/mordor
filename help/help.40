@@ -1,0 +1,17 @@
+Help on:
+	READ <object> [#] [on] [<player/monster/object> [#]]
+	RECITE <object> [#] [on] [<player/monster/object> [#]]
+
+The read command allows you to READ a scroll, thereby causing the spell
+contained on the scroll to be cast.  READ is different from STUDY in that
+the spell is actually cast when you read the scroll, but you do not learn
+the spell.  It is different from CAST because no magic points are required
+to read a scroll, and you do not have to know the spell to read it.
+
+Example:
+
+You have: a black scroll.
+: read scroll on dog
+You cast a hurt spell on the dog for 7 damage.
+The black scroll disintegrates.
+

@@ -1,0 +1,13 @@
+
+Help on command:
+
+	USE
+
+Syntax:
+
+	USE <item> <target>
+
+	This command allows you to use different items.  If no target is 
+given, it is assumed that you want to use it yourself.
+
+

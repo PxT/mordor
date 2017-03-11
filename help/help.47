@@ -1,0 +1,14 @@
+Help on:
+	GIVE <object> [#] [to] <player/monster> [#]
+	GIVE $<amount> [to] <player/monster> [#]
+
+The give command allows you to give money or objects to other players or
+monsters.  To give money, use a "$" before the number of gold pieces you
+want to give away.
+
+Example:
+: give knife to Jack
+You give a small knife to Jack.
+: give $100 to Jack
+You give 100 gold pieces to Jack.
+

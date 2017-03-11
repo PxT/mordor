@@ -1,0 +1,11 @@
+Help on:
+
+	*AC [crt]
+
+	This function returns the armor stat and the THAC0 of the subject.
+
+example:
+:*ac joe
+
+AC: 80  THAC0: 19
+

@@ -1,0 +1,11 @@
+
+Help on:
+
+	*PREPEND [-sn] [text]
+
+	This function prepends [text] to the current description.  If the 
+-s flag is set then it will prepend to the short description.  If the -n 
+is set then it will prepend without adding a new line.  NOTE:  This 
+function does not reformat the text prepended.
+
+

@@ -1,0 +1,12 @@
+** IMPORTANT ***
+
+	This distribution *MUST* be installed under the /home/mordor 
+directory in order to run.  If you want to change this you will have 
+to alter src/mtype.h to accomodate the new paths.
+
+--------------- ------ -----
+
+	This distribution can be compiled under Linux, FreeBSD, SunOS and 
+requires that you have at least 3M+ RAM (8M+ recommended), networking
+capabilities (Ethernet, SLIP, etc), and around 10-15M of HD space. 
+

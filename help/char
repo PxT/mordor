@@ -1,0 +1,14 @@
+CLASS	CHARACTER			RACE	CHARACTER
+  1	Assassin			  1	Dwarf
+  2	Barbarian			  2	Elf
+  3	Cleric				  3	Half Elf
+  4	Fighter				  4	Hobbit
+  5	Mage				  5	Human
+  6	Paladin				  6	Orc
+  7	Ranger				  7	Half Giant
+  8	Thief				  8	Gnome
+  9	Bard				  9	Troll
+ 10	Caretaker
+ 11	Dungeonmaster
+
+

@@ -1,0 +1,23 @@
+
+Help on command:
+
+	PLEDGE
+
+Syntax:
+
+	PLEDGE [to] <monster>
+
+	Pledge allows you to join the organization that the monster
+belongs to.  When you join, you get many benefits.  You may kill players
+who are members of opposing groups for experience, even if they are
+lawful.  You will gain experience for killing if the other person is
+pledged to the other group.  If you kill someone in your own group, you 
+will both lose experience.  
+	The amount of experience gained or lost is dependent on the level 
+of the characters involved.
+
+
+
+
+
+

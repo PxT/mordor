@@ -1,0 +1,10 @@
+Help on:
+	TURN <monster> [#]
+
+Turn is a special ability that is given to paladins and clerics.  When
+attacking undead creatures (like ghosts, vampires, etc.) a cleric or
+paladin may try to turn a monster.  If successful, the monster is stripped
+of half its hit points or possibly even killed instantly.  This is a 
+powerful weapon.  Success depends on the difference in levels between
+the player and monster as well as piety.
+

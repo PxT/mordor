@@ -1,0 +1,21 @@
+
+Help on command:
+
+	SELECTION
+
+Syntax:
+
+	SELECTION <monster>
+
+	This command allows you to see what a given monster has for 
+sale.  It will only work with certain monsters.  After you have a 
+selection from the monster, you may use the PURCHASE command to buy one 
+of the items.
+
+Example:
+
+: selection registrar
+
+The registrar is currently selling:
+1) enrollment verification    7000gp
+

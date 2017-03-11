@@ -1,0 +1,15 @@
+Help on:
+	TALK <monster> [#] [<keyword>]
+
+Talk allows you to communicate with certain monsters.  Some monsters
+can even carry on interactive conversations.  If you supply a keyword,
+the monster may be able to give you some more information about it.
+
+Example:
+
+: talk scribe
+The scribe says to you, "<Yawn> You bore me.".
+: talk scribe bore
+The scribe says to you, "Yes, you are a boring fellow.  I see no reason
+   to continue a rational discussion with you."
+

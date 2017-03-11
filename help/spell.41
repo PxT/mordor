@@ -1,0 +1,7 @@
+Know-alignment:
+This spell allows its target to see the alignment of a creature 
+by looking at it, a blue aura indicates good, a red aura indicates
+evil, and a gray aura indicates nuetral.
+MP cost: 6
+Syntax:
+cast know <target>

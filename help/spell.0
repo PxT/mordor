@@ -1,0 +1,5 @@
+Vigor:
+This spell is the lowest level healing spell
+MP cost: 2
+Syntax:
+cast vigor <target>

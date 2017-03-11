@@ -1,0 +1,5 @@
+Earth-shield:
+This spell protects its target from harsh environments
+MP cost: 12
+Syntax:
+cast earth-shield <target>

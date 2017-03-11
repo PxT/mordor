@@ -1,0 +1,10 @@
+Help on:
+
+	*SHUTDOWN
+
+	This function is used to shutdown the game in a
+specified number of minutes.  The syntax is as follows:
+
+	*shutdown <#>
+
+Where # is minutes before actually shutdown.  Default is one minute.

@@ -1,0 +1,7 @@
+Help on:
+	OPEN <exit/door> [#]
+
+The open command allows you to open any closed door, unless of course
+it's locked or already open.  Most open doors will eventually close
+again after a period of time.
+

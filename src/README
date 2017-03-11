@@ -1,0 +1,14 @@
+		Quest for Mordor v2.5 beta MUD driver
+	  -------------------------------------------------
+
+	  Written by Brett Vickers, Steve Smith & Brooke Paul
+	  		  (C) 1992, 1995
+
+	This should compile out of the box on Linux, FreeBSD or SunOS.  Be
+sure to take a look at mtype.h to define your paths properly and to set
+your DMNAMES.  Then just cd src/ and type make.  You should have an
+executable file named frp.new within a few minutes. 
+	I know that the docs suck, but I am too lazy to write more.  If
+you have questions post to rec.games.mud.admin or rec.games.mud.misc. 
+
+	Have fun!

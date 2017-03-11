@@ -1,0 +1,17 @@
+
+Help on command:
+
+	TEACH
+
+Syntax:
+
+	TEACH <character> <spell>
+
+	This command can be used only by mages to teach others the most 
+basic spells known.
+
+Example:
+:teach gonzo vigor
+Spell "vigor" taught to Gonzo.
+
+

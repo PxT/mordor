@@ -1,0 +1,15 @@
+****************************************************************************
+          Be sure to try the online DM help commands 
+                i.e. *dmhelp and help <dm_command>  
+****************************************************************************
+	
+This directory contains text file documentation about the various DM
+commands.  Some commands listed here may not be available in this
+distribution.
+	These files are part of an offline DM help function that is not 
+implemented in this distribution.  It may be added to future 
+distributions.  For the time begin you can use the info in these files to 
+help you become familiar with Mordor.
+	Further documentation can be gotten in the help directory. Most of
+this information can be gotten online with the help or *dmhelp commands. 
+

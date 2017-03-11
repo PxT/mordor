@@ -1,0 +1,10 @@
+Help on:
+	TRACK
+
+Track is a special ability that rangers have.  If a ranger is successful,
+he or she will discover the tracks of the last person to leave the room.
+In other words, if a person had been in the room a day before and left
+the room by heading north, the ranger would be able to discover this fact
+with the track command.  This is extremely useful in getting out of
+maze-like dungeons or forests.
+

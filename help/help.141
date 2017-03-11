@@ -1,0 +1,17 @@
+
+Help on command:
+
+	*DUST <name>
+
+	This command utterly destroys the named character.  They are 
+kicked off of the game, and their player file is deleted.  Only DMs may 
+use this command.
+
+example:
+:*dust ninja
+
+### Ninja has been turned to dust! We'll miss him dearly.
+### Ninja just logged off.
+### Ominous thunder rumbles in the distance.
+
+

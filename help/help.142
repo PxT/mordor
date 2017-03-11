@@ -1,0 +1,14 @@
+
+Help on command:
+
+	*CFOLLOW <name>
+
+	This causes the named monster to follow you.  This command is 
+intended for use with custom monsters (created with *CNAME), so that you 
+can move them around or drop them in a location you want them at.  They 
+will follow normal movements as well as *teleports.
+
+:*cfol nobleman
+nobleman starts following you.
+
+

@@ -1,0 +1,14 @@
+
+Help on:
+
+	*FORCE [player] [command]
+
+	This function will force another player to perform the command.
+NOTE: This command should only be used in extreme circumstances. 
+
+example:
+:*force gonzo west
+
+Gonzo leaves to the west.
+
+

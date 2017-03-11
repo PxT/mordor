@@ -1,0 +1,11 @@
+Help on:
+	FLEE
+	RUN
+
+The flee command is a fool-proof way to escape a room when monsters have
+been attacking you and are really starting to hurt you.  With some monsters
+flee is unnecessary (because they do not attempt to block exits).  But
+other monsters block exits, and you may be forced to flee to save your
+life.  Any weapon which you had wielded is dropped in the room you fled 
+from.
+

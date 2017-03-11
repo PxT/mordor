@@ -1,0 +1,5 @@
+Remove-blindness:
+This spell removes blindness
+MP Cost: 12
+Syntax:
+cast remove-blindess <target>

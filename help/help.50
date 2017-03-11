@@ -1,0 +1,8 @@
+Help on:
+	CIRCLE <player/monster> [#]
+
+The circle command allows fighters and barbarians to run circles about an
+opponent, causing them to be confused for several seconds.  Any monster
+that is circled will not be able to attack back for a few seconds, giving
+you a slight defensive advantage.  Circle is most useful in groups.
+

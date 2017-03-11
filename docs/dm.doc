@@ -1,0 +1,1302 @@
+GSTAT COMMAND:
+
+The gstat command produces various statistical information about all
+the characters in mordor.  In addition, gstat can list all the 
+mordor characters that exceed a given amount of gold, play time,
+or level.
+
+Syntax:
+        gstat [-glts #] [-d] [-P <players ...>]
+
+The flags can appear in any order except for the '-P' which must be 
+the last flag in the command arguement list.  Also each flag must 
+appear separately.   i.e. -gl 10 needs to be -g 10 -l 10
+Also, due to the amount of data output, the static breakdown will not be
+listed if the -d, -g, -l or -t flags are used.
+
+    -d    The '-d' flag will list all the players that are either
+          a DM, a caretaker or None.
+
+    -g #  The '-g' flag will list all players with '#' or more
+          gold.
+
+    -l #  The '-l' flag will list all players that are '#'+
+          level. 
+
+          breakdown on players '#'+ level.  This is intended to allow
+          for a more accurate statical breakdown.  Often times
+          players create a 'one time' character which can skew
+          the true static brekadown of the game..
+
+    -t #  The '-t flag will list all players that have a play
+          time greater than '#' seconds..
+
+    -P <players...> The '-P' tells gstat to run gstat only on the 
+          player's names specified after the '-P'.  If the '-P
+          is not present, gstat will use all the characters in
+          the players directory.  Note: the player's names following
+          '-P' still must be in the player/ directory. The '-P'
+          was intended as a means to limit gstat static domain.
+
+Examples:
+      gstat -l 10
+         -- list all the players that are 10+ level.
+
+      gstat -d -P P1 P2 P3
+         -- list all the DMs in the player list P1, P2, P3
+
+      gstat -s 2
+         -- only preform the statical breakdown on players that
+            are 2nd or higher level.el.
+
+Other notes:
+
+Class / Level Breakdown:
+    The number following the Class number tells the total 
+    number of players of that class.  The two lines of numbers
+    represents the number of players of the given class at
+    at each level.  The first line of numbers corresponds to 
+    1st to 13th level , the second line of numbers corresponds to
+    14th to 26th level, where 26 slot is for all players that are
+    26+ level..
+
+    Due to the amount of output from gstat, and the length of time to
+    search all the players, it might be easier to redirect gstat 
+    output to a file: gstat > gstat_file.
+Use italk instead of telnet because telnet is an ugly
+way to connect to anything, 
+
+italk localhost 4040
+or on tesla 
+italk m
+
+If you insist on TELNET, then use telnet localhost 4040
+
+cmd_ital
+
+list <m|o|r> [options]
+[options]:  -r#:#     index range
+            -s#       descriptor for output
+            -l#:#     level range
+            -t#       object type
+            -w#       object wearflag
+            -f#       flag set
+            -F#       flag NOT set
+            -q        quest objects only
+            -o#       monsters/rooms carrying object
+            -m#       rooms with monster 
+
+PLIST COMMAND:
+
+    The plist commands provides a simply way to list a given player's
+class, level, password, and inventory without having to use the editor
+or actually log the player in.  
+
+syntax: 
+    plist [[-inp] [-l #]] <players>
+
+    -n    The '-n' tells plist to only list the name of the player.
+          The '-n' flag is intented to be used with the '-l #' 
+          flag to allow the output list of players to be piped
+          or redirected into another command.
+
+    -i    The '-i' flag requires plist to list all the objects in the
+          player inventory, including items in containers.  The
+          output format is a bit rough, so some line wrap around
+          may occur.  NOTE:  It is not wise to type "plist -i *" in
+          the player directory due to the massive amount of data
+          that would be produced.
+
+    -p    The '-p' requires plist to display the player password.
+
+    -l #  The '-l #' requires plist to list all players equal to the 
+          given level #.
+
+
+Examples:
+    plist -p Foo Bar
+      -- this will list the class, level, race and password for 
+         Foo and Bar.
+
+    plist -l 1 Player1 ... Player10
+      -- this will list all the players that are level 1 in the list
+         of players Player1 to Player10.
+
+    plist -i Fubar
+      --this will list the class, race, level  and inventory
+        for the player Fubar.
+
+
+PSEARCH COMMAND:
+
+   The psearch command searchs all the characters in the mordor/player
+directory for a specified item.  Psearch will search a characters entire 
+inventory including the contents of containers.  Psearch will list a player's
+name, the total number of specified object in the player's possession,
+and the number of the specified objects that are in containers.
+Psearch also has the option to list any weapon that does more than
+a specified amount of damage, or armor that exceeds a given armor
+rating.
+
+syntax:
+    psearch <[object #] [-adnsv #] [-N <name>]> [-P <players>]
+
+
+    If the first argument for psearch is a number, then psearch 
+will search for the object corresponding to that number.  The item
+number does not have to be given if any of the other flags are set.
+The flags may appear in any order.
+
+
+    -a #   The '-a' will list all objects on players that have
+           an armor rating equal or greater to '#'.
+
+    -d #   The '-d' will list all objects on players that do
+           a maxium damage equal or greater than '#'.  This is
+           based on ndice*sdice + pdice.
+
+    -n #   The '-n' flag specifies the object number to search for.
+           This flag is redundant if the object number has already 
+           been specified as the first argument of psearch.
+
+    -s #   The '-s' will list all players that know the spell 
+           which corresponds to '#'. The first spell starts at 0.
+
+    -v #   The '-v' will list all objects on players with value
+           exceeding '#'.
+
+    -N <name> Requires psearch to use the name following the -N as
+           the name of the object to search for.  The given name
+           has to perfectly match the object name in ordor for the object
+           to be listed.  In cases where the object name is more than
+           one word or contains single quotes, the entire name needs
+           to be double quoted.   i.e. psearch -N "dragon's blade"
+
+   -P <players> Normally psearch will search all the players in
+           the mordor/player/ directory. The '-P' flag requires psearch
+           to only search the following list of players.  Note:  the
+           list of players still must exist in mordor/player/. The '-P'
+           allows a way to limit psearch's search domain.
+
+Examples:
+    psearch 212
+     --this will list all the players that have object 212 
+       (assassin daggers)
+
+    psearch -d 20
+     --this will search and list all the players and objects that
+       can do 20+ damage. 
+
+    psearch -N "small knife" -P P1 P2 P3
+     -- this will search all the given players (P1, P2, P3) that
+        have objects with the name of small knife. 
+
+
+Errors:
+     If a player cannot be loaded, the user will be notifed of a
+     player load error.or.
+
+
+startup is a shell auto startup / running program for mordor.  This
+should only be executed as mordor user.
+
+TDEL COMMAND:
+
+   The tdel command will list or delete all files that have not been 
+modified in a specified number of days.  The number of days is
+specified by the first command arguemnt of tdel.  Note: the number
+of days can be a floating number (i.e. 2.2, 60.5, etc).
+
+syntax:
+    tdel <# of days> [-d] [-F <files ..>]
+
+    -d  The '-d' flag requires tdel to delete all files that are
+        X or more days old, where X is the specified number of days.
+
+    -F  <files...> The '-F' requires tdel to list/delete the specified 
+        files after the '-F' flag. If '-F' is not set, tdel will
+        list / delete the files in the specifed directory (the
+        path is hard coded and currently set to mordor/player/).
+        Note: '-F' must appear as the last command flag, since
+        all arguements following '-F' are assumed to be file names.
+        The files are also assumed to in the current work directory,
+        or a relative path to the current working directory
+        The files are also assumed to in the current work directory,
+        or a relative path to the current working directory.
+
+
+Examples:
+    tdel 10
+     -- tdel will LIST all files in the player/ that have not been
+        modified in the last 10 days.
+
+    tdel 10 -d
+     -- tdel will DELETE all files in the player/ that have not been
+        modified in the last 10 days.
+
+    tdel 25 -d -F F1 F2 F3
+      -- tdel will delete any of files following  the -F flag (F1,F2,F3)
+         that has not been  modified in the last 25 days.
+
+
+GUIDELINES FOR MAKING MORDOR MONSTERS
+
+LEVEL	STATS	HP's	AC	TO	XP's	DAM	
+   1	  55	 10	90	19	 10	 5
+   2	  58	 20	80	18	 15	 6
+   3	  61	 30	70	17	 35	 7
+   4	  65	 45	60	16	 65	 8
+   5	  68	 60	50	15	100	10
+   6	  71	 75	40	14	140	12
+   7	  75	 90	30	13	200	14
+   8	  78	105	20	12	250	16
+   9	  81	120	10	11	325	18
+  10	  85	135	 0	10	400	20
+  11	  88	150	-5	 9	500	22
+  12	  91	165    -10	 8	600	24
+  13	  95	180    -15	 7	700	26
+  14	  98	195    -20	 6	850	28
+  15	 101	210    -25	 5     1000	30
+  16	 105	225    -30	 4     1150	33
+  17	 108	240    -35	 3     1300	36
+  18	 111	255    -40	 2     1450	40
+  19	 115    270    -45       1     1600	45
+  20     118	285    -50	 0     1800	50
+  21	 121    300    -60      -2     2200     52
+  22     122    350    -70      -4     2600     54
+  23     123    400    -80      -6     3200     56
+  24     124    450    -90      -8     4000     58
+  25     125    500   -100     -10     5000     60
+ 
+	
+		 	 	 
+                         >Creature Flags<
+
+The following is a list and brief description of all creature flags.
+syntax: name     flag #  stat name    defined name
+ 
+The value for flag # includes the offset of +1
+
+==================================================================
+Permanent Monster       1           Perm            MPERMT
+    The monster will be a permanent monster, and will be saved as
+    part of the room.
+
+Hidden                  2           <none>          MHIDDN
+    The monster appears hidden, and can not be seen, unless 
+    searched for. 
+
+Invisible               3           Invis           MINVIS
+    The monster appears invisible.  Players interacting 
+    with the monster must have detect-invisible.
+
+Plural name             4           <none>          MTOMEN
+    The moster's name is changed from "man" to "men" when
+    more than one of the monster's appears.  
+
+No Plural               5           <none>          MDROPS
+    No "s" will be added to monster's plural name.
+
+No Prefix               6           <none>          MNOPRE
+    No prefix words will be used when the monster's name is displayed.
+
+Aggressive              7           Aggr            MAGGRE
+    The monster will attack all visible players on sight.
+
+Guard Treasure          8           Guard           MGUARD
+    The monster will guard all items on the floor of the room, and
+    prevent any player from picking up the object(s)
+Follow attacker         10          Follow          MFOLLO
+    If a player is currently attacking the monster, and the player
+
+Flee                    11          Flee            MFLEER
+    The monster will flee when it loses 90% or more of it's total HP.
+
+Scavenger               12          Scav            MSCAVE
+    The monster will pick up an object from the floor.
+
+Gender                  13          Male            MMALES
+    The monster gender is male, otherwise the monster will
+    be considered to be female if this flag is not set.
+
+Poisoner                14          Poison          MPOISS
+    The monster has the special ability to poison attacking
+    players.
+
+Undead                  15          Undead          MUNDED
+    The monster is the type undead, which allows clerics,
+    paladins, and caretakers+ to turn the monster.  With a sucessful
+    turn, the monster can lose 1/2 their current total hp or be
+    totally destroyed.
+
+No Steal                16          No-steal        NUNSTL
+    The monster can not be stolen from, regardless of a
+    player's class, level or abilties.
+
+Poisoned                17          Poisoned        MPOISN
+    The monster is currently suffering from the affects of
+    poison.  As of now, this flag is not in use in mordor.
+
+Casts spells            18          Magic           MMAGIC
+    The monster has the ability to cast spells during combat.
+    The type of spells casted depends on on which known
+    spell flags are set for the monster.
+
+Has Scavenged           19          <none>          MHASSC
+    The monster has already picked up some object off of the ground
+    and will not pick up anything else.  This flag is used interally.
+
+Breath Weapon Attack    20          <see below>     MBRETH
+    The monster has a chance of using a breath-weapon as a form
+    of attack.  The actual type of breath weapon is defined by the parameters
+    MBRWP1 and MBRWP2.   The *stat name given for MBRETH also depends on
+    the setting of MBRWP1 and MBRWP2.
+
+Type of breath          29/30       <see below>     MBRWP1/MBRWP2
+    The two flags MBRWP1 and MBRWP2 determine the type of breath
+    attack if the MBRETH flag is set. The follow are the type of breath
+    attack for (MBRWP1,MBRWP2): (0,0) = BR-fire, (01) = BR-ice, 
+    (1,0) = BR-gas, (1,1) = BR-acid
+
+Magic Harm  Only        21          Magic-only      MMGONL
+    The monster may only be harmed with magic spells.  No weapon
+    will have an affect on the monster.
+
+Detect Invisibility     22          Detect-invis    MDINVIS
+    The monster will be able to detect invisible players.
+
+Magic / Enchant         23          Enchant-only    MENONL
+    The monster can only be harmed with enchanted weapons or magic spells.
+
+Interactive Talk        24          Talks           MTALKS
+    The monster has the ability to have interactive talk with a
+    player.  i.e. The player may ask questions of the monster.
+
+No Harm                 25          Unkillable      MUNKIL
+    The monster can not be harmed by any form of player attack.
+    The player will not be able to attack the monster.
+
+Fix amount of gold      26          NonrandGold     MNRGLD
+    The monster will drop the exact amount of gold defined
+    by the gold field.  Normally the monster would drop a random
+    amount equal to or less that the set amount.
+
+Aggressive talk         27          Talk-aggr       MTLKAG
+    The monster will attack any player who talks to it.
+
+Resist-magic            28          Resist-magic    MRMAGI
+    The monster will be able to resist magical attacks.  The
+    percent of magic resistance is based on: (monster_intelligence +
+    monster_piety)*2.  Any monster with resist-magic will only
+    be affected by befuddle for 3 seconds, regardless of percentage.
+
+Experience Drain        31          Energy Drain    MENEDR
+    The monster has the special attack of draining a player's
+    experience.  The amount of experience drained is based on:
+    5-sided dice rolled monster_level times plus monster_level*5.
+
+Kingdom allegiance      32          <see below>    MKNGDM
+    This flag specifies which kingdom a monster belongs to when
+    either the MPLDGK or the MRSCND flag is set.  If MKNGDM is set
+    the monster belongs to kingdom 1 otherwise the monster is 
+    a member of kingdom 0.
+
+Pledge                  33          Pledge 0/1      MPLDGK
+    Players can pledge to this monster and it's kingdom. 
+    The monster and player must both be in a room with the 
+    RPLDGK and the correct RKNGDN flag set.  The RKNGDM
+    flag determins which kingdom the monster belongs to.
+
+Rescind                 34          Rescind 0/1     MRSCND
+    A pledged player can rescind his pledge to a monster that has this
+    flag set.  The monster and player must both be in in a room with the
+    RRSCND and the correct RKNGDN flag set. The RKNGDM flag determines
+    which kingdom the monster belongs to.
+
+Disease                 35          Disease         MDISEA
+    The monster has a chance of inflicting disease on a player,
+    when the monster attacks.
+
+Disolve items           36          Dissolve        MDISIT
+    The monster has a chance on a sucessful attack of dissolving
+    an item which a player may have equiped, wielded, or held.  
+    Items in the player's inventory will not be affected.
+
+Vendor                  37          Purchase        MPURIT
+    The monster will be able to sell any of it's "carried items".
+    Players can obtain a list of what the monster has for sale with
+    the "select" command, and can buy with the "purchase" command..
+    
+Gives Items for quest   38          Trade           MTRADE
+    If the monster is presented with a certain item (players use
+    the trade command), the monster will give an item to the player.
+    This is useful in making interactive monster / player quests.
+    As of now, the 10 possible carried items represents the traded item/
+    reward.  The first 5 of the monster carried items represent a needed
+    item by the monster.  In return for one of these items the monster
+    will give the player the object located in the carried item slot
+    (needed item + 5).  For example, a player gives a monster an item
+    described in carried item slot 1, the monster will return
+    the item described in slot 6 as a reward.
+
+Passive guard           39          P-Guard         MPGUAR
+    The monster is a passive guard.  The monster will not allow 
+    any players to go through any exits in the current room with the
+    XPGUAR flag set.
+
+Good Aggressive        40          Good-Aggro      MGAGGR
+    The monster will attack any good alignment players on site,
+    and ignore evil or neutral players.  Note: the MAGGRO flag will
+    over ride MGAGGR.
+
+Evil Aggressive        41          Evil-Aggro      MEAGGR
+    The monster will attack any evil alignment players on site,
+    and ignore good or neutral players.  Note: the MAGGRO flag will
+    over ride MEAGGR.
+
+Death Scene            42          Ddesc           MDEATH
+    Once the monster is killed, the text in the monster's death 
+    description will be displayed to everyone in the room where
+    the monster's death occured. The location of the death scene file
+    is in ddesc/ (currently mordor/objmon/ddesc/).  The name of the 
+    file is the monster's name "_" monster level. All blank spaces
+    in the name need to be replaced with '_' (i.e. Barney_the_dinosaur_20).
+    The monster with the death scene must also be a permanent monster.
+
+This is how you make a monster, including all kinds 
+of neato advice and recomendations.
+mk_monster
+Interactive talk
+
+    Interactive talk allows a monster and a player to interactively
+talk.  When a player asks a monster about a "key" question, the monster 
+will respond with a specified response.  In addition, a monster can perform
+various actions (attack, social command, or cast a spell) whenever asked 
+about a key word.  The interactive talk file is located in:
+/usr/games/mordor/objmon/talk. 
+Generally the name of the file is the name of the monster-level.
+The format to use the interactive talk file is:
+<key word line> [action phrase]
+<response line>
+
+    The maximum size of the key word line is 80 characters while the response
+line can be up to 1024 characters (including carriage return and null 
+character).  Note: a hard return will denote the end of a line, so 
+return should only be entered at the end of "key word line" and
+the  "response line".  
+
+    The <key word> is defined by a single word (no spaces).  The 
+parameters for the action phrase are based on the type of the
+command.  A monster can perform the following actions:
+
+<key word> ATTACK
+    The monster will attack the player who asks the monster about the 
+given key word.  The word ATTACK must appear in all capitals.
+
+<key word> ACTION type PLAYER
+    The monster will perform the social action defined by type when the
+key word is spoken.  The type parameter can be any of the normal social
+commands.  If the social command is followed by the word PLAYER, the 
+social action will be performed on the player who spoke the key word.  
+Otherwise the social command will be interpreted as general (wave vs 
+wave happy).  Note the words ACTION and PLAYER must appear in all capitals.
+
+<key word> CAST <spell>
+    The monster will cast the given spell on the player who
+spoke the key word.  The monster must have sufficient mp, and belong
+to the correct class (and know the spell) in order to cast it. 
+A monster casting heal must be a cleric/paladin and have 25 mp
+to successfully cast the spell.
+
+<key word> GIVE <item #>
+    The monster will give a specified object to the player who asked the 
+key word.  Object may be a quest item, in which case the player will only
+be able to receive one of the item.  Also, if a player is weighted down,
+and unable to hold the object, the monster will not give the object. 
+Be careful with the value of the objects being given away since it might 
+provide a loop hole for making money.
+
+examples:
+
+die ATTACK
+response.
+    If a player asks a monster about "die", the monster will give
+the response and then attack the player.
+
+bye ACTION wave
+response
+    If a player asks a monster about "bye" the monster will give
+the response and wave to everyone in the room.
+
+bye ACTION wave PLAYER
+    If a player asks a monster about "bye" the monster will give
+the response and wave to the player who asked about "bye".
+
+bless CAST bless
+    If a player asks the monster about "bless", the monster will
+cast a bless spell on the player, provided the monster knows the
+spell and has sufficient mp to do so.
+
+ll
+                      =====>DM COMMANDS<======
+
+
+*ac [player]
+    DM ac sets the DM's hp and mp to max and displays the DM's
+    current hp, mp, THAC0 and ac.  If *ac is followed by a player's
+    name, then the player's current hp, mp, THAC0 and ac are 
+    displayed.
+
+
+*add r <room number>
+    DM add room allows a DM to create a new (empty) room for
+    the given room number.  The DM will be notified if the room already 
+    exists.
+
+
+*append [-sn] <text...>
+    DM append will append the given text to the end of a room's
+    description.  The defualt will append the line at a separate line
+    at the end of the long room description.
+
+    -s   append text at the end of the short room description.
+
+    -n   append the text line to the end of the last line of the
+         description.  Normally append would create a new line for
+         appended text.
+
+    -sn  or -ns will append the text line to the end of the last line
+         in the short description.
+
+     There is no line or screen length checking or line formatting.
+     Also the newly appended line is not saved until the room is saved.
+
+
+*broad [-n] <message ....>
+     DM broadecho displays the given message to all the player currently 
+     logged in (and nobroad cleared).  The message will be preceded by '### ' 
+     if the -n flag is not set.  Otherwise, if the -n flag is given, the
+     message will appear without the leading '###'
+
+
+*create <object number> 
+     DM create adds the given object to the DM's inventory list.
+
+
+*echo <message ...>
+     DM echo echoes the given message to all players in the room.  The
+     message is free of format, and will appear as typed.
+
+
+*finger <player> [name]
+     DM will finger the given player site, and return a list of all 
+     currently logged on users.  If a name parameter is given, then
+     only the given individual at the player's site will be fingered.
+
+
+*flushcrtobj
+     DM creature / object flush allows a DM to flush the memory
+     of all objects and monsters, thus allowing new updates to
+     be loaded.
+
+
+*force <player> <action>
+     DM player force allows a DM for force a given player to perform
+     a given action.  A DM cannot force a player to commit suicide.
+
+ 
+*gcast [-r] <spell name>
+     The global cast command allows a dm to cast a spell on all the
+     currently logged in players (excluding players under dm invis.) 
+     Gcastallows a dm to cast: protect, bless, resist-magic, resist-fire, 
+     detect-magic, detect-invisibbilty, fly, levitatate,know alignment,
+     vigor, mend wound, heal, and restore.  If the "-r" flag is set, then
+     gcast will only be casted on players in the current room.  DMs can
+     cast all the "global spells" for room cast, and in addition, the
+     DM can cast word of recall on all the players in the room.  The
+     duration of spells will last approximately one hour real time.
+
+*group <player name>
+     The dm_group command will list the names of all the characters
+     in the given player's group as well as the person the given player
+     is following..
+
+*info
+     DM info displays the current memory usage by the game, as well as
+     the total number of players logged in and waiting in the queue.
+
+*invis
+     Toggles DM invisibility.  DM invisibility will allow a DM to
+     move around unseen by players.  Note:  If a DM attacks a monster
+     while invisible, the DM's name will appear in the monsters current
+     enemy list.
+
+
+*list <o/m/r> 
+     DM list will list all the objects (o), creatures (c), or
+     rooms (r).  Type *list for a complete list of flags for the
+     *list command.
+
+*lock
+     DM lockout allows the DM to reload the list of lockout sites.
+
+
+*log [r]
+     DM log displays the mordor game log.
+     f *log is followed by an 'r', then the current game
+     log is removed. 
+
+
+*monster <creature number> [n #]
+     DM monster creates and adds the given n monster to the DM's
+     current room.  If the monster number if followed by an 'n' and
+     a number then that number of monsters will appear.
+
+
+*name <name ...>
+     DM name allows a DM to rename the current room.  *name does not 
+     automatically save the room's new name.  (Use *save to do so.
+     *reload will restore the room's original name, provided the
+     room hasn't been saved)
+
+
+*parameter [dsr]
+     DM set parameter allows a DM to change an update time
+     parameter..
+
+     d     Flag displays the time for random monster update,
+           time to next shutdown, ship sailing interval, and
+           time to next set sail.
+
+     r #  Sets the random monster update time interval
+           to the given value.  Default is 10.
+
+     s  #  The s flag, by itself causes the ship to set 
+           sail.  If the s flag is followed by a number,
+           (greater than 1), then the sailing interval will be
+           set to the given number..
+ 
+
+*perm <object>
+     DM perm allows a DM to make the given object (on the floor) 
+     into a permanent object.
+
+
+*prepend [-sn] <text...>
+      DM prepend command prepends the given text to the beginning of
+      a description.  In all other aspects prepend is identical to
+      *append.
+
+
+*purge
+      DM purge will clear a room of all monsters and objects.
+
+
+*reload
+      DM reload allows a DM to reload a room back from disk.
+
+
+*replace [-D] <key word> <replacement phrase>
+    DM replace will search the DM's current room's description for the
+    the given key word and replace the keyword with the given
+    replacement phrase.  The key word must be a single word, without
+    spaces or tabs.  The replacement phrase can contain multiple words,
+    spaces, or any other printable character. If the '-D' switch is
+    given, followed by a '<deletement phrase>' DM replace will search
+    the room's description for the given <deletement phrase> and deleted
+    it from the room's description.  DM replace does not reformat a rooms
+    description and is not automatically saved (The new description will
+    be saved by *save, or when the room is removed from memory.  A 
+    *reload, before the room is saved, will restore the old description).
+
+
+*rm
+    DM room number, displays the room number.
+
+
+*save
+    DM room save saves the current state (perm objects, perm monsters, etc)
+    of a room.
+
+
+*send <message>
+    DM send will display the given message to all DMs and 
+    Caretakers (with nobroad cleared).
+
+
+*shutdown [minutes]
+     DM shutdown allows the DM to shutdown the game with a 1 minute 
+     warning. If *shutdown is followed by number, the shutdown will
+     occur in the given number of minutes. 
+
+
+*silence <player> [cm]
+     Dm silence will silence (set broadcast number to 0) the given 
+     player. 
+     
+     c   display remaining and maximum number of broadcasts for
+         for the given player.
+     m   followed by a number will set the players remaining
+         number of broadcasts to the given number.
+
+
+*spy <player>
+     DM spy allows the DM to spy on the selected play. The DM 
+      will see all the players actions, and messages.  Typing
+      *spy again, will turn the spy function off. 
+      Note:  if a player logs off you need to manually turn off
+      the *spy command.
+
+    
+*set  <o/c/r/x>
+     DM set allows the DM to modify a creature, player, object, room
+     or exit.  The parameters vary depending on what is being set.
+
+
+*set o <object> [#] [creature] <attribute> [value]
+     Set attributes on the #th object.  Type *set o for
+     more information on the attributes.
+
+
+*set c/p/m <name> [#] <attribute> [value]
+     Sets the attributes for the given player or creature.
+     If a creature name is followed by a number, then the
+     #th creature will be affected.  Type *set c for more 
+     information on the attributes.
+    
+ 
+*set r <attribute> [value]
+     Sets the attributes for the current room.  Type *set r for
+     information on the attributes.
+
+
+*set xf <exit> <number>
+     Sets or unsets the given exit's flag for the given number.
+
+  
+*set x <name> <room number> [<name2>]
+     Creates 'name' exit to room number.  If value '0' is used from
+     room number, the exit will be deleted.  If the given exit name
+     is a abbrivation (n,nw,e, etc) of a standard exit then the
+     abbrivation name will be expanded to he standard exit (north,
+     northwest, east, etc).  If  name2 is given and the room exists
+     for the given room number, the rooms will be linked in both
+     directions, (name2 will be the name of the exit back to the
+     current room).
+
+
+*set x bl <number>
+     Will set the lower level boundary to the value of  <number>.
+
+
+*set x bh <number>
+     Will set the upper level boundary to the value of  <number>.
+
+*set x x <number>
+     Sets the trap type <number> in the current room.
+
+
+
+*status [obj/player/crt] [player/creature]
+     DM status displays the status of a room, object, monster or player.
+     *status        show the status of the room.
+     *status o/c/p  show status of the given object/creature/player.
+     *status o ply  show the status of object o on player ply.
+
+
+*teleport [player1/room number] [player2]
+     room.  
+     *t           teleport the DM to the Tree of Life.
+     *t #         teleport the DM to room #.
+     *t player    teleport the DM to player.
+     *t ply1 ply2 teleport ply1 to ply2.
+     *t ply1 .    teleport player1 to the DM.
+
+
+*users
+     DM users displays the name, location, connection site, and idle
+     time for all players currently on mordor.
+                    > DM's Guide and Manual <
+
+    Welcome to the DM online manual.  This program was created to
+help current and future DMs maintain and run mordor.  This program
+is menu driven, so just select the letter of the menu option of
+interest.  Entering a 'Q' on a menu screen will exit the program.
+Entering 'B' will exit a submenu back to the previous menu (provided
+you are in a submenu).
+
+While viewing a file:  hitting the space bar will scroll the document
+up one line, hitting return will scroll the document up one screen,
+and entering 'q' will quit back to a menu.
+
+
+                        >Object Flags<
+ 
+The following is a list and a brief description of all object 
+flags.
+syntax: name              flag #  stat name    defined name 
+ 
+The value for flag # includes the offset of +1
+ 
+======================================================================= 
+
+Permanent               1       Pperm               OPERMT
+    Object will remain in a room until a player picks
+the object up.
+
+Hidden                  2       Hidden              OPERMT
+    Object appears hidden, players need to sucessful search to find
+the object. (if a monster is carring an item with the hidden flag
+set, players will not see the object on the monster after the
+monster is killed).
+
+Invisible               3       Invis               OINVIS
+    Players without detect-invisible are unable to pick the
+object up or use the object.
+
+Prefix Some             4       <none>              OSOMEA
+    The object will be preceded with the word 'some' 
+instead of the word 'a'.
+
+Plurals                 5       <none>              ODROPS
+    If more than one of the object appears do not add an 's'
+to make the object name plural.
+    
+No Prefix               6       <none>              ONOPRE
+    The object name will be displayed without any form of a
+prefix.
+
+Container               7       Cont                OCONTN
+    Object may serve as a container, where players may put
+other items into the container.  Players can not put
+a container into a container.
+
+Weightless Container    8       Wtless              OCONTN
+    The weight of all the items inside the container are not 
+included as part of a players total weight.
+
+Temp Permanent          9       Tperm               OTEMPP
+Inventory Permanent     10      IPerm               OPERM2
+
+Mage restricted         11      Nomage              ONOMAG
+    Object may not be wored by mages.  This flag has become
+obsolete with the class selective flags (OCLSEL).
+
+Light Source            12      Light               OLIGHT
+    Object provides a light source if equiped.
+
+Good Only               13      Good                OGOODO
+    Only players that have a "good" alignement may use the object.
+If used by an "evil" player, the player will be shocked by the item.
+
+Evil Only               14      Evil                OEVILO
+    Only players that have a "evil" alignement may use the object.
+If used by an "good" player, the player will be shocked by the item.
+
+Enchanted               15      Ench                OENCHA
+    Object is enchanted, and can not be enchanted with the 
+enchant spell unless the object loses it enchant.  It is
+imported to set this flag on ALL magic weapons and armor
+(items with a '+' associated with them).
+
+Non repairable          16      NoFix               ONOFIX
+    Once the object has broke, the smitty will be unable to repair
+the object. This flag is unnecessary for wands and potions since
+those objects are automatically unrepairable.
+
+Climbing Gear           17      Climbing            OCLIMB
+    When the object is equiped, it will aid the player in
+exits that require climbing gear to ascend or repel.
+
+Cannot be taken         18      Notake              ONOTAK
+    Players will be unable to 'get' the object.  This is useful
+for signs and other unremovable devices.
+
+OSCENE                  19      Scenery             OSCENE
+    Object is part of a room's scenery, and is unremovable
+by the players.
+
+Sized armor             20/21   Sized               OSIZE1/OSIZE2
+    Object can only be worn by selected size (race). If 00 =
+wearable by all, 01 = wearable by small race, 10 = wearable by 
+medium race, 11 = wearable by large race.
+
+Random Enchant          22      RandEnch            ORENCH
+    The object will be given a random enchant value (nornal, +1,
++2, or +3) when ever the object is created (when a monster appears
+and drops it).
+
+Cursed                  23      Cursed              OCURSE
+    Object is cursed, once the object is wielded, held or worn
+by a player, the player will be unable to remove the item.
+
+Worn                    24      Worn                OWEARS
+    Object is currently being worn by a player, this is an
+interal flag, and should not be set on an object.   
+
+Floor usable            25      Use-floor           OUSEFl
+    Object can be used by players even though the object is
+on the floor.
+
+Devouring container     26      Devours             OCNDES
+    Any placed into the container will be destroyed.
+
+Female only             27      Nomale              ONOMAL
+    Object will only be usable by players of the female gender.
+
+Male only               27      Nofemale            ONOFEM
+    Object will only be usable by players of the male gender.
+
+Damage based object     29      NdS dam             ODDICE
+    Various spells if invoked by an object, will base their
+damage on the number*sides +plus. This flag should not be set
+unless you are sure the spell is design for NdS damage.
+Currently drain energy is the only spell designed  for NdS.
+
+Pledge Only             30/31   Kingdom 0/1         OPLDGK/OKNGDM
+    Object may only be use / worn by players who have pledged.
+The OPLDGK needs to be set, the OKNGDM determines which kigdom
+theobject belongs to. If OKNGDM is unset then object belongs to
+kingom 0 otherwise the object belongs to kingdom 1.
+
+Class selective         32      Cls-Sel:            OCLSSEl
+    Object can only be used by selected classes.  The following
+eight flags detemine which classes can use the object.
+
+Assassin usable			33		A					OASSNO
+	If this flag is set in conjunction with	OCLSSEL, then
+assassin classes can use the object.
+
+Barbarian usable		34		B					OBARBO
+	If this flag is set in conjunction with	OCLSSEL, then
+barbarian classes can use the object.
+
+Cleric usable			35		C					OCLERO
+	If this flag is set in conjunction with	OCLSSEL, then
+cleric classes can use the object.
+
+Fighter usable			36		F					OFIGHO
+	If this flag is set in conjunction with	OCLSSEL, then
+fighter classes can use the object.
+
+Mage usable				37		M					OMAGEO
+	If this flag is set in conjunction with	OCLSSEL, then
+mage classes can use the object.
+
+Paladin usable			38		P					OPALAO
+	If this flag is set in conjunction with	OCLSSEL, then
+paladin classes can use the object.
+
+Ranger usable			39		R					ORNGRO
+	If this flag is set in conjunction with	OCLSSEL, then
+ranger classes can use the object.
+
+Thief usable			40		T					OTHIEO
+	If this flag is set in conjunction with	OCLSSEL, then
+thief classes can use the object.
+
+this is how to make an item
+lalala
+mk_item
+	How to Create a Combination Lock
+
+Combination locks appear in the game as buttons that must be pushed in a
+particular sequence.  Usually they are color-coded, but you can give them
+any description you please.  The editor is used to make them as objects.
+
+First, make as many buttons as you desire with each one being a separate
+object.  For example, you might make four buttons, black, red, white and blue.
+Each button is TYPE 13, and SPECIAL 2.
+
+Now, assume we want the black button to be number zero, (reset) and the
+red button to be number one, the white number 2, and the blue one number
+three.
+
+A combination of 132 would require the sequence red, blue, white be pushed.
+Of course, you can require that a button be pushed more than once if you
+want a longer combination..
+
+In the output string for each object, put the combination, preceded by a
+zero.  Example:  0132322
+The first zero is the reset, and each number is a colored button.
+
+Makes the shots equal to 0/0.
+
+In order to identify the Reset button as different from the others,
+make it:
+	1d0 Plus 2.
+
+Each of the other buttons are:
+	0d1 Plus 2
+	0d2 Plus 2 
+	0d3 plus 2
+
+Where the numbers following the 'd' indicate the combination number for 
+that object.
+
+Set the following flags:  1 and 18. 
+Flag 1 is to make the button permanent.
+Flag 18 is the no-take property.
+
+When you create the room this lock goes in, be sure to put the buttons as
+permanent objects.  Also, be sure to set the exits flags 3, 4, 5, 6 and 7.
+
+                        >Room Flags<
+
+The following is a list and a brief description of all room flags
+
+syntax: name              flag #  stat name    defined name 
+
+The value for flag # includes the offset of +1
+
+========================================================================
+Shop                1       Shoppe          RSHOPP
+    The room serves as a shop where players can buy goods.
+
+Recycle             2       Dump            RDUMPR
+    All items dropped in the room will be recycled (disappear)
+and the player will get 5 gp for each item dropped.
+
+Pawnshop            3       Pawnshop	    RPAWNS
+    Room can serve as a shop for player to sell their goods.
+
+Training ground     4-5-6-7   Train           RTRAIN
+    Room can serve as a training ground for characters.ZZ Flag '4'
+denotes the room is a training site, while flags 5,6,7 denote
+the class of the training group. (000 = assassin,... 111 = thief)
+
+Repair Shop         8       Repair          RREPAI
+    Players can have weapons and armor repaired in the room.
+
+Continual Darkness  9       DarkAlways      RDARKR
+    The room is constantly in darkness, players need to be able
+to see int he dark or have a light source to be able to see.
+
+Dark At Night       10      DarkNight       RDARKN
+    Players need to have a light source or intrared vison
+to see the room at nigth (game time).
+
+Post Office         11      PostOffice      RPOSTO
+    A player can send or read their mail in the room.
+
+Safe Room           12      NoPlyKill       RNOKIL
+    The room is a safe room, no player killing or player stealing
+allow in the room.
+
+No Teleport         13      NoTeleport      RNOTEL
+    Players are unable to teleport, be summoned to or track to
+the room.
+
+Fast heal           14      HealFast        RHEALR
+    Players heal time is reduced in this room to promote faster healing.
+
+One Player          15      OnePlayer       RONEPL
+    A maxium of one player is allowed in the room.
+
+Two Player          16      TwoPlayer       RTWOPL
+    A maxium of two players are allowed in the room at the same time.
+
+Three Player        17      Threeplyr       RTHREE
+    A maxium of three players are allowed in the room at the same time.
+
+No Magic            18      NoMagic         RNOMAG
+    Players are unable to cast any form of magic in this room.
+
+Permanent Tracks    19      PermTrack       RPTRAK
+    The room has "permanent" tracks on the ground which rangers
+can detect withthe track command.
+
+Earth Realm         20      Earth           REATH
+    All Earth realm spells gain a damage bonus while Wind
+spell suffer a damage penality when casted in the room.
+
+Wind Realm          21      Wind            RWINDR
+    All Wind realm spells gain a damage bonus while Earth
+spell suffer a damage penality when casted in the room.
+
+Fire Realm          22      Fire            RFIRER
+    All Fire realm spells gain a damage bonus while Water
+spell suffer a damage penality when casted in the room.
+
+Water Realm         23      Water           RWATER
+    All Water realm spells gain a damage bonus while Fire
+spell suffer a damage penality when casted in the room.
+
+Group Wander        24      Group           RPLWAN
+    The monster of random monsters taht appear will be based
+on the size of the group in the room. I.E. if 4 players are in the
+room between 1 to 3 monster will appear at one time.
+
+Player Harm         25      PHarm           RPHARM
+    Players that spend a certian lenght of time in thisd room
+will start to lose hp.  If an elemental flag is set for
+the room (Fire, Water, Wind, Earth), the player will lose damage
+with respects to that realm (fire realm: player gets burnt, etc.)
+If a player has the proper resist-element for given element
+(earthshiled for earth pharm rooms, the player won't suffer
+any damage.
+
+Poison              26      P-Poison        RPPOIS
+    If the RPPOIS flag is set in conjunction with the RPHARM flag,
+a player will become posioned if they spend enough time inthe room.
+The player will not suffer any damage unless an elemental flag is set.
+
+Magic Drain         27      MPDrain         RPMPRD
+    If the RPMPDR flag is set in conjunction with the RPHARM flag,
+a player will lose magic points in the room.  A player will
+not die if their mp reaches 0.  The player will not suffer any 
+damage unless an elemental flag is set.
+
+Befuddling          28      Confusion       RPBEFU
+    If the RPBEFU flag is set in conjunction with the RPHARM flag,
+a player will become confused for a short peroid of time if they
+spend enough time in the room. The player will not suffer any
+damage unless an elemental flag is set.
+
+No Summon           29      No SUmmon       RNOLEA
+    Players in the room can not be summoned out of, regardless
+if the no summon is set or cleared.
+
+Pledge              30      Pledge          RPLDGK
+    The room can serve as a place for players to pledge
+their alligance  to a kingdom. Note: a monster with the 
+MPLDGK flag set must also be in the room.
+
+Rescind             31      Rescind         RRSCND
+    The room can serve as a place for players to rescind
+their alligance  to a kingdom. Note: a monster with the 
+MRSCND flag set must also be in the room.
+
+No Potion           32      No Potion       RNOPOT
+    Players will be unable to drink potions in the room.  Any
+attemp to do so wil result in the evaporation of th epotion.
+
+Extended Magic      33      Pmagic          RPMEXT
+    Players casting defesnive spells will have an increased duration while
+mend wounds and vigor would have inceased healing power.
+                          
+this is how to make a room
+lalala
+mk_room
+	How to Create a Shop
+
+A shop must always have a storage room associated with it.  The storage
+room must be the next sequential room number.  The storage room is where
+items are stored that will appear on the list in the shop.  Be sure to set
+the room flag 13 in the storage room so that players cannot teleport there.
+
+After the shop and storage room have been created, go to the storage room
+and create one each of the items you want to appear in the shop's list.
+Then, set both flags 9 and 10 for the item(s) and drop them on the floor.
+And last, you must use the DM command *perm to make the items permanent.
+NOTE:  If the game is being heavily used you may have to type *perm many
+times.  You will get either a "failed" or "done" message each time.  Keep
+trying until the "done" message appears.
+
+
+EXAMPLE
+
+You decide to make a room that sells only rings.
+
+1.	Create a new room with your description.
+	Set the shop flag.  flag 1.
+
+2.	Create a storage room, exactly one room number higher.
+	Set the no teleport flag.  flag 13.
+
+3.	Log in to the game and go to the storage room.
+
+4.	Use the DM command *c <ring number> to put a ring in your inventory.
+	Set the two permanent flags.  flag 9 and flag 10.
+	Use the DM command *set o ring f #
+
+5.	At this point, you can change the value of the ring to be different
+	than that set in the editor.  What ever you change it to will be the
+	price set by the shop.
+	Use the DM command *set o ring v <$$$>
+
+6.	Drop the ring in the storage room.
+	Use the DM command *perm.  (Continue until you get the "done" message.)
+
+7.	Congratulations!  Now type list in the shop to check your handiwork.
+
+                        >Exit Flags<
+
+The following is a list and a brief description of all room exit
+flags.
+syntax: name              flag #  stat name    defined name 
+
+The value for flag # includes the offset of +1
+
+=======================================================================
+Hidden              1       Secret          XSECRT
+    Hidden exits are hidden from view and can be found by search.
+
+Invisible           2       Invisible       XINVIS
+    Invisible exits will only be detected and usable by players
+    currently under detect-invisiblity.
+
+Locked              3       Locked          XLOCKED
+    The exit is currently lock  A player needs to unlock the
+    exit before opeing it.
+
+Closed              4       Closed          XCLOSD
+    The exit is currently closed.
+
+Lockable            5       Lockable        XLOCKS
+    A player can lock the exit if they have the correct key.
+
+Clossable           6       Closable        XCLOSS
+    A player can close the exit.
+
+Unpickable          7       Un-pick         XUNPCK
+    If an exit is locked, the exit is unpickable.
+ 
+Weightless          8       Naked           XNAKED
+    Players can't bring any equipment or weapons through the exit.
+
+Climbing Up         9       ClimbUp         XCLIMB
+    Player needs climbing gear to use the exit.  Climbing gear is not
+    required, but a player might fall if they tried to use that exit.
+
+Climb  Down         10      ClimbRepel          XREPEL
+    Player needs climbing gear to use the exit.  Climbing gear is not
+    required, but a player might fall if they tried to use that exit.
+
+Difficult Climb     11      HardClimb           XDCLIM
+    The player must have climbing gear or currently have levatation 
+    spell or be using a levitation item to use exit.
+
+Fly                 12      Fly                 XFLYSP
+    The player must currently be under a fly spell to use the exit.
+
+Female only         13      Female              XFEMAL
+    Only females characters may use the exit.
+
+Male only           14      Male                XMALES
+    Only male characters may use the exit.
+
+Kingdom / Pledge    14/15   Kingdom 0/1         XPLDGK / XKNGDM
+    Only players that have pledged to a given kingdom may use the exit.
+    The XPLDGK flag restricts the exit to pledged players while the
+    XKNGDM denotes to which kingom the exit belongs.  If XKNGDM is not
+    set, then the exit belongs to kingdom 0, otherwise the exit belongs
+    to kingdom 1.
+
+Night time          17       Night              XNGHTO
+    The exit is only usable during the day (game time).
+
+Day time            18       Day                XDATON
+    The exit is only usable during the day (game time).
+
+Gaurded             19      P-Guard             XPGUAR
+    The exit is guarded by a passive guard monster.  The monster
+    MPGUARD flag must also be set on the monster doing the guarding.
+    A player will not be able to use the exit as long as the
+    monster is present.
+
+unseen exit         20      NoSee               XNOSEE
+    The exit is unusable and invisible to players.  This flag is not
+    normally used, except in cases of multiple timed exits.  (exits that
+    periodically change room connections, based on a given time).
+

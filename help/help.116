@@ -1,0 +1,13 @@
+Help on:
+
+	*FLUSHCRTOBJ
+
+	This function removes all object and monster data from memory.  
+This is useful for implementing changes made in an object or creature.
+
+example:
+:*flushcrtobj
+
+Basic object and creature data flushed from memory.
+
+

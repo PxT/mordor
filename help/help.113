@@ -1,0 +1,13 @@
+Help on:
+
+	*FLUSHROOMS
+
+	This function saves _all_ rooms, items and monsters to disk.  It 
+is only accessible by one DM.
+
+example:
+:*flushrooms
+
+All rooms and contents flushed to disk.
+
+

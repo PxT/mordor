@@ -1,0 +1,14 @@
+Help on:
+	PEEK <player/monster>
+
+Peek allows thieves and assassins to try and "peek" at another player's
+or monster's inventory.  If they are successful, they get to see what that 
+creature is holding, and another die roll is made.  If they make the second
+die roll, then no one will see that the thief or assassin tried to peek.
+
+Example:
+
+Mark says, "Hi".
+: peek Mark
+He is carrying: a bow, a knife.
+

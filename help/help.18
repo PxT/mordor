@@ -1,0 +1,8 @@
+Help on:
+	FOLLOW <player>
+
+The follow command will allow you to follow another player around.  When
+another player is in the same room as you, you can "follow" him or her.
+Then whenever that player moves in a given direction, you will automatically
+follow.  This is extremely useful for adventuring in groups.
+

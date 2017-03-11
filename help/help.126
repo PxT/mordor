@@ -1,0 +1,17 @@
+
+Help on:
+
+	*INFO
+
+	This function lists various system statistics.
+
+example:
+:*info
+
+Internal Cache Queue Sizes:
+   Rooms: 55      Monsters: 6       Objects: 10
+
+Wander update: 10
+      Players: 1  Queued: 0
+
+

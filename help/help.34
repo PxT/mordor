@@ -1,0 +1,6 @@
+Help on:
+	LOCK <exit/door> [#] [with] <key-name> [#]
+
+If you have the key that unlocks a door, you also have the key which locks
+the door.  You may lock a door in the same way that you UNLOCK it.
+

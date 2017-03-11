@@ -1,0 +1,5 @@
+Detect-magic:
+This spell allows its target to detect magical items and monsters
+MP cost: 10
+Syntax:
+cast detect-magic <target>

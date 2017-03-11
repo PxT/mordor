@@ -1,0 +1,17 @@
+
+Help on command:
+
+	FINGER
+
+Syntax:
+
+	FINGER <player>
+
+	This command allows you to get information on the last time a 
+player logged in and if they have any mail waiting.
+
+Example:
+: finger Gonzo
+Gonzo                     Gnome       Cleric
+last login: Sat Sep  3 13:02:51 1994
+No mail.

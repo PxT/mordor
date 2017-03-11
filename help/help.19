@@ -1,0 +1,8 @@
+Help on:
+	LOSE <player>
+
+The lose command allows you to "lose" a person that is following you,
+effectively kicking him or her out of your group.  Use this command if
+there is someone following you that you would prefer not to have following
+you.
+

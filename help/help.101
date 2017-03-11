@@ -1,0 +1,18 @@
+
+Help on command:
+
+	*TELEPORT <room # | player > [ player2 | . ]
+
+	This is the DM mode of transit.  You can teleport to anyone or 
+any room.  You can also use this to teleport players to you or to another 
+player.
+
+examples:
+:*teleport gonzo 
+	{You arrive in a room with Gonzo}
+:*teleport gonzo .
+	{Gonzo arrives in the room you are in, not unlike a summon}
+:*teleport gonzo mithrandir
+	{Gonzo is teleported to the room Mithrandir is in}
+:*t 34
+	{You teleport to room number 34}

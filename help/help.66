@@ -1,0 +1,9 @@
+Help on:
+	PREPARE
+
+The prepare command is used when you know the next room you're going to
+walk into has a trap in it.  If you prepare before entering a room,
+you will almost always avoid any trap in that room (unless your
+dexterity is really poor).  Prepare only lasts until you enter the 
+next room, and you can only use it once every 15 seconds.
+

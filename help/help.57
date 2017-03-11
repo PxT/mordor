@@ -1,0 +1,18 @@
+
+Help on command:
+
+	GTALK
+
+Syntax:
+
+	GTALK <text>
+
+	This command allows you to send messages to only those players in 
+your group.  A group is defined as a number of players all following the 
+same player.  You cannot use this command unless you are in a group.
+
+Example:
+:gtalk Where to now?
+### Gonzo group mentioned, "Where to now?".
+
+

@@ -1,0 +1,16 @@
+
+Help on:
+
+	*GCAST [-r] <spell>
+
+	This function will globally cast a spell.  This function is 
+limited to non-offensive spells.  Using the -r option will result in the 
+spell only being cast in the room you are in.
+
+example:
+:*gcast protection
+
+You cast protection on everyone.
+Someone casts protection on everyone.
+
+ 

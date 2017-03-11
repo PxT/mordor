@@ -1,0 +1,13 @@
+Help on:
+	HOLD <object> [#]
+
+Hold allows you to hold certain objects that are designated as "hold-able"
+items.  Things like torches, lanterns and wands are all hold-able.  Anything
+that you are holding, wearing or wielding cannot be stolen.  Certain things
+have to be held for them to have any use (for example torches).
+
+Example:
+
+: hold torch 2
+You hold the torch.
+

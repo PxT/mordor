@@ -1,0 +1,18 @@
+
+Help no command:
+
+	DRINK
+
+Syntax:
+
+	DRINK <object>
+
+	This command allows you to use a drinkable item.  Usually this 
+will be a potion.
+
+: drink potion
+You feel better.
+Potion drank.
+The dark green potion disintegrates.
+
+

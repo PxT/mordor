@@ -1,0 +1,11 @@
+Help on:
+	BACKSTAB <monster/player> [#]
+
+The backstab command is usable only by thieves and assassins, and allows
+them to do 2-3 times more damage than normal with sharp or thrusting
+weapons.  The thief or assassin must be hidden in order for a backstab
+to work, and if he or she fails, then they are considered vulnerable
+and will have to wait 3 times the normal amount of time before attacking
+again.  Backstab can only be used to initiate combat, not once the
+monster is already attacking you.
+

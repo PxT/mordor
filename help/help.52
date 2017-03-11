@@ -1,0 +1,7 @@
+Help on:
+	SAVE
+
+This command saves your character to file.  It is always a good idea to
+do this every once in a while, because sometimes the game will crash,
+and all progress since the time of the last save (or login) will be lost.
+

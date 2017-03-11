@@ -1,0 +1,5 @@
+Resist-cold:
+This spell protects its target from biting cold
+MP cost: 12
+Syntax: 
+cast resist-cold <target>

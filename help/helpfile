@@ -1,0 +1,24 @@
+			LIST OF COMMANDS:
+		      [===================]
+
+ COMMUNICATION:				MOVEMENT:		
+ say\tell\gtalk\yell\broadcast\ignore 	go / flee / sneak / leave
++-------------------------------------------------------------------+
+ STATUS:					
+ score / info / health / who / whois / look / finger / set / clear
+ group / equipment / inventory / party / time
++-------------------------------------------------------------------+
+ ACTIONS: Not including social commands.
+ get / remove / wield / hold / drink / use / wear / bribe / pledge
+ lose / open / lock / study / cast / hide / suicide / prepare / list
+ search / quaff / put / drop / ready / read / rescind / trade / buy
++-------------------------------------------------------------------+
+ COMBAT:
+ attack / kill / bash / circle / backstab / turn / charm / cast
++-------------------------------------------------------------------+
+ SPECIAL: These are class skills.
+ bash / circle / pray / sing / meditate / touch / picklock / peek
+ steal / backstab / haste / track / turn / charm / teach / sneak
+[===================================================================]
+ Type "help <command>" to get help on any one of these commands.
+ Type "help spells" to list all available spells.

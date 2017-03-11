@@ -1,0 +1,12 @@
+Help on:
+	STEAL <object> [from] <player/monster> [#]
+
+Thieves and assassins may steal objects from monsters or other players.
+If they are successful, the victim will not even know he or she was stolen
+from.  However, if unsuccessful, the victim is warned.  Monsters usually
+get quite angry when someone tries to steal from them.
+
+WARNING:  Stealing from other players should not be abused.  It's been
+	rumored that players caught using this command abusively have
+	lost the power to steal.
+

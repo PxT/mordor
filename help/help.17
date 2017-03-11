@@ -1,0 +1,12 @@
+Help on:
+	SEND <player> <message>
+	TELL <player> <message>
+
+Send can be used to telepathically communicate with another player in
+the game.
+
+Example:
+
+: send jack hi how are you?
+Message sent to Jack.
+

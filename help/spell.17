@@ -1,0 +1,5 @@
+Summon:
+This spell summons its target to the room of the caster.
+MP cost: 30
+Syntax: 
+cast summon <target>

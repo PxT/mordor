@@ -1,0 +1,6 @@
+Help on:
+	CLOSE <exit/door> [#]
+	SHUT <exit/door> [#]
+
+The close command allows you to close an already opened door.
+

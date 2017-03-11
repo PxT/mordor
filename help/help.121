@@ -1,0 +1,20 @@
+
+Help on:
+
+	*LOG [r]
+
+	This function prints out the current log.  Using the r flag will 
+erase the log.
+
+example:
+:*log
+Fri Aug  5 07:31:44 1994: Gonzo (128.200.76.43) logged on.
+Fri Aug  5 07:31:45 1994: no_port@mendel.bio.uci.edu (no_port@128.200.76.43)
+  connected.
+Fri Aug  5 07:32:28 1994: no_port@mendel.bio.uci.edu (no_port@128.200.76.43)
+  connected.
+Fri Aug  5 07:32:58 1994: no_port@mendel.bio.uci.edu (no_port@128.200.76.43)
+  connected.
+Fri Aug  5 07:33:02 1994: Potio (mendel.bio.uci.edu) logged on.
+
+

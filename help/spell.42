@@ -1,0 +1,5 @@
+Remove-curse:
+This spell allows its target to remove cursed items
+MP cost: 18
+Syntax:
+cast remove-curse <target>

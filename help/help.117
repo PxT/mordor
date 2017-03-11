@@ -1,0 +1,14 @@
+Help on:
+
+	*MONSTER [#]
+
+	This function creates a monster in the parent room.  If no number 
+is specified, then it creates one at random from the random list for the 
+parent room.
+
+example:
+:*monster 105
+The Fenris Wolf just arrived.
+The Fenris Wolf attacks you.
+
+ 

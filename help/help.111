@@ -1,0 +1,17 @@
+Help on:
+
+	*USERS [f]
+
+	This function lists all the users online with various info about 
+them. 
+
+example:
+:*users
+
+Lev  Clas  Player    Room #: Name         Address         Last command    Idle
+-------------------------------------------------------------------------------
+[12] Dung  Tesseract     42: Leviathan Wa localhost       *u              00:00
+[ 3] Thie  Gonzo         50: Limbo        mendel.bio.uci. go blue         01:40
+[ 2] Figh  Potio       2283: The Healing  mendel.bio.uci. l               00:22
+
+

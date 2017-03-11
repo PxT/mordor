@@ -1,0 +1,6 @@
+Locate-person:
+This spell allows you to see through the eyes of another player, it
+doesn't always work...
+MP cost: 15
+Syntax:
+cast locate-person <target>

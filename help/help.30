@@ -1,0 +1,12 @@
+Help on:
+	GO <exit/door> [#]
+	ENTER <exit/door> [#]
+
+The go command allows you to enter any non-standard exit like a "door"
+or a "passage" or any other non-cardinal-direction exit.
+
+Example:
+
+Obvious exits: door, path.
+: go path
+

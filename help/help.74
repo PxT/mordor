@@ -1,0 +1,20 @@
+
+Help on command:
+
+	PURCHASE
+
+Syntax:
+
+	PURCHASE <item> <monster>
+
+	This command allows you to buy items from monsters, providing 
+they have something to sell.  To find out what a monster may have for 
+sale, use the SELECTION command.
+
+Example:
+
+:purchase enrollment registrar
+You pay the registrar 7000 gold pieces.
+The registrar says, "Thank you very much.  Here is your enrollment
+  verification."
+
